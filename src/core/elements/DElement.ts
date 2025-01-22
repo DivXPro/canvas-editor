@@ -22,6 +22,7 @@ export interface IDElementBase {
 
 export interface IDElement extends IDElementBase {
   items?: IDElement[]
+  [key: string]: any
 }
 
 export interface IDElementInstance<Item extends Container> extends IDElementBase {
@@ -147,6 +148,10 @@ export abstract class DElement implements IDElementInstance<any> {
 
   get height() {
     return this.item?.height ?? 0
+  }
+
+  get scale() {
+    return this.item?.scale ?? { x: 1, y: 1 }
   }
 
   get globalPosition() {

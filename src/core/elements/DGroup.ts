@@ -38,6 +38,7 @@ export class DGroup extends DElement {
       width: computed,
       height: computed,
       rotation: computed,
+      scale: computed,
       canSelect: computed,
       globalPosition: computed,
       jsonData: computed,
@@ -143,10 +144,10 @@ export class DGroup extends DElement {
       hidden: this.hidden,
       x: this.x,
       y: this.y,
-      width: this.width,
-      height: this.height,
+      width: this.width / this.scale.x,
+      height: this.height / this.scale.y,
       rotation: this.rotation,
-      items: this.children.map(child => child.jsonData)
+      items: this.children.map(child => child.jsonData),
     }
   }
 }

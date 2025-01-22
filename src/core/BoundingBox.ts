@@ -75,13 +75,11 @@ export class BoundingBox extends Container {
   }
 
   public show() {
-    console.log('show bounding box')
     this.update()
     this.visible = true
   }
 
   public hide() {
-    console.log('hide bounding box')
     this.visible = false
   }
 
