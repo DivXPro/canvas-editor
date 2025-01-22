@@ -1,0 +1,155 @@
+import { Application, ApplicationOptions, Size, EventEmitter, PointData, Graphics, Container } from 'pixi.js'
+
+import { DFrame, IDFrame } from './elements/DFrame'
+import { IDElement } from './elements/DElement'
+import { DGroup, IDGroup } from './elements/DGroup'
+import { DRectangle, DRectangleOptions } from './elements/DRectangle'
+import { OutlineLayer } from './OutlineLayer'
+
+export interface DesignApplicationOptions extends Partial<ApplicationOptions> {
+  enableZoom?: boolean
+  canvasSize?: Size
+  data: IDApp
+}
+
+const DefaultFrame: IDFrame = {
+  width: 512,
+  height: 512,
+  type: 'Frame',
+  x: 0,
+  y: 0,
+}
+
+export interface IDApp {
+  id: string
+  name: string
+  frame: IDFrame
+}
+
+export class DesignApplication extends Application {
+  id?: string
+  name?: string
+  maxZoom = 2
+  minZoom = 0.5
+  zoomRatio = 1
+  enableZoom = false
+  isZooming = false
+  lastPointerDown?: PointData
+  frame?: DFrame
+  outlineLayer?: OutlineLayer
+  events = new EventEmitter()
+  data?: IDApp
+
+  constructor() {
+    super()
+  }
+
+  async init(options: DesignApplicationOptions) {
+    await super.init(options)
+    const { enableZoom, data, background } = options
+
+    this.id = data.id
+    this.name = data.name
+    this.canvas.style.backgroundColor = background?.toString() ?? '0xcfcfcf'
+    this.enableZoom = enableZoom ?? false
+    this.data = data
+    this.initFrame()
+    this.initOutlineLayer()
+    this.initEventEmitter()
+    if (this.enableZoom) {
+      this.activeWheelZoom()
+    }
+  }
+
+  initFrame() {
+    const frame = this.data?.frame ?? DefaultFrame
+    const point = new Graphics().rect(-0.5, -0.5, 1, 1).fill({ color: 'red' })
+    this.frame = new DFrame({
+      app: this,
+      x: frame.x,
+      y: frame.y,
+      width: frame.width,
+      height: frame.height,
+      rotation: frame.rotation,
+      items: frame.items,
+      type: 'Frame',
+    })
+    this.stage.position.set((this.screen.width - this.frame.width) / 2, (this.screen.height - this.frame.height) / 2)
+    this.stage.addChild(this.frame.item, point)
+  }
+
+  initOutlineLayer() {
+    this.outlineLayer = new OutlineLayer()
+    this.stage.addChild(this.outlineLayer)
+  }
+
+  initEventEmitter() {
+    // point
+    this.canvas.addEventListener('pointerenter', e => this.events.emit('pointerenter', e), { passive: false })
+    this.canvas.addEventListener('pointerover', e => this.events.emit('pointerover', e), { passive: false })
+    this.canvas.addEventListener('pointerleave', e => this.events.emit('pointerleave', e), { passive: false })
+    this.canvas.addEventListener('pointertap', e => this.events.emit('pointertap', e), { passive: false })
+    this.canvas.addEventListener('pointerdown', e => this.events.emit('pointerdown', e), { passive: false })
+    this.canvas.addEventListener('pointermove', e => this.events.emit('pointermove', e), { passive: false })
+    this.canvas.addEventListener('pointerup', e => this.events.emit('pointerup', e), { passive: false })
+    this.canvas.addEventListener('pointerupoutside', e => this.events.emit('pointerupoutside', e), { passive: false })
+    this.canvas.addEventListener('pointercancel', e => this.events.emit('pointercancel', e), { passive: false })
+
+    // wheel
+    this.canvas.addEventListener('wheel', e => this.events.emit('wheel', e), { passive: false })
+
+    this.events.on('pointerdown', (e: PointerEvent) => this.lastPointerDown = { x: e.clientX, y: e.clientY })
+  }
+
+  activeWheelZoom() {
+    if (this.enableZoom) {
+      this.events.on('wheel', this.applyZoom.bind(this))
+    }
+  }
+
+  applyZoom(event: WheelEvent) {
+    const delta = event.deltaY
+    let zoomRatio = this.zoomRatio ?? 1
+
+    if (delta > 0) {
+      zoomRatio -= 0.02
+    } else {
+      zoomRatio += 0.02
+    }
+
+    if (zoomRatio <= this.minZoom) {
+      zoomRatio = this.minZoom
+    } else if (zoomRatio >= this.maxZoom) {
+      zoomRatio = this.maxZoom
+    }
+
+    console.log('zoomRatio', zoomRatio)
+    this.zoomRatio = zoomRatio
+    this.frame?.setZoom(this.zoomRatio)
+    this.outlineLayer?.scale.set(this.zoomRatio)
+
+    event.preventDefault()
+    event.stopPropagation()
+  }
+
+  generateElement(item: IDElement) {
+    switch (item.type) {
+      case 'Frame':
+        return new DFrame({ app: this, ...(item as IDFrame) })
+      case 'Group':
+        return new DGroup({ app: this, ...(item as IDGroup) })
+      case 'Rectangle':
+        return new DRectangle({ app: this, ...(item as Omit<DRectangleOptions, 'app'>) })
+      default:
+        break
+    }
+  }
+
+  get jsonData() {
+    return {
+      id: this.data?.id,
+      name: this.data?.name,
+      frame: this.frame?.jsonData,
+    }
+  }
+}
