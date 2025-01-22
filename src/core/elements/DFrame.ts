@@ -15,10 +15,10 @@ export interface IDFrame extends IDElement {
   items?: IDElement[]
 }
 
-export class DFrame extends DElement implements IDElementInstance<Frame> {
+export class DFrame extends DElement {
   declare item: Frame
 
-  children: IObservableArray<IDElementInstance<any>> = observable.array([])
+  children: IObservableArray<DElement> = observable.array([])
 
   constructor(options: DFrameOptions) {
     super(options)
@@ -52,6 +52,7 @@ export class DFrame extends DElement implements IDElementInstance<Frame> {
       height: options.height ?? 0,
     })
     this.item.eventMode = 'static'
+
     this.setupChildrenObserver()
     this.renderItems(options.items)
   }
@@ -133,8 +134,6 @@ export class DFrame extends DElement implements IDElementInstance<Frame> {
     // 处理添加元素的逻辑
     elements.forEach(element => {
       // 例如，将元素添加到 Frame 中
-      console.debug('Element add:', element.item.name, element.item)
-
       this.item.addChild(element.item)
     })
   }

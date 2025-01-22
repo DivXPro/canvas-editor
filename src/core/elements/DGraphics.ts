@@ -20,6 +20,7 @@ export interface IDGraphics extends IDElement {
 
 export interface DGraphicsOptions extends IDGraphics {
   app: DesignApplication
+  parent?: DElement
 }
 
 export abstract class DGraphics extends DElement implements IDElementInstance<Graphics> {
@@ -42,18 +43,19 @@ export abstract class DGraphics extends DElement implements IDElementInstance<Gr
       displayName: computed,
       x: computed,
       y: computed,
-      globalPosition: computed,
       width: computed,
       height: computed,
+      canSelect: computed,
+      globalPosition: computed,
       jsonData: computed,
       setWidth: action.bound,
       setHeight: action.bound,
       setHidden: action.bound,
       setIsHovered: action.bound,
-      setIsSelected: action.bound,
       setPostion: action.bound,
       handlePointerEnter: action.bound,
       handlePointerLeave: action.bound,
+      handlePointerTap: action.bound,
       handlePointerDown: action.bound,
       handleDragStart: action.bound,
       handleDrageMove: action.bound,

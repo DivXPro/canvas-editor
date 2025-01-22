@@ -14,6 +14,7 @@ export interface IDText extends IDElement {
 
 export interface DTextOptions extends IDText {
   app: DesignApplication
+  parent?: DElement
 }
 
 export class DText extends DElement implements IDElementInstance<TextBox> {
@@ -37,21 +38,24 @@ export class DText extends DElement implements IDElementInstance<TextBox> {
       height: computed,
       rotation: computed,
       globalPosition: computed,
+      canSelect: computed,
       jsonData: computed,
       setWidth: action.bound,
       setHeight: action.bound,
       setHidden: action.bound,
       setIsHovered: action.bound,
-      setIsSelected: action.bound,
       setPostion: action.bound,
       handlePointerEnter: action.bound,
       handlePointerLeave: action.bound,
       handlePointerDown: action.bound,
+      handlePointerTap: action.bound,
       handleDragStart: action.bound,
       handleDrageMove: action.bound,
       handleDragEnd: action.bound,
     })
-    this.item = new TextBox(options)
+    const { parent: _, ...others } = options
+
+    this.item = new TextBox(others)
     this.setupInteractiveEvents()
   }
 

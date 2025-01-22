@@ -4,7 +4,7 @@ import { IDElementInstance } from './elements/DElement'
 
 export interface IOutline {
   element: IDElementInstance<any>
-  render: (element: IDElementInstance<any>) => void
+  update: (element: IDElementInstance<any>) => void
   show: () => void
   hide: () => void
 }
@@ -18,10 +18,10 @@ export class Outline extends Graphics implements IOutline {
     })
     this.element = element
     this.visible = false
-    this.render()
+    this.update()
   }
 
-  render(element: IDElementInstance<any> = this.element) {
+  update(element: IDElementInstance<any> = this.element) {
     if (element.width && element.height) {
       this.position.set(element.centerX, element.centerY)
       this.clear().rect(0, 0, element.width, element.height).stroke({ color: 0x238def, width: 2 })
@@ -36,14 +36,11 @@ export class Outline extends Graphics implements IOutline {
   }
 
   show() {
-    console.log('show outline')
-    this.render()
-    // this.element.app.stage.setChildIndex(this, this.element.app.stage.children.length - 1)
+    this.update()
     this.visible = true
   }
 
   hide() {
-    console.log('hide outline')
     this.visible = false
   }
 }

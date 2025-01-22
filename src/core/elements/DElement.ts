@@ -3,6 +3,8 @@ import { Container, PointData } from 'pixi.js'
 
 import { DesignApplication } from '../DesignApplication'
 import { Outline } from '../Outline'
+import { BoundingBox } from '../BoundingBox'
+import { SelectElementEvent, UnselectElementEvent } from '../events/SelectElementEvent'
 
 export interface IDElementBase {
   id?: string
@@ -40,7 +42,9 @@ export interface IDElementInstance<Item extends Container> extends IDElementBase
 
 export interface DElementOptions extends IDElement {
   app: DesignApplication
+  parent?: DElement
 }
+
 export abstract class DElement implements IDElementInstance<any> {
   protected dragStartPosition?: { x: number; y: number }
   protected elementStartPosition?: { x: number; y: number }
@@ -53,18 +57,22 @@ export abstract class DElement implements IDElementInstance<any> {
   locked?: boolean
   _hidden?: boolean
   _isHovered?: boolean
-  _isSelected?: boolean
   isDragging?: boolean
   outline: Outline
+  boundingBox: BoundingBox
+  children?: DElement[]
+  parent?: DElement
 
   constructor(options: DElementOptions) {
     this.app = options.app
+    this.parent = options.parent
     this.id = options.id ?? eid()
     this.name = options.name
     this.index = options.index
     this.locked = !!options.locked
     this._hidden = !!options.hidden
     this.outline = new Outline(this)
+    this.boundingBox = new BoundingBox(this)
   }
 
   get type() {
@@ -77,6 +85,10 @@ export abstract class DElement implements IDElementInstance<any> {
 
   get hidden() {
     return this._hidden
+  }
+
+  get canSelect() {
+    return this.parent?.type === 'Frame'
   }
 
   setHidden(value: boolean) {
@@ -106,15 +118,7 @@ export abstract class DElement implements IDElementInstance<any> {
   }
 
   get isSelected() {
-    return this._isSelected ?? false
-  }
-
-  set isSelected(value: boolean) {
-    this.setIsSelected(value)
-  }
-
-  setIsSelected(value: boolean) {
-    this._isSelected = value
+    return this.app.selection.has(this) ?? false
   }
 
   get displayName() {
@@ -135,6 +139,14 @@ export abstract class DElement implements IDElementInstance<any> {
 
   get centerY() {
     return this.item?.y ?? 0
+  }
+
+  get width() {
+    return this.item?.width ?? 0
+  }
+
+  get height() {
+    return this.item?.height ?? 0
   }
 
   get globalPosition() {
@@ -158,11 +170,26 @@ export abstract class DElement implements IDElementInstance<any> {
       this.item.on('pointerenter', this.handlePointerEnter)
       this.item.on('pointerleave', this.handlePointerLeave)
       this.item.on('pointerdown', this.handlePointerDown)
+      this.item.on('pointertap', this.handlePointerTap)
     }
+    this.app.events.on('select:element', (e: SelectElementEvent) => {
+      if (Array.isArray(e.data.source) && e.data.source.includes(this)) {
+        this.boundingBox.show()
+      } else {
+        this.boundingBox.hide()
+      }
+    })
+    this.app.events.on('unselect:element', (e: UnselectElementEvent) => {
+      if (Array.isArray(e.data.source) && e.data.source.includes(this)) {
+        this.boundingBox.show()
+      } else {
+        this.boundingBox.hide()
+      }
+    })
   }
 
   renderOutline() {
-    this.outline.render()
+    this.outline.update()
   }
 
   handlePointerEnter(event: PointerEvent) {
@@ -173,10 +200,16 @@ export abstract class DElement implements IDElementInstance<any> {
     this.isHovered = false
   }
 
-  handlePointerDown(event: PointerEvent) {
-    console.log('pointerdown', event, this.item?.isInteractive())
+  handlePointerTap(event: PointerEvent) {
+    console.log('handlePointerTap')
+    if (this.canSelect) {
+      this.app.selection.safeSelect(this)
+      event.stopPropagation()
+      event.preventDefault()
+    }
+  }
 
-    this.isSelected = true
+  handlePointerDown(event: PointerEvent) {
     this.handleDragStart(event)
   }
 
@@ -209,13 +242,34 @@ export abstract class DElement implements IDElementInstance<any> {
         this.elementStartPosition.y + dy / this.app.zoomRatio
       )
       // 更新 outline 位置
-      this.renderOutline()
+      this.outline.hide()
+      this.boundingBox.hide()
     }
   }
 
   handleDragEnd() {
-    this.isDragging = false
-    this.app.isDragging = false
+    if (this.isDragging) {
+      this.isDragging = false
+      this.app.isDragging = false
+
+      // TODO: 改为事件触发
+      this.boundingBox.show()
+    }
+  }
+
+  findById(id: string): DElement | undefined {
+    if (this.id === id) {
+      return this
+    }
+    if (this.children) {
+      for (const child of this.children) {
+        const found = child.findById(id)
+
+        if (found) {
+          return found
+        }
+      }
+    }
   }
 
   get jsonData(): IDElementBase {

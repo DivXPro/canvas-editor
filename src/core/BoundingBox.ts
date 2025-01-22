@@ -1,28 +1,24 @@
 import { Container, Graphics, Point } from 'pixi.js'
 
-import { IDElementInstance } from './elements/DElement'
+import { DElement } from './elements/DElement'
+import * as UICfg from './config'
 
-export class BoundingBox {
-  private item: IDElementInstance<any>
-  private container: Container
+export class BoundingBox extends Container {
+  private element: DElement
   private border: Graphics
   private handles: Graphics[]
-  private rotationHandle: Graphics
 
-  constructor(item: IDElementInstance<any>) {
-    this.item = item
-    this.container = new Container()
+  constructor(element: DElement) {
+    super({ x: element.centerX, y: element.centerY })
+    this.element = element
     this.border = new Graphics()
     this.handles = []
-    this.rotationHandle = new Graphics()
-
     this.init()
   }
 
   private init() {
     this.initBorder()
     this.initHandles()
-    this.initRotationHandle()
     this.update()
   }
 
@@ -31,94 +27,70 @@ export class BoundingBox {
       width: 1,
       color: 0x0099ff,
     })
-    this.container.addChild(this.border)
+    this.addChild(this.border)
   }
 
   private initHandles() {
     // 4个控制点：左上、右上、右下、左下
-    const positions = [
-      new Point(-0.5, -0.5),
-      new Point(0.5, -0.5),
-      new Point(0.5, 0.5),
-      new Point(-0.5, 0.5),
-    ]
-
-    positions.forEach(pos => {
+    this.handlePostions.forEach(pos => {
       const handle = new Graphics()
+        .rect(pos.x, pos.y, UICfg.boundingHandingSize, UICfg.boundingHandingSize)
+        .fill({
+          color: UICfg.white,
+        })
+        .stroke({
+          width: UICfg.boundingHandingStrokeWidth,
+          color: UICfg.boundingHandingStrokeColor,
+        })
 
-      handle.setFillStyle({
-        color: 0xffffff,
-      })
-      handle.setStrokeStyle({
-        width: 1,
-        color: 0x0099ff,
-      })
-      handle.rect(-4, -4, 8, 8)
-      handle.fill()
-      handle.stroke()
+      handle.pivot.set(UICfg.boundingHandingSize / 2, UICfg.boundingHandingSize / 2)
       this.handles.push(handle)
-      this.container.addChild(handle)
+      this.addChild(handle)
     })
-  }
-
-  private initRotationHandle() {
-    this.rotationHandle.setFillStyle({
-      color: 0xffffff,
-    })
-    this.rotationHandle.setStrokeStyle({
-      width: 1,
-      color: 0x0099ff,
-    })
-    this.rotationHandle.circle(0, 0, 4)
-    this.rotationHandle.fill()
-    this.rotationHandle.stroke()
-    this.container.addChild(this.rotationHandle)
   }
 
   public update() {
     // 更新边框
     this.border.clear()
     this.border.setStrokeStyle({
-      width: 1,
-      color: 0x0099ff
+      width: UICfg.boundingBoxWidth,
+      color: UICfg.boudingBoxColor,
     })
     this.border.rect(
-      this.item.x,
-      this.item.y,
-      this.item.width,
-      this.item.height
+      this.element.centerX - this.element.width / 2,
+      this.element.centerY - this.element.height / 2,
+      this.element.width,
+      this.element.height
     )
     this.border.stroke()
 
     // 更新控制点位置
     this.handles.forEach((handle, index) => {
-      const x = this.item.x + this.item.width * (index % 2)
-      const y = this.item.y + this.item.height * Math.floor(index / 2)
-
-      handle.position.set(x, y)
+      handle.position.set(this.handlePostions[index].x, this.handlePostions[index].y)
     })
 
-    // 更新旋转控制点位置
-    this.rotationHandle.position.set(
-      this.item.x + this.item.width / 2,
-      this.item.y - 20
-    )
+    if (this.parent == null) {
+      this.element.app.boundingLayer?.addChild(this)
+    }
   }
 
   public show() {
-    this.container.visible = true
+    console.log('show bounding box')
     this.update()
+    this.visible = true
   }
 
   public hide() {
-    this.container.visible = false
+    console.log('hide bounding box')
+    this.visible = false
   }
 
-  public destroy() {
-    this.container.destroy()
-  }
-
-  public getContainer() {
-    return this.container
+  private get handlePostions() {
+    return [
+      new Point(this.element.centerX - this.element.width / 2, this.element.centerY - this.element.height / 2),
+      new Point(this.element.centerX + this.element.width / 2, this.element.centerY - this.element.height / 2),
+      new Point(this.element.centerX + this.element.width / 2, this.element.centerY + this.element.height / 2),
+      new Point(this.element.centerX - this.element.width / 2, this.element.centerY + this.element.height / 2),
+    ]
   }
 }

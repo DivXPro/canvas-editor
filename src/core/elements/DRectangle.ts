@@ -3,7 +3,7 @@ import { FillStyle, StrokeStyle } from 'pixi.js'
 import { DesignApplication } from '../DesignApplication'
 
 import { DGraphics } from './DGraphics'
-import { IDElement } from './DElement'
+import { DElement, IDElement } from './DElement'
 
 export interface DRectangleData {
   data: { x: number; y: number; width: number; height: number; radius?: number }
@@ -21,6 +21,7 @@ export interface IDRectangle extends IDElement {
 
 export interface DRectangleOptions extends IDRectangle {
   app: DesignApplication
+  parent?: DElement
 }
 
 export class DRectangle extends DGraphics {
@@ -28,10 +29,7 @@ export class DRectangle extends DGraphics {
     super(options)
     const { width, height, radius } = options
 
-    this.item
-      .roundRect(0, 0, width, height, radius)
-      .fill(options.fillStyle)
-      .stroke(options.strokeStyle)
+    this.item.roundRect(0, 0, width, height, radius).fill(options.fillStyle).stroke(options.strokeStyle)
     this.item.pivot.set(width / 2, height / 2)
     this.item.rotation = options.rotation ?? 0
     this.item.visible = this.hidden ? false : true

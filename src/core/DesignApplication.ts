@@ -1,11 +1,13 @@
 import { Application, ApplicationOptions, Size, EventEmitter, PointData, Graphics, Container } from 'pixi.js'
 
 import { DFrame, IDFrame } from './elements/DFrame'
-import { IDElement } from './elements/DElement'
+import { DElement, IDElement } from './elements/DElement'
 import { DGroup, IDGroup } from './elements/DGroup'
 import { DRectangle, IDRectangle } from './elements/DRectangle'
 import { OutlineLayer } from './OutlineLayer'
 import { DText, IDText } from './elements/DText'
+import { BoundingLayer } from './BoundingLayer'
+import { Selection } from './Selection'
 
 export interface DesignApplicationOptions extends Partial<ApplicationOptions> {
   enableZoom?: boolean
@@ -39,7 +41,9 @@ export class DesignApplication extends Application {
   lastPointerDown?: PointData
   frame?: DFrame
   outlineLayer?: OutlineLayer
+  boundingLayer?: BoundingLayer
   events = new EventEmitter()
+  selection = new Selection({ app: this })
   data?: IDApp
 
   constructor() {
@@ -56,7 +60,7 @@ export class DesignApplication extends Application {
     this.enableZoom = enableZoom ?? false
     this.data = data
     this.initFrame()
-    this.initOutlineLayer()
+    this.initGuideLayers()
     this.initEventEmitter()
     if (this.enableZoom) {
       this.activeWheelZoom()
@@ -66,6 +70,7 @@ export class DesignApplication extends Application {
   initFrame() {
     const frame = this.data?.frame ?? DefaultFrame
     const point = new Graphics().rect(-0.5, -0.5, 1, 1).fill({ color: 'red' })
+
     this.frame = new DFrame({
       app: this,
       x: frame.x,
@@ -80,12 +85,15 @@ export class DesignApplication extends Application {
     this.stage.addChild(this.frame.item, point)
   }
 
-  initOutlineLayer() {
+  initGuideLayers() {
     this.outlineLayer = new OutlineLayer()
-    this.stage.addChild(this.outlineLayer)
+    this.boundingLayer = new BoundingLayer()
+    this.stage.addChild(this.outlineLayer, this.boundingLayer)
   }
 
   initEventEmitter() {
+    this.stage.eventMode = 'static'
+
     // point
     this.canvas.addEventListener('pointerenter', e => this.events.emit('pointerenter', e), { passive: false })
     this.canvas.addEventListener('pointerover', e => this.events.emit('pointerover', e), { passive: false })
@@ -100,7 +108,13 @@ export class DesignApplication extends Application {
     // wheel
     this.canvas.addEventListener('wheel', e => this.events.emit('wheel', e), { passive: false })
 
-    this.events.on('pointerdown', (e: PointerEvent) => this.lastPointerDown = { x: e.clientX, y: e.clientY })
+    this.stage.on(
+      'pointertap',
+      () => {
+        this.selection.clear()
+      },
+      { passive: false }
+    )
   }
 
   activeWheelZoom() {
@@ -125,7 +139,6 @@ export class DesignApplication extends Application {
       zoomRatio = this.maxZoom
     }
 
-    console.log('zoomRatio', zoomRatio)
     this.zoomRatio = zoomRatio
     this.frame?.setZoom(this.zoomRatio)
     this.outlineLayer?.scale.set(this.zoomRatio)
@@ -134,16 +147,16 @@ export class DesignApplication extends Application {
     event.stopPropagation()
   }
 
-  generateElement(item: IDElement) {
+  generateElement(item: IDElement, parent?: DElement) {
     switch (item.type) {
       case 'Frame':
         return new DFrame({ app: this, ...(item as IDFrame) })
       case 'Group':
-        return new DGroup({ app: this, ...(item as IDGroup) })
+        return new DGroup({ app: this, parent, ...(item as IDGroup) })
       case 'Rectangle':
-        return new DRectangle({ app: this, ...(item as IDRectangle) })
+        return new DRectangle({ app: this, parent, ...(item as IDRectangle) })
       case 'Text':
-        return new DText({ app: this, ...(item as IDText) })
+        return new DText({ app: this, parent, ...(item as IDText) })
       default:
         break
     }

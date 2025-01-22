@@ -11,13 +11,14 @@ export interface IDGroup extends IDElement {
 
 export interface DGroupOptions extends IDGroup {
   app: DesignApplication
+  parent?: DElement
   width?: number
   height?: number
 }
 
-export class DGroup extends DElement implements IDElementInstance<Container> {
+export class DGroup extends DElement {
   item: Container
-  children: IObservableArray<IDElementInstance<any>> = observable.array([])
+  children: IObservableArray<DElement> = observable.array([])
 
   constructor(options: DGroupOptions) {
     super(options)
@@ -37,6 +38,7 @@ export class DGroup extends DElement implements IDElementInstance<Container> {
       width: computed,
       height: computed,
       rotation: computed,
+      canSelect: computed,
       globalPosition: computed,
       jsonData: computed,
       setRotation: action.bound,
@@ -45,6 +47,7 @@ export class DGroup extends DElement implements IDElementInstance<Container> {
       handlePointerEnter: action.bound,
       handlePointerLeave: action.bound,
       handlePointerDown: action.bound,
+      handlePointerTap: action.bound,
       handleDragStart: action.bound,
       handleDrageMove: action.bound,
       handleDragEnd: action.bound,
@@ -72,22 +75,6 @@ export class DGroup extends DElement implements IDElementInstance<Container> {
     return this.name ?? 'Group'
   }
 
-  get x() {
-    return this.item.x
-  }
-
-  get y() {
-    return this.item.y
-  }
-
-  get width() {
-    return this.item.width
-  }
-
-  get height() {
-    return this.item.height
-  }
-
   get globalPosition() {
     return this.item.getGlobalPosition()
   }
@@ -104,7 +91,7 @@ export class DGroup extends DElement implements IDElementInstance<Container> {
     items
       .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
       .forEach(item => {
-        const child = this.app.generateElement(item)
+        const child = this.app.generateElement(item, this)
 
         child && this.children.push(child)
       })

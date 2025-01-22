@@ -37,7 +37,7 @@
       "semi": false,
       "singleQuote": true,
       "trailingComma": "es5",
-      "printWidth": 100,
+      "printWidth": 120,
       "arrowParens": "avoid"
     }],
     "no-unused-vars": "off",
@@ -47,7 +47,7 @@
       "warn",
       {
         "args": "after-used",
-        "ignoreRestSiblings": false,
+        "ignoreRestSiblings": true,
         "argsIgnorePattern": "^_.*?$"
       }
     ],
