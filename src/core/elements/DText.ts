@@ -44,6 +44,7 @@ export class DText extends DElement implements IDElementInstance<TextBox> {
       setIsHovered: action.bound,
       setIsSelected: action.bound,
       setPostion: action.bound,
+      handlePointerEnter: action.bound,
       handlePointerLeave: action.bound,
       handlePointerDown: action.bound,
       handleDragStart: action.bound,

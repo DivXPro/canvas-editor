@@ -153,7 +153,7 @@ export abstract class DElement implements IDElementInstance<any> {
   setupInteractiveEvents() {
     if (this.item) {
       this.item.eventMode = 'dynamic'
-      this.item.on('pointerenter', () => (this.isHovered = true))
+      this.item.on('pointerenter', this.handlePointerEnter)
       this.item.on('pointerleave', this.handlePointerLeave)
       this.item.on('pointerdown', this.handlePointerDown)
     }
@@ -163,8 +163,17 @@ export abstract class DElement implements IDElementInstance<any> {
     this.outline.render()
   }
 
+  handlePointerEnter(event: PointerEvent) {
+    if (this.app.isDragging) {
+      return
+    }
+    this.isHovered = true
+  }
+
   handlePointerLeave(event: PointerEvent) {
-    console.log('pointerleave', event, this.item?.isInteractive())
+    if (this.app.isDragging) {
+      return
+    }
     this.isHovered = false
   }
 

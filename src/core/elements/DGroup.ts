@@ -42,6 +42,12 @@ export class DGroup extends DElement implements IDElementInstance<Container> {
       setRotation: action.bound,
       setHidden: action.bound,
       renderItems: action.bound,
+      handlePointerEnter: action.bound,
+      handlePointerLeave: action.bound,
+      handlePointerDown: action.bound,
+      handleDragStart: action.bound,
+      handleDrageMove: action.bound,
+      handleDragEnd: action.bound,
     })
     this.id = options.id ?? eid()
     this.locked = options.locked

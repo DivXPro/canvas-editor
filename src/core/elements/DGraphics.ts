@@ -52,6 +52,7 @@ export abstract class DGraphics extends DElement implements IDElementInstance<Gr
       setIsHovered: action.bound,
       setIsSelected: action.bound,
       setPostion: action.bound,
+      handlePointerEnter: action.bound,
       handlePointerLeave: action.bound,
       handlePointerDown: action.bound,
       handleDragStart: action.bound,
