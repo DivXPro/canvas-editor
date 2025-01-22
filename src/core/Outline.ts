@@ -2,12 +2,19 @@ import { Graphics } from 'pixi.js'
 
 import { IDElementInstance } from './elements/DElement'
 
-export class Outline extends Graphics {
+export interface IOutline {
+  element: IDElementInstance<any>
+  render: (element: IDElementInstance<any>) => void
+  show: () => void
+  hide: () => void
+}
+
+export class Outline extends Graphics implements IOutline {
   element: IDElementInstance<any>
   constructor(element: IDElementInstance<any>) {
     super({
-      x: element.x,
-      y: element.y,
+      x: element.centerX,
+      y: element.centerY,
     })
     this.element = element
     this.visible = false
@@ -15,12 +22,16 @@ export class Outline extends Graphics {
   }
 
   render(element: IDElementInstance<any> = this.element) {
-    // this.position.set(element.x + element.width / 2, element.y + element.height / 2)
-    this.clear().rect(0, 0, element.width, element.height).stroke({ color: 0x238def, width: 2 })
-    this.pivot.set(element.width / 2, element.height / 2)
-    this.rotation = element.rotation ?? 0
-    if (this.parent == null) {
-      this.element.app.outlineLayer?.addChild(this)
+    if (element.width && element.height) {
+      this.position.set(element.centerX, element.centerY)
+      this.clear().rect(0, 0, element.width, element.height).stroke({ color: 0x238def, width: 2 })
+      this.pivot.set(element.width / 2, element.height / 2)
+      this.rotation = element.rotation ?? 0
+      if (this.parent == null) {
+        this.element.app.outlineLayer?.addChild(this)
+      }
+    } else {
+      this.clear()
     }
   }
 

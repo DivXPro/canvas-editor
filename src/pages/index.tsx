@@ -4,6 +4,7 @@ import { Assets, Sprite, Texture } from 'pixi.js'
 import DefaultLayout from '@/layouts/default'
 import { DesignApplication } from '@/core/DesignApplication'
 import { IDRectangle } from '@/core/elements/DRectangle'
+import { IDText } from '../core/elements/DText'
 
 export default function IndexPage() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -30,20 +31,54 @@ export default function IndexPage() {
               height: 512,
               type: 'Frame',
               items: [
+                // {
+                //   id: 'rectangle-1',
+                //   name: 'Rectangle 1',
+                //   type: 'Rectangle',
+                //   x: 150,
+                //   y: 100,
+                //   width: 100,
+                //   height: 100,
+                //   radius: 20,
+                //   rotation: Math.PI / 4,
+                //   fillStyle: { color: 'orange' },
+                // } as IDRectangle,
                 {
-                  id: 'rectangle-1',
-                  name: 'Rectangle 1',
-                  type: 'Rectangle',
-                  x: 150,
+                  id: 'text-1',
+                  name: 'Text 1',
+                  type: 'Text',
+                  x: 100,
                   y: 100,
-                  width: 100,
+                  width: 150,
                   height: 100,
-                  radius: 20,
-                  rotation: Math.PI / 4,
-                  graphics: {
-                    fillStyle: { color: 'orange' },
-                  },
-                } as IDRectangle,
+                  fixSize: true,
+                  text: 'This is text of example 1',
+                  style: { fill: { color: 'orange' }, align: 'center' },
+                } as IDText,
+                {
+                  id: 'text-2',
+                  name: 'Text 2',
+                  type: 'Text',
+                  x: 100,
+                  y: 200,
+                  width: 150,
+                  height: 100,
+                  fixSize: true,
+                  text: 'This is text of example 2',
+                  style: { fill: { color: 'pink' }, align: 'left' },
+                } as IDText,
+                {
+                  id: 'text-3',
+                  name: 'Text 3',
+                  type: 'Text',
+                  x: 100,
+                  y: 300,
+                  width: 150,
+                  height: 100,
+                  fixSize: true,
+                  text: 'This is text of example 3',
+                  style: { fill: { color: 'pink' }, align: 'right' },
+                } as IDText,
               ],
             },
           },

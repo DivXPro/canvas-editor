@@ -3,8 +3,9 @@ import { Application, ApplicationOptions, Size, EventEmitter, PointData, Graphic
 import { DFrame, IDFrame } from './elements/DFrame'
 import { IDElement } from './elements/DElement'
 import { DGroup, IDGroup } from './elements/DGroup'
-import { DRectangle, DRectangleOptions } from './elements/DRectangle'
+import { DRectangle, IDRectangle } from './elements/DRectangle'
 import { OutlineLayer } from './OutlineLayer'
+import { DText, IDText } from './elements/DText'
 
 export interface DesignApplicationOptions extends Partial<ApplicationOptions> {
   enableZoom?: boolean
@@ -34,6 +35,7 @@ export class DesignApplication extends Application {
   zoomRatio = 1
   enableZoom = false
   isZooming = false
+  isDragging = false
   lastPointerDown?: PointData
   frame?: DFrame
   outlineLayer?: OutlineLayer
@@ -139,7 +141,9 @@ export class DesignApplication extends Application {
       case 'Group':
         return new DGroup({ app: this, ...(item as IDGroup) })
       case 'Rectangle':
-        return new DRectangle({ app: this, ...(item as Omit<DRectangleOptions, 'app'>) })
+        return new DRectangle({ app: this, ...(item as IDRectangle) })
+      case 'Text':
+        return new DText({ app: this, ...(item as IDText) })
       default:
         break
     }

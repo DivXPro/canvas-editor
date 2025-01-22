@@ -3,7 +3,7 @@ import { makeObservable, observable, computed, action, observe, IObservableArray
 
 import { DesignApplication } from '../DesignApplication'
 
-import { eid, IDElement, IDElementInstance } from './DElement'
+import { DElement, eid, IDElement, IDElementInstance } from './DElement'
 
 export interface IDGroup extends IDElement {
   type: 'Group'
@@ -11,21 +11,16 @@ export interface IDGroup extends IDElement {
 
 export interface DGroupOptions extends IDGroup {
   app: DesignApplication
+  width?: number
+  height?: number
 }
 
-export class DGroup implements IDElementInstance<Container> {
-  app: DesignApplication
-  id: string
-  name?: string
-  index: number = 0
+export class DGroup extends DElement implements IDElementInstance<Container> {
   item: Container
-  locked?: boolean
-  isHovered?: boolean
-  isSelected?: boolean
   children: IObservableArray<IDElementInstance<any>> = observable.array([])
 
   constructor(options: DGroupOptions) {
-    this.app = options.app
+    super(options)
     makeObservable(this, {
       id: observable,
       name: observable,
@@ -37,18 +32,14 @@ export class DGroup implements IDElementInstance<Container> {
       displayName: computed,
       x: computed,
       y: computed,
+      centerX: computed,
+      centerY: computed,
       width: computed,
       height: computed,
-      boundX: computed,
-      boundY: computed,
-      boundWidth: computed,
-      boundHeight: computed,
       rotation: computed,
       globalPosition: computed,
       jsonData: computed,
       setRotation: action.bound,
-      setBoundX: action.bound,
-      setBoundY: action.bound,
       setHidden: action.bound,
       renderItems: action.bound,
     })
@@ -60,7 +51,7 @@ export class DGroup implements IDElementInstance<Container> {
       rotation: options.rotation ?? 0,
       width: options.width,
       height: options.height,
-      pivot: { x: options.width / 2, y: options.height / 2 },
+      // pivot: { x: options.width / 2, y: options.height / 2 },
       visible: !options.hidden,
     })
     this.setupChildrenObserver()
@@ -91,27 +82,6 @@ export class DGroup implements IDElementInstance<Container> {
     return this.item.height
   }
 
-  get boundX() {
-    return this.item.getBounds().x
-  }
-
-  get boundY() {
-    return this.item.getBounds().y
-  }
-
-  get boundWidth() {
-    return this.item.getBounds().width
-  }
-
-  get boundHeight() {
-    return this.item.getBounds().height
-  }
-
-
-  get boundCenter() {
-    return { x: this.x + this.boundWidth / 2, y: this.y + this.boundHeight / 2 }
-  }
-
   get globalPosition() {
     return this.item.getGlobalPosition()
   }
@@ -120,28 +90,8 @@ export class DGroup implements IDElementInstance<Container> {
     return this.item.rotation
   }
 
-  get hidden() {
-    return !this.item.visible
-  }
-
-  set hidden(value: boolean) {
-    this.setHidden(value)
-  }
-
   setHidden(value: boolean) {
     this.item.visible = !value
-  }
-
-  setRotation(rotation: number) {
-    this.item.rotation = rotation
-  }
-
-  setBoundX(x: number) {
-    this.item.x += x - this.boundX
-  }
-
-  setBoundY(y: number) {
-    this.item.x += y - this.boundY
   }
 
   renderItems(items: IDElement[] = []) {
@@ -207,4 +157,3 @@ export class DGroup implements IDElementInstance<Container> {
     }
   }
 }
-

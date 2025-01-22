@@ -83,25 +83,25 @@ export class BoundingBox {
       color: 0x0099ff
     })
     this.border.rect(
-      this.item.boundX,
-      this.item.boundY,
-      this.item.boundWidth,
-      this.item.boundHeight
+      this.item.x,
+      this.item.y,
+      this.item.width,
+      this.item.height
     )
     this.border.stroke()
 
     // 更新控制点位置
     this.handles.forEach((handle, index) => {
-      const x = this.item.boundX + this.item.boundWidth * (index % 2)
-      const y = this.item.boundY + this.item.boundHeight * Math.floor(index / 2)
+      const x = this.item.x + this.item.width * (index % 2)
+      const y = this.item.y + this.item.height * Math.floor(index / 2)
 
       handle.position.set(x, y)
     })
 
     // 更新旋转控制点位置
     this.rotationHandle.position.set(
-      this.item.boundX + this.item.boundWidth / 2,
-      this.item.boundY - 20
+      this.item.x + this.item.width / 2,
+      this.item.y - 20
     )
   }
 

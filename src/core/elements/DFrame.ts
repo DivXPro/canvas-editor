@@ -3,7 +3,7 @@ import { makeObservable, observable, computed, action, IObservableArray, observe
 import { DesignApplication } from '../DesignApplication'
 import { Frame } from '../Frame'
 
-import { eid, IDElement } from './DElement'
+import { DElement, IDElement } from './DElement'
 import { IDElementInstance } from './DElement'
 
 export interface DFrameOptions extends IDElement {
@@ -15,20 +15,13 @@ export interface IDFrame extends IDElement {
   items?: IDElement[]
 }
 
-export class DFrame implements IDElementInstance<Frame> {
+export class DFrame extends DElement implements IDElementInstance<Frame> {
   declare item: Frame
 
-  app: DesignApplication
-  id: string
-  name?: string
-  index: number = 0
-  isHovered?: boolean
-  isSelected?: boolean
   children: IObservableArray<IDElementInstance<any>> = observable.array([])
 
   constructor(options: DFrameOptions) {
-    this.app = options.app
-
+    super(options)
     makeObservable(this, {
       id: observable,
       name: observable,
@@ -38,13 +31,11 @@ export class DFrame implements IDElementInstance<Frame> {
       displayName: computed,
       x: computed,
       y: computed,
+      centerX: computed,
+      centerY: computed,
       zoomRatio: computed,
       width: computed,
       height: computed,
-      boundX: computed,
-      boundY: computed,
-      boundWidth: computed,
-      boundHeight: computed,
       globalPosition: computed,
       rotation: computed,
       jsonData: computed,
@@ -52,14 +43,13 @@ export class DFrame implements IDElementInstance<Frame> {
       renderItems: action.bound,
       setZoom: action.bound,
     })
-    this.id = options.id ?? eid()
     this.item = new Frame({
       app: this.app,
       x: options.x,
       y: options.y,
       rotation: options.rotation ?? 0,
-      width: options.width,
-      height: options.height,
+      width: options.width ?? 0,
+      height: options.height ?? 0,
     })
     this.item.eventMode = 'static'
     this.setupChildrenObserver()
@@ -75,39 +65,19 @@ export class DFrame implements IDElementInstance<Frame> {
   }
 
   get x() {
-    return this.item.x
+    return this.item?.x
   }
 
   get y() {
-    return this.item.y
+    return this.item?.y
   }
 
   get width() {
-    return this.item.width
+    return this.item?.width
   }
 
   get height() {
-    return this.item.height
-  }
-
-  get boundX() {
-    return this.item.getBounds().x
-  }
-
-  get boundY() {
-    return this.item.getBounds().y
-  }
-
-  get boundWidth() {
-    return this.item.getBounds().width
-  }
-
-  get boundHeight() {
-    return this.item.getBounds().height
-  }
-
-  get boundCenter() {
-    return { x: this.x + this.boundWidth / 2, y: this.y + this.boundHeight / 2 }
+    return this.item?.height
   }
 
   get globalPosition() {
