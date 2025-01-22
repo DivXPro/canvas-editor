@@ -96,10 +96,12 @@ export abstract class DElement implements IDElementInstance<any> {
 
   setIsHovered(value: boolean) {
     this._isHovered = value
-    if (this._isHovered) {
-      this.outline.show()
-    } else {
-      this.outline.hide()
+    if (!this.app.isDragging) {
+      if (this._isHovered) {
+        this.outline.show()
+      } else {
+        this.outline.hide()
+      }
     }
   }
 
@@ -164,16 +166,10 @@ export abstract class DElement implements IDElementInstance<any> {
   }
 
   handlePointerEnter(event: PointerEvent) {
-    if (this.app.isDragging) {
-      return
-    }
     this.isHovered = true
   }
 
   handlePointerLeave(event: PointerEvent) {
-    if (this.app.isDragging) {
-      return
-    }
     this.isHovered = false
   }
 
