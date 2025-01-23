@@ -8,6 +8,10 @@ import { OutlineLayer } from './OutlineLayer'
 import { DText, IDText } from './elements/DText'
 import { BoundingLayer } from './BoundingLayer'
 import { Selection } from './Selection'
+import { Cursor } from './Cursor'
+import { EventDriver } from './drivers/EventDriver'
+import { PointerMoveDriver } from './drivers/PointerMoveDriver'
+import { DragDropDriver } from './drivers'
 
 export interface DesignApplicationOptions extends Partial<ApplicationOptions> {
   enableZoom?: boolean
@@ -43,7 +47,9 @@ export class DesignApplication extends Application {
   outlineLayer?: OutlineLayer
   boundingLayer?: BoundingLayer
   events = new EventEmitter()
+  cursor = new Cursor(this)
   selection = new Selection({ app: this })
+  drivers: EventDriver[] = []
   data?: IDApp
 
   constructor() {
@@ -62,6 +68,7 @@ export class DesignApplication extends Application {
     this.initFrame()
     this.initGuideLayers()
     this.initEventEmitter()
+    this.initDrivers()
     if (this.enableZoom) {
       this.activeWheelZoom()
     }
@@ -115,6 +122,13 @@ export class DesignApplication extends Application {
       },
       { passive: false }
     )
+  }
+
+  initDrivers() {
+    this.drivers.push(new PointerMoveDriver(this), new DragDropDriver(this))
+    this.drivers.forEach(driver => {
+      driver.attach()
+    })
   }
 
   activeWheelZoom() {

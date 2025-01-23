@@ -4,7 +4,7 @@ import { Container, PointData } from 'pixi.js'
 import { DesignApplication } from '../DesignApplication'
 import { Outline } from '../Outline'
 import { BoundingBox } from '../BoundingBox'
-import { SelectElementEvent, UnselectElementEvent } from '../events/SelectElementEvent'
+import { SelectElementEvent, UnselectElementEvent } from '../events/mutation/SelectElementEvent'
 
 export interface IDElementBase {
   id?: string

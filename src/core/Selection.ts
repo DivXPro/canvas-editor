@@ -2,7 +2,7 @@ import { action, computed, makeObservable, observable } from 'mobx'
 
 import { DesignApplication } from './DesignApplication'
 import { DElement } from './elements'
-import { SelectElementEvent, UnselectElementEvent } from './events'
+import { SelectElementEvent, UnselectElementEvent } from './events/mutation'
 
 export interface SelectionOptions {
   app: DesignApplication

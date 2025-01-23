@@ -1,4 +1,4 @@
-import { DElement } from '../elements/DElement'
+import { DElement } from '../../elements/DElement'
 
 export interface IMutationElementEventData {
   //事件发生的数据源
