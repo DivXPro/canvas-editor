@@ -141,8 +141,6 @@ export class DesignApplication extends Application {
 
     this.zoomRatio = zoomRatio
     this.frame?.setZoom(this.zoomRatio)
-    this.outlineLayer?.scale.set(this.zoomRatio)
-    this.boundingLayer?.scale.set(this.zoomRatio)
     event.preventDefault()
     event.stopPropagation()
   }

@@ -25,14 +25,22 @@ export interface IDElement extends IDElementBase {
   [key: string]: any
 }
 
+export interface ScaleData {
+  x: number
+  y: number
+}
+
 export interface IDElementInstance<Item extends Container> extends IDElementBase {
   app: DesignApplication
   displayName: string
+  displayWidth: number
+  displayHeight: number
   centerX: number
   centerY: number
   item?: Item
   children?: IDElementInstance<any>[]
-  globalPosition?: PointData
+  globalPosition: PointData
+  globalCenter: PointData
   offset: PointData
   jsonData: IDElementBase
   locked?: boolean
@@ -151,12 +159,20 @@ export abstract class DElement implements IDElementInstance<any> {
     return this.item?.height ?? 0
   }
 
-  get scale() {
-    return this.item?.scale ?? { x: 1, y: 1 }
+  get displayWidth() {
+    return this.width * this.app.zoomRatio
+  }
+
+  get displayHeight() {
+    return this.height * this.app.zoomRatio
   }
 
   get globalPosition() {
-    return this.item?.getGlobalPosition()
+    return this.item?.getGlobalPosition() ?? { x: 0, y: 0 }
+  }
+
+  get globalCenter() {
+    return this.globalPosition
   }
 
   get offset() {
@@ -214,7 +230,6 @@ export abstract class DElement implements IDElementInstance<any> {
   }
 
   handlePointerTap(event: PointerEvent) {
-    console.log('handlePointerTap')
     if (this.canSelect) {
       this.app.selection.safeSelect(this)
       event.stopPropagation()

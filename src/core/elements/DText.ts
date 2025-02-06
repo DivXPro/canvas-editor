@@ -36,7 +36,9 @@ export class DText extends DElement implements IDElementInstance<TextBox> {
       centerY: computed,
       width: computed,
       height: computed,
-      scale: computed,
+      displayWidth: computed,
+      displayHeight: computed,
+      globalCenter: computed,
       rotation: computed,
       globalPosition: computed,
       canSelect: computed,
@@ -76,9 +78,16 @@ export class DText extends DElement implements IDElementInstance<TextBox> {
     return (this.item?.y ?? 0) + this.height / 2
   }
 
+  get globalCenter() {
+    return {
+      x: this.globalPosition.x + this.displayWidth / 2,
+      y: this.globalPosition.y + this.displayHeight / 2,
+    }
+  }
+
   get width() {
     if (this.item) {
-      return this.item.fixSize ? (this.item.fixWidth, this.item.width) : this.item.width
+      return this.item.fixSize ? this.item.fixWidth : this.item.width
     }
 
     return 0
@@ -86,7 +95,7 @@ export class DText extends DElement implements IDElementInstance<TextBox> {
 
   get height() {
     if (this.item) {
-      return this.item.fixSize ? (this.item.fixHeight, this.item.height) : this.item.height
+      return this.item.fixSize ? this.item.fixHeight : this.item.height
     }
 
     return 0
@@ -107,8 +116,8 @@ export class DText extends DElement implements IDElementInstance<TextBox> {
       type: this.type,
       x: this.x,
       y: this.y,
-      width: this.width / this.scale.x,
-      height: this.height / this.scale.y,
+      width: this.width,
+      height: this.height,
       rotation: this.rotation,
       text: this.item.text,
       locked: this.locked,

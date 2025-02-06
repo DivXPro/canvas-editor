@@ -13,9 +13,10 @@ export class Outline extends Graphics implements IOutline {
   element: IDElementInstance<any>
   constructor(element: IDElementInstance<any>) {
     super({
-      x: element.centerX - element.offset.x,
-      y: element.centerY - element.offset.y,
+      x: element.globalCenter.x,
+      y: element.globalCenter.y,
     })
+
     this.element = element
     this.visible = false
     this.update()
@@ -23,9 +24,10 @@ export class Outline extends Graphics implements IOutline {
 
   update(element: IDElementInstance<any> = this.element) {
     if (element.width && element.height) {
-      this.position.set(element.centerX - element.offset.x, element.centerY - element.offset.y)
-      this.clear().rect(0, 0, element.width, element.height).stroke({ color: 0x238def, width: 2 })
-      this.pivot.set(element.width / 2, element.height / 2)
+      this.position.set(element.globalCenter.x, element.globalCenter.y)
+      console.log('item', element.globalCenter.x, element.globalCenter.y, element.displayWidth, element.displayHeight, element.width, element.height)
+      this.clear().rect(0, 0, element.displayWidth, element.displayHeight).stroke({ color: 0x238def, width: 2 })
+      this.pivot.set(element.displayWidth / 2, element.displayHeight / 2)
       this.rotation = element.rotation ?? 0
       if (this.parent == null) {
         this.element.app.outlineLayer?.addChild(this)
