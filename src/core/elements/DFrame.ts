@@ -61,38 +61,6 @@ export class DFrame extends DElement {
     return 'Frame'
   }
 
-  get displayName() {
-    return this.name ?? 'Frame'
-  }
-
-  get x() {
-    return this.item?.x
-  }
-
-  get y() {
-    return this.item?.y
-  }
-
-  get width() {
-    return this.item?.width
-  }
-
-  get height() {
-    return this.item?.height
-  }
-
-  get globalPosition() {
-    return this.item.getGlobalPosition()
-  }
-
-  get rotation() {
-    return this.item.rotation
-  }
-
-  setRotation(rotation: number) {
-    this.item.rotation = rotation
-  }
-
   get zoomRatio() {
     return this.item.scale.x
   }

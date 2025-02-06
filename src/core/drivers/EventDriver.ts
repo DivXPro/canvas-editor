@@ -11,6 +11,14 @@ export abstract class EventDriver {
     return this.app.events
   }
 
+  protected getCanvasPoint(clientX: number, clientY: number) {
+    const rect = this.app.canvas.getBoundingClientRect()
+    const x = clientX - rect.left
+    const y = clientY - rect.top
+
+    return { x, y }
+  }
+
   addEventListener<K extends keyof HTMLElementEventMap>(
     type: K,
     listener: (this: HTMLCanvasElement, ev: HTMLElementEventMap[K]) => any,

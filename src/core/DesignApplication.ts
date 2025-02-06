@@ -9,14 +9,15 @@ import { DText, IDText } from './elements/DText'
 import { BoundingLayer } from './BoundingLayer'
 import { Selection } from './Selection'
 import { Cursor } from './Cursor'
-import { EventDriver } from './drivers/EventDriver'
-import { PointerMoveDriver } from './drivers/PointerMoveDriver'
-import { DragDropDriver } from './drivers'
+import { EventDriver, PointerMoveDriver, DragDropDriver, SelectionAreaDriver } from './drivers'
+import { BackgroundLayer } from './BackgroundLayer'
+import { SelectionAreaLayer } from './SelectionAreaLayer'
 
 export interface DesignApplicationOptions extends Partial<ApplicationOptions> {
   enableZoom?: boolean
   canvasSize?: Size
   data: IDApp
+  background?: number
 }
 
 const DefaultFrame: IDFrame = {
@@ -46,6 +47,8 @@ export class DesignApplication extends Application {
   frame?: DFrame
   outlineLayer?: OutlineLayer
   boundingLayer?: BoundingLayer
+  backgroundLayer?: BackgroundLayer
+  selectionAreaLayer?: SelectionAreaLayer
   events = new EventEmitter()
   cursor = new Cursor(this)
   selection = new Selection({ app: this })
@@ -62,9 +65,13 @@ export class DesignApplication extends Application {
 
     this.id = data.id
     this.name = data.name
-    this.canvas.style.backgroundColor = background?.toString() ?? '0xcfcfcf'
     this.enableZoom = enableZoom ?? false
     this.data = data
+
+    // 初始化背景层
+    this.backgroundLayer = new BackgroundLayer({ app: this, color: background })
+    this.stage.addChildAt(this.backgroundLayer, 0)
+
     this.initFrame()
     this.initGuideLayers()
     this.initEventEmitter()
@@ -76,7 +83,6 @@ export class DesignApplication extends Application {
 
   initFrame() {
     const frame = this.data?.frame ?? DefaultFrame
-    const point = new Graphics().rect(-0.5, -0.5, 1, 1).fill({ color: 'red' })
 
     this.frame = new DFrame({
       app: this,
@@ -88,44 +94,24 @@ export class DesignApplication extends Application {
       items: frame.items,
       type: 'Frame',
     })
-    this.stage.position.set((this.screen.width - this.frame.width) / 2, (this.screen.height - this.frame.height) / 2)
-    this.stage.addChild(this.frame.item, point)
+    this.stage.addChild(this.frame.item)
   }
 
   initGuideLayers() {
     this.outlineLayer = new OutlineLayer()
     this.boundingLayer = new BoundingLayer()
-    this.stage.addChild(this.outlineLayer, this.boundingLayer)
+    this.selectionAreaLayer = new SelectionAreaLayer(this)
+    this.stage.addChild(this.outlineLayer, this.boundingLayer, this.selectionAreaLayer)
   }
 
   initEventEmitter() {
     this.stage.eventMode = 'static'
-
-    // point
-    this.canvas.addEventListener('pointerenter', e => this.events.emit('pointerenter', e), { passive: false })
-    this.canvas.addEventListener('pointerover', e => this.events.emit('pointerover', e), { passive: false })
-    this.canvas.addEventListener('pointerleave', e => this.events.emit('pointerleave', e), { passive: false })
-    this.canvas.addEventListener('pointertap', e => this.events.emit('pointertap', e), { passive: false })
-    this.canvas.addEventListener('pointerdown', e => this.events.emit('pointerdown', e), { passive: false })
-    this.canvas.addEventListener('pointermove', e => this.events.emit('pointermove', e), { passive: false })
-    this.canvas.addEventListener('pointerup', e => this.events.emit('pointerup', e), { passive: false })
-    this.canvas.addEventListener('pointerupoutside', e => this.events.emit('pointerupoutside', e), { passive: false })
-    this.canvas.addEventListener('pointercancel', e => this.events.emit('pointercancel', e), { passive: false })
-
     // wheel
     this.canvas.addEventListener('wheel', e => this.events.emit('wheel', e), { passive: false })
-
-    this.stage.on(
-      'pointertap',
-      () => {
-        this.selection.clear()
-      },
-      { passive: false }
-    )
   }
 
   initDrivers() {
-    this.drivers.push(new PointerMoveDriver(this), new DragDropDriver(this))
+    this.drivers.push(new SelectionAreaDriver(this))
     this.drivers.forEach(driver => {
       driver.attach()
     })

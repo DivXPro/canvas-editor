@@ -1,4 +1,5 @@
 import { Graphics } from 'pixi.js'
+
 import { DesignApplication } from './DesignApplication'
 
 export class Brush {
@@ -42,6 +43,7 @@ export class Brush {
     if (!this.isDrawing) return
 
     const newPosition = this.getPosition(event)
+
     if (this.lastPosition && newPosition) {
       this.drawLine(this.lastPosition, newPosition)
       this.lastPosition = newPosition
@@ -74,11 +76,11 @@ export class Brush {
 
     return {
       x: clientX - rect.left,
-      y: clientY - rect.top
+      y: clientY - rect.top,
     }
   }
 
-  private drawLine(from: { x: number, y: number }, to: { x: number, y: number }): void {
+  private drawLine(from: { x: number; y: number }, to: { x: number; y: number }): void {
     this.graphics.setStrokeStyle({ width: this.brushSize, color: this.brushColor })
     this.graphics.moveTo(from.x, from.y)
     this.graphics.lineTo(to.x, to.y)

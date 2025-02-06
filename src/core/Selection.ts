@@ -13,6 +13,7 @@ export class Selection {
   app: DesignApplication
   selected = observable.array<string>([])
   indexes: Record<string, boolean> = {}
+  selecting = false
 
   constructor(options: SelectionOptions) {
     this.app = options.app
@@ -27,7 +28,6 @@ export class Selection {
       add: action.bound,
       remove: action.bound,
       clear: action.bound,
-      trigger: action.bound,
     })
   }
 

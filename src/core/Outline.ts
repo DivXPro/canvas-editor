@@ -13,8 +13,8 @@ export class Outline extends Graphics implements IOutline {
   element: IDElementInstance<any>
   constructor(element: IDElementInstance<any>) {
     super({
-      x: element.centerX,
-      y: element.centerY,
+      x: element.centerX - element.offset.x,
+      y: element.centerY - element.offset.y,
     })
     this.element = element
     this.visible = false
@@ -23,7 +23,7 @@ export class Outline extends Graphics implements IOutline {
 
   update(element: IDElementInstance<any> = this.element) {
     if (element.width && element.height) {
-      this.position.set(element.centerX, element.centerY)
+      this.position.set(element.centerX - element.offset.x, element.centerY - element.offset.y)
       this.clear().rect(0, 0, element.width, element.height).stroke({ color: 0x238def, width: 2 })
       this.pivot.set(element.width / 2, element.height / 2)
       this.rotation = element.rotation ?? 0

@@ -3,8 +3,7 @@ import { Assets, Sprite, Texture } from 'pixi.js'
 
 import DefaultLayout from '@/layouts/default'
 import { DesignApplication } from '@/core/DesignApplication'
-import { IDRectangle } from '@/core/elements/DRectangle'
-import { IDText } from '../core/elements/DText'
+import { IDText } from '@/core/elements/DText'
 
 export default function IndexPage() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -25,8 +24,8 @@ export default function IndexPage() {
             id: 'app-1',
             name: 'app-1',
             frame: {
-              x: 0,
-              y: 0,
+              x: 100,
+              y: 100,
               width: 512,
               height: 512,
               type: 'Frame',

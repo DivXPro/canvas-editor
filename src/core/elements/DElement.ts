@@ -33,6 +33,7 @@ export interface IDElementInstance<Item extends Container> extends IDElementBase
   item?: Item
   children?: IDElementInstance<any>[]
   globalPosition?: PointData
+  offset: PointData
   jsonData: IDElementBase
   locked?: boolean
   hidden?: boolean
@@ -158,6 +159,13 @@ export abstract class DElement implements IDElementInstance<any> {
     return this.item?.getGlobalPosition()
   }
 
+  get offset() {
+    return {
+      x: this.x - (this.globalPosition?.x ?? 0),
+      y: this.y - (this.globalPosition?.y ?? 0),
+    }
+  }
+
   setPostion(x: number, y: number) {
     this.item?.position.set(x, y)
     this.outline.position.set(x, y)
@@ -216,6 +224,8 @@ export abstract class DElement implements IDElementInstance<any> {
 
   handlePointerDown(event: PointerEvent) {
     this.handleDragStart(event)
+    event.preventDefault()
+    event.stopPropagation()
   }
 
   handleDragStart(event: PointerEvent) {
