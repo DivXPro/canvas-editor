@@ -1,7 +1,7 @@
 import { makeObservable, observable, action } from 'mobx'
 
-import { DesignApplication } from './DesignApplication'
-import { Position } from './events'
+import { Position } from '../events'
+import { Engine } from '../Engine'
 
 export enum CursorStatus {
   Normal = 'normal',
@@ -38,12 +38,8 @@ export type CursorPosition = Position
 const DEFAULT_POSITION: CursorPosition = {
   clientX: 0,
   clientY: 0,
-  topClientX: 0,
-  topClientY: 0,
   pageX: 0,
   pageY: 0,
-  topPageX: 0,
-  topPageY: 0,
   canvasX: 0,
   canvasY: 0,
 }
@@ -52,19 +48,15 @@ const calcPositionDelta = (end: CursorPosition, start: CursorPosition): CursorPo
   return {
     clientX: end.clientX - start.clientX,
     clientY: end.clientY - start.clientY,
-    topClientX: end.topClientX - start.topClientX,
-    topClientY: end.topClientY - start.topClientY,
     pageX: end.pageX - start.pageX,
     pageY: end.pageY - start.pageY,
-    topPageX: end.topPageX - start.topPageX,
-    topPageY: end.topPageY - start.topPageY,
     canvasX: end.canvasX - start.canvasX,
     canvasY: end.canvasY - start.canvasY,
   }
 }
 
 export class Cursor {
-  app: DesignApplication
+  engine: Engine
   position: CursorPosition = DEFAULT_POSITION
   type: CursorType = CursorType.Default
   status: CursorStatus = CursorStatus.Normal
@@ -76,8 +68,8 @@ export class Cursor {
   dragStartToCurrentDelta: CursorPosition = DEFAULT_POSITION
   dragStartToEndDelta: CursorPosition = DEFAULT_POSITION
 
-  constructor(app: DesignApplication) {
-    this.app = app
+  constructor(engine: Engine) {
+    this.engine = engine
     makeObservable(this, {
       position: observable,
       status: observable,

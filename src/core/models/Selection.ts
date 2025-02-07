@@ -1,22 +1,28 @@
 import { action, computed, makeObservable, observable } from 'mobx'
 
-import { DesignApplication } from './DesignApplication'
-import { DElement } from './elements'
-import { SelectElementEvent, UnselectElementEvent } from './events/mutation'
+import { DElement } from '../elements'
+import { SelectElementEvent, UnselectElementEvent } from '../events/mutation'
+import { Engine } from '../Engine'
+
+import { Operation } from './Operation'
 
 export interface SelectionOptions {
-  app: DesignApplication
+  engine: Engine
+  operation: Operation
   selected?: string[]
 }
 
 export class Selection {
-  app: DesignApplication
+  engine: Engine
+  operation: Operation
   selected = observable.array<string>([])
   indexes: Record<string, boolean> = {}
   selecting = false
 
   constructor(options: SelectionOptions) {
-    this.app = options.app
+    this.engine = options.engine
+    this.operation = options.operation
+
     if (options.selected) {
       this.selected.clear().push(...options.selected)
     }
@@ -33,11 +39,11 @@ export class Selection {
 
   trigger(type = SelectElementEvent) {
     const event = new type({
-      target: this.app.frame,
+      target: this.engine.frame,
       source: this.selectedElements,
     })
 
-    this.app.events.emit('select:element', event)
+    this.engine.events.emit('element:select', event)
   }
 
   mapIds(ids: string | DElement | string[] | DElement[]) {
@@ -66,7 +72,7 @@ export class Selection {
   }
 
   get selectedElements() {
-    return this.selected.map(id => this.app.frame?.findById(id)).filter(element => element != null)
+    return this.selected.map(id => this.engine.frame?.findById(id)).filter(element => element != null)
   }
 
   get first() {

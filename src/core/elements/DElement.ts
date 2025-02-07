@@ -1,10 +1,10 @@
 import { customAlphabet } from 'nanoid'
-import { Container, PointData } from 'pixi.js'
+import { Container, EventMode, FederatedPointerEvent, PointData } from 'pixi.js'
 
-import { DesignApplication } from '../DesignApplication'
-import { Outline } from '../Outline'
-import { BoundingBox } from '../BoundingBox'
-import { SelectElementEvent, UnselectElementEvent } from '../events/mutation/SelectElementEvent'
+import { Engine } from '../Engine'
+import { Outline } from '../components/Outline'
+import { BoundingBox } from '../components/BoundingBox'
+import { HoverElementEvent, SelectElementEvent, UnselectElementEvent } from '../events/mutation/SelectElementEvent'
 
 export interface IDElementBase {
   id?: string
@@ -31,7 +31,7 @@ export interface ScaleData {
 }
 
 export interface IDElementInstance<Item extends Container> extends IDElementBase {
-  app: DesignApplication
+  engine: Engine
   displayName: string
   displayWidth: number
   displayHeight: number
@@ -48,10 +48,11 @@ export interface IDElementInstance<Item extends Container> extends IDElementBase
   isSelected?: boolean
   isHovered?: boolean
   isDragging?: boolean
+  eventMode?: EventMode
 }
 
 export interface DElementOptions extends IDElement {
-  app: DesignApplication
+  engine: Engine
   parent?: DElement
 }
 
@@ -59,14 +60,13 @@ export abstract class DElement implements IDElementInstance<any> {
   protected dragStartPosition?: { x: number; y: number }
   protected elementStartPosition?: { x: number; y: number }
 
-  app: DesignApplication
+  engine: Engine
   id: string
   index?: number
   name?: string
   item?: Container
-  locked?: boolean
+  _locked?: boolean
   _hidden?: boolean
-  _isHovered?: boolean
   isDragging?: boolean
   outline: Outline
   boundingBox: BoundingBox
@@ -74,12 +74,12 @@ export abstract class DElement implements IDElementInstance<any> {
   parent?: DElement
 
   constructor(options: DElementOptions) {
-    this.app = options.app
+    this.engine = options.engine
     this.parent = options.parent
     this.id = options.id ?? eid()
     this.name = options.name
     this.index = options.index
-    this.locked = !!options.locked
+    this._locked = !!options.locked
     this._hidden = !!options.hidden
     this.outline = new Outline(this)
     this.boundingBox = new BoundingBox(this)
@@ -89,16 +89,47 @@ export abstract class DElement implements IDElementInstance<any> {
     return 'DGraphics'
   }
 
+  get operation() {
+    return this.engine.operation
+  }
+
+  get eventMode() {
+    return this.item?.eventMode ?? 'none'
+  }
+
+  set eventMode(mode: EventMode) {
+    if (this.item) {
+      this.item.eventMode = mode
+    }
+  }
+
   get rotation() {
     return this.item?.rotation
   }
 
-  get hidden() {
-    return this._hidden
-  }
-
   get canSelect() {
     return this.parent?.type === 'Frame'
+  }
+
+  get locked() {
+    return this._locked ?? false
+  }
+
+  set locked(locked: boolean) {
+    this.setLocked(locked)
+  }
+
+  setLocked(locked: boolean) {
+    this._locked = locked
+    this.eventMode = this._locked ? 'none' : 'auto'
+  }
+
+  get hidden() {
+    return this._hidden ?? false
+  }
+
+  set hidden(value: boolean) {
+    this.setHidden(value)
   }
 
   setHidden(value: boolean) {
@@ -108,27 +139,8 @@ export abstract class DElement implements IDElementInstance<any> {
     }
   }
 
-  get isHovered() {
-    return this._isHovered ?? false
-  }
-
-  set isHovered(value: boolean) {
-    this.setIsHovered(value)
-  }
-
-  setIsHovered(value: boolean) {
-    this._isHovered = value
-    if (!this.app.isDragging) {
-      if (this._isHovered) {
-        this.outline.show()
-      } else {
-        this.outline.hide()
-      }
-    }
-  }
-
   get isSelected() {
-    return this.app.selection.has(this) ?? false
+    return this.operation?.selection.has(this) ?? false
   }
 
   get displayName() {
@@ -160,11 +172,11 @@ export abstract class DElement implements IDElementInstance<any> {
   }
 
   get displayWidth() {
-    return this.width * this.app.zoomRatio
+    return this.width * this.engine.zoomRatio
   }
 
   get displayHeight() {
-    return this.height * this.app.zoomRatio
+    return this.height * this.engine.zoomRatio
   }
 
   get globalPosition() {
@@ -193,59 +205,55 @@ export abstract class DElement implements IDElementInstance<any> {
     }
   }
 
-  setupInteractiveEvents() {
+  setupInteractive() {
     if (this.item) {
-      this.item.eventMode = 'dynamic'
       this.item.on('pointerenter', this.handlePointerEnter)
       this.item.on('pointerleave', this.handlePointerLeave)
       this.item.on('pointerdown', this.handlePointerDown)
       this.item.on('pointertap', this.handlePointerTap)
+      this.eventMode = this.locked ? 'none' : 'static'
     }
-    this.app.events.on('select:element', (e: SelectElementEvent) => {
-      if (Array.isArray(e.data.source) && e.data.source.includes(this)) {
-        this.boundingBox.show()
-      } else {
-        this.boundingBox.hide()
-      }
-    })
-    this.app.events.on('unselect:element', (e: UnselectElementEvent) => {
-      if (Array.isArray(e.data.source) && e.data.source.includes(this)) {
-        this.boundingBox.show()
-      } else {
-        this.boundingBox.hide()
-      }
-    })
   }
 
   renderOutline() {
     this.outline.update()
   }
 
-  handlePointerEnter(event: PointerEvent) {
-    this.isHovered = true
+  handlePointerEnter(event: FederatedPointerEvent) {
+    const hoverEvent = new HoverElementEvent({
+      source: this,
+      target: this,
+    })
+
+    this.engine.events.emit('element:hover', hoverEvent)
   }
 
-  handlePointerLeave(event: PointerEvent) {
-    this.isHovered = false
+  handlePointerLeave(event: FederatedPointerEvent) {
+    const hoverEvent = new HoverElementEvent({
+      source: null,
+      target: null,
+    })
+
+    this.engine.events.emit('element:hover', hoverEvent)
   }
 
-  handlePointerTap(event: PointerEvent) {
-    if (this.canSelect) {
-      this.app.selection.safeSelect(this)
-      event.stopPropagation()
-      event.preventDefault()
-    }
-  }
-
-  handlePointerDown(event: PointerEvent) {
+  handlePointerDown(event: FederatedPointerEvent) {
     this.handleDragStart(event)
     event.preventDefault()
     event.stopPropagation()
   }
 
+  handlePointerTap(event: FederatedPointerEvent) {
+    if (this.canSelect) {
+      this.operation?.selection.safeSelect(this)
+      event.stopPropagation()
+      event.preventDefault()
+    }
+  }
+
   handleDragStart(event: PointerEvent) {
     this.isDragging = true
-    this.app.isDragging = true
+    this.engine.isDragging = true
     // 记录拖拽开始时的鼠标位置
     this.dragStartPosition = {
       x: event.clientX,
@@ -256,8 +264,8 @@ export abstract class DElement implements IDElementInstance<any> {
       x: this.x,
       y: this.y,
     }
-    this.app.events.on('pointermove', this.handleDrageMove)
-    this.app.events.on('pointerup', this.handleDragEnd)
+    this.engine.events.on('pointermove', this.handleDrageMove)
+    this.engine.events.on('pointerup', this.handleDragEnd)
   }
 
   handleDrageMove(event: PointerEvent) {
@@ -268,8 +276,8 @@ export abstract class DElement implements IDElementInstance<any> {
 
       // 更新元素位置
       this.setPostion(
-        this.elementStartPosition.x + dx / this.app.zoomRatio,
-        this.elementStartPosition.y + dy / this.app.zoomRatio
+        this.elementStartPosition.x + dx / this.engine.zoomRatio,
+        this.elementStartPosition.y + dy / this.engine.zoomRatio
       )
       // 更新 outline 位置
       this.outline.hide()
@@ -280,7 +288,7 @@ export abstract class DElement implements IDElementInstance<any> {
   handleDragEnd() {
     if (this.isDragging) {
       this.isDragging = false
-      this.app.isDragging = false
+      this.engine.isDragging = false
 
       // TODO: 改为事件触发
       this.boundingBox.show()

@@ -1,3 +1,5 @@
+import { FederatedPointerEvent } from 'pixi.js'
+
 import { DragStartEvent } from '../events'
 
 import { EventDriver } from './EventDriver'
@@ -10,9 +12,9 @@ const GlobalState = {
 }
 
 export class DragDropDriver extends EventDriver {
-  private handlePointerDown(event: PointerEvent) {
+  private handlePointerDown(event: FederatedPointerEvent) {
     GlobalState.isDragging = false
-
+    const canvasPosition = this.app.stage.toLocal(event.global)
     const dragStartEvent = new DragStartEvent({
       clientX: event.clientX,
       clientY: event.clientY,
@@ -20,6 +22,8 @@ export class DragDropDriver extends EventDriver {
       pageY: event.pageY,
       target: event.target,
       view: event.view,
+      canvasX: canvasPosition.x,
+      canvasY: canvasPosition.y,
     })
 
     this.events.emit(dragStartEvent.type, dragStartEvent)
@@ -39,14 +43,8 @@ export class DragDropDriver extends EventDriver {
   }
 
   attach() {
-    this.addEventListener('pointerdown', this.handlePointerDown.bind(this))
-    this.addEventListener('pointerup', this.handlePointerUp.bind(this))
-    this.addEventListener('pointermove', this.handlePointerMove.bind(this))
   }
 
   detach() {
-    this.removeEventListener('pointerdown', this.handlePointerDown.bind(this))
-    this.removeEventListener('pointerup', this.handlePointerUp.bind(this))
-    this.removeEventListener('pointermove', this.handlePointerMove.bind(this))
   }
 }

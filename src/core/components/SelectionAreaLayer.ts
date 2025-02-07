@@ -1,23 +1,24 @@
 import { Container, PointData } from 'pixi.js'
 
-import { DesignApplication } from './DesignApplication'
+import { SelectionAreaEndEvent, SelectionAreaMoveEvent, SelectionAreaStartEvent } from '../events'
+import { Engine } from '../Engine'
+
 import { SelectionArea } from './SelectionArea'
-import { SelectionAreaEndEvent, SelectionAreaMoveEvent, SelectionAreaStartEvent } from './events'
 
 export class SelectionAreaLayer extends Container {
-  private app: DesignApplication
+  private engine: Engine
   private selectionArea: SelectionArea | null = null
   private isSelecting: boolean = false
   private startPoint: PointData | null = null
 
-  constructor(app: DesignApplication) {
+  constructor(engine: Engine) {
     super()
-    this.app = app
+    this.engine = engine
 
     // 监听选区事件
-    this.app.events.on('selection:start', this.onSelectionStart.bind(this))
-    this.app.events.on('selection:move', this.onSelectionMove.bind(this))
-    this.app.events.on('selection:end', this.onSelectionEnd.bind(this))
+    this.engine.events.on('selection:start', this.onSelectionStart.bind(this))
+    this.engine.events.on('selection:move', this.onSelectionMove.bind(this))
+    this.engine.events.on('selection:end', this.onSelectionEnd.bind(this))
   }
 
   private onSelectionStart(event: SelectionAreaStartEvent) {
@@ -55,9 +56,9 @@ export class SelectionAreaLayer extends Container {
   }
 
   destroy() {
-    this.app.events.off('selectionStart', this.onSelectionStart.bind(this))
-    this.app.events.off('selectionMove', this.onSelectionMove.bind(this))
-    this.app.events.off('selectionEnd', this.onSelectionEnd.bind(this))
+    this.engine.events.off('selectionStart', this.onSelectionStart.bind(this))
+    this.engine.events.off('selectionMove', this.onSelectionMove.bind(this))
+    this.engine.events.off('selectionEnd', this.onSelectionEnd.bind(this))
     super.destroy()
   }
 }

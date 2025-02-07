@@ -1,6 +1,6 @@
 import { FillStyle, StrokeStyle } from 'pixi.js'
 
-import { DesignApplication } from '../DesignApplication'
+import { Engine } from '../Engine'
 
 import { DGraphics } from './DGraphics'
 import { DElement, IDElement } from './DElement'
@@ -20,7 +20,7 @@ export interface IDRectangle extends IDElement {
 }
 
 export interface DRectangleOptions extends IDRectangle {
-  app: DesignApplication
+  engine: Engine
   parent?: DElement
 }
 
@@ -38,6 +38,14 @@ export class DRectangle extends DGraphics {
 
   get type() {
     return 'Rectangle'
+  }
+
+  get displayWidth() {
+    return this.item.width * this.engine.zoomRatio
+  }
+
+  get displayHeight() {
+    return this.item.height * this.engine.zoomRatio
   }
 
   get jsonData(): IDRectangle {

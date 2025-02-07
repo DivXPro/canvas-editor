@@ -1,8 +1,8 @@
 import { TextString, TextStyleOptions } from 'pixi.js'
 import { action, computed, makeObservable, observable } from 'mobx'
 
-import { DesignApplication } from '../DesignApplication'
-import { TextBox } from '../TextBox'
+import { Engine } from '../Engine'
+import { TextBox } from '../components/TextBox'
 
 import { DElement, IDElement, IDElementInstance } from './DElement'
 
@@ -13,7 +13,7 @@ export interface IDText extends IDElement {
 }
 
 export interface DTextOptions extends IDText {
-  app: DesignApplication
+  engine: Engine
   parent?: DElement
 }
 
@@ -26,7 +26,7 @@ export class DText extends DElement implements IDElementInstance<TextBox> {
       id: observable,
       name: observable,
       index: observable,
-      locked: observable,
+      locked: computed,
       hidden: computed,
       type: computed,
       displayName: computed,
@@ -45,8 +45,8 @@ export class DText extends DElement implements IDElementInstance<TextBox> {
       jsonData: computed,
       setWidth: action.bound,
       setHeight: action.bound,
+      setLocked: action.bound,
       setHidden: action.bound,
-      setIsHovered: action.bound,
       setPostion: action.bound,
       handlePointerEnter: action.bound,
       handlePointerLeave: action.bound,
@@ -59,7 +59,7 @@ export class DText extends DElement implements IDElementInstance<TextBox> {
     const { parent: _, ...others } = options
 
     this.item = new TextBox(others)
-    this.setupInteractiveEvents()
+    this.setupInteractive()
   }
 
   get type() {

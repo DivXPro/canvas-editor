@@ -1,7 +1,7 @@
 import { Container, Graphics, Point } from 'pixi.js'
 
-import { DElement } from './elements/DElement'
-import * as UICfg from './config'
+import { DElement } from '../elements/DElement'
+import * as UICfg from '../config'
 
 export class BoundingBox extends Container {
   private element: DElement
@@ -70,7 +70,7 @@ export class BoundingBox extends Container {
     })
 
     if (this.parent == null) {
-      this.element.app.boundingLayer?.addChild(this)
+      this.element.engine.boundingLayer?.addChild(this)
     }
   }
 

@@ -6,7 +6,7 @@ import { EventDriver } from './EventDriver'
 
 export class SelectionAreaDriver extends EventDriver {
   private request?: number
-  private isSelecting = false
+  isSelecting = false
 
   onPointerDown = (e: FederatedPointerEvent) => {
     this.isSelecting = true

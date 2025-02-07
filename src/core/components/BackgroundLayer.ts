@@ -1,14 +1,14 @@
 import { Container, Graphics } from 'pixi.js'
 
-import { DesignApplication } from './DesignApplication'
+import { Engine } from '../Engine'
 
 interface BackgroundOptions {
-  app: DesignApplication
+  app: Engine
   color?: string | number
 }
 
 export class BackgroundLayer extends Container {
-  app: DesignApplication
+  app: Engine
   background: Graphics
 
   constructor(options: BackgroundOptions) {

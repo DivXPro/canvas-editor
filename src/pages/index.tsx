@@ -2,18 +2,18 @@ import { useEffect, useRef } from 'react'
 import { Assets, Sprite, Texture } from 'pixi.js'
 
 import DefaultLayout from '@/layouts/default'
-import { DesignApplication } from '@/core/DesignApplication'
-import { IDText } from '@/core/elements/DText'
+import { IDRectangle, IDText } from '@/core/elements'
+import { Engine } from '../core/Engine'
 
 export default function IndexPage() {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const initApp = async () => {
-      const app = new DesignApplication()
+      const engine = new Engine()
 
       if (containerRef.current) {
-        await app.init({
+        await engine.init({
           background: 0xdfdfdf,
           resizeTo: containerRef.current,
           antialias: true,
@@ -30,18 +30,18 @@ export default function IndexPage() {
               height: 512,
               type: 'Frame',
               items: [
-                // {
-                //   id: 'rectangle-1',
-                //   name: 'Rectangle 1',
-                //   type: 'Rectangle',
-                //   x: 150,
-                //   y: 100,
-                //   width: 100,
-                //   height: 100,
-                //   radius: 20,
-                //   rotation: Math.PI / 4,
-                //   fillStyle: { color: 'orange' },
-                // } as IDRectangle,
+                {
+                  id: 'rectangle-1',
+                  name: 'Rectangle 1',
+                  type: 'Rectangle',
+                  x: 150,
+                  y: 100,
+                  width: 100,
+                  height: 100,
+                  radius: 20,
+                  rotation: Math.PI / 4,
+                  fillStyle: { color: 'orange' },
+                } as IDRectangle,
                 {
                   id: 'text-1',
                   name: 'Text 1',
@@ -75,7 +75,8 @@ export default function IndexPage() {
                   width: 150,
                   height: 100,
                   fixSize: true,
-                  text: 'This is text of example 3',
+                  locked: true,
+                  text: 'This is text of example 3 locked',
                   style: { fill: { color: 'pink' }, align: 'right' },
                 } as IDText,
               ],
@@ -85,7 +86,7 @@ export default function IndexPage() {
       }
 
       if (containerRef.current) {
-        containerRef.current.appendChild(app.canvas)
+        containerRef.current.appendChild(engine.app.canvas)
       }
 
       // 加载资源

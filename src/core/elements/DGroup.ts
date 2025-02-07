@@ -1,7 +1,7 @@
 import { Container } from 'pixi.js'
 import { makeObservable, observable, computed, action, observe, IObservableArray } from 'mobx'
 
-import { DesignApplication } from '../DesignApplication'
+import { Engine } from '../Engine'
 
 import { DElement, eid, IDElement, IDElementInstance } from './DElement'
 
@@ -10,7 +10,7 @@ export interface IDGroup extends IDElement {
 }
 
 export interface DGroupOptions extends IDGroup {
-  app: DesignApplication
+  engine: Engine
   parent?: DElement
   width?: number
   height?: number
@@ -38,7 +38,6 @@ export class DGroup extends DElement {
       width: computed,
       height: computed,
       rotation: computed,
-      scale: computed,
       canSelect: computed,
       globalPosition: computed,
       jsonData: computed,
@@ -54,14 +53,12 @@ export class DGroup extends DElement {
       handleDragEnd: action.bound,
     })
     this.id = options.id ?? eid()
-    this.locked = options.locked
     this.item = new Container({
       x: options.x,
       y: options.y,
       rotation: options.rotation ?? 0,
       width: options.width,
       height: options.height,
-      // pivot: { x: options.width / 2, y: options.height / 2 },
       visible: !options.hidden,
     })
     this.setupChildrenObserver()
@@ -92,7 +89,7 @@ export class DGroup extends DElement {
     items
       .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
       .forEach(item => {
-        const child = this.app.generateElement(item, this)
+        const child = this.engine.generateElement(item, this)
 
         child && this.children.push(child)
       })
@@ -131,7 +128,7 @@ export class DGroup extends DElement {
     })
   }
 
-  moveTo(point: { x: number, y: number }) {
+  moveTo(point: { x: number; y: number }) {
     this.item.position.set(point.x, point.y)
   }
 
@@ -144,8 +141,8 @@ export class DGroup extends DElement {
       hidden: this.hidden,
       x: this.x,
       y: this.y,
-      width: this.width / this.scale.x,
-      height: this.height / this.scale.y,
+      width: this.width,
+      height: this.height,
       rotation: this.rotation,
       items: this.children.map(child => child.jsonData),
     }

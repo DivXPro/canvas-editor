@@ -1,13 +1,13 @@
 import { makeObservable, observable, computed, action, IObservableArray, observe } from 'mobx'
 
-import { DesignApplication } from '../DesignApplication'
-import { Frame } from '../Frame'
+import { Engine } from '../Engine'
+import { Frame } from '../components/Frame'
 
 import { DElement, IDElement } from './DElement'
 import { IDElementInstance } from './DElement'
 
 export interface DFrameOptions extends IDElement {
-  app: DesignApplication
+  engine: Engine
 }
 
 export interface IDFrame extends IDElement {
@@ -47,15 +47,13 @@ export class DFrame extends DElement {
       setZoom: action.bound,
     })
     this.item = new Frame({
-      app: this.app,
+      app: this.engine.app,
       x: options.x,
       y: options.y,
       rotation: options.rotation ?? 0,
       width: options.width ?? 0,
       height: options.height ?? 0,
     })
-    this.item.eventMode = 'static'
-
     this.setupChildrenObserver()
     this.renderItems(options.items)
   }
@@ -80,7 +78,7 @@ export class DFrame extends DElement {
     items
       .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
       .forEach(item => {
-        const child = this.app.generateElement(item)
+        const child = this.engine.generateElement(item)
 
         child && this.children.push(child)
       })
@@ -122,8 +120,8 @@ export class DFrame extends DElement {
       id: this.id,
       x: this.x,
       y: this.y,
-      width: this.width / this.app.zoomRatio,
-      height: this.height / this.app.zoomRatio,
+      width: this.width / this.engine.zoomRatio,
+      height: this.height / this.engine.zoomRatio,
       rotation: this.rotation,
       name: this.name,
       type: this.type,

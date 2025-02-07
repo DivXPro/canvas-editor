@@ -1,17 +1,17 @@
 import { Graphics } from 'pixi.js'
 
-import { DesignApplication } from './DesignApplication'
+import { Engine } from '../Engine'
 
 export class Brush {
-  private app: DesignApplication
+  private engine: Engine
   private graphics: Graphics
   private isDrawing: boolean = false
   private lastPosition: { x: number, y: number } | null = null
   private brushSize: number = 5
   private brushColor: number = 0x000000 // 黑色
 
-  constructor(app: DesignApplication, graphics: Graphics) {
-    this.app = app
+  constructor(engine: Engine, graphics: Graphics) {
+    this.engine = engine
     this.graphics = graphics
     this.setupEventListeners()
   }
@@ -21,15 +21,15 @@ export class Brush {
   }
 
   private setupEventListeners(): void {
-    this.app.events.on('touchstart', this.onStart.bind(this))
-    this.app.events.on('touchmove', this.onMove.bind(this))
-    this.app.events.on('touchend', this.onEnd.bind(this))
-    this.app.events.on('touchcancel', this.onEnd.bind(this))
+    this.engine.events.on('touchstart', this.onStart.bind(this))
+    this.engine.events.on('touchmove', this.onMove.bind(this))
+    this.engine.events.on('touchend', this.onEnd.bind(this))
+    this.engine.events.on('touchcancel', this.onEnd.bind(this))
 
-    this.app.events.on('mousedown', this.onStart.bind(this))
-    this.app.events.on('mousemove', this.onMove.bind(this))
-    this.app.events.on('mouseup', this.onEnd.bind(this))
-    this.app.events.on('mouseout', this.onEnd.bind(this))
+    this.engine.events.on('mousedown', this.onStart.bind(this))
+    this.engine.events.on('mousemove', this.onMove.bind(this))
+    this.engine.events.on('mouseup', this.onEnd.bind(this))
+    this.engine.events.on('mouseout', this.onEnd.bind(this))
   }
 
   private onStart(event: MouseEvent | TouchEvent): void {
@@ -56,8 +56,8 @@ export class Brush {
     this.lastPosition = null
   }
 
-  private getPosition(event: MouseEvent | TouchEvent): { x: number, y: number } | null {
-    const rect = this.app.canvas.getBoundingClientRect()
+  private getPosition(event: MouseEvent | TouchEvent): { x: number; y: number } | null {
+    const rect = this.engine.canvas.getBoundingClientRect()
     let clientX, clientY
 
     if (event instanceof MouseEvent) {

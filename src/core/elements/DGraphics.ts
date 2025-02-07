@@ -1,7 +1,7 @@
 import { action, computed, makeObservable, observable } from 'mobx'
 import { FillStyle, Graphics, StrokeStyle } from 'pixi.js'
 
-import { DesignApplication } from '../DesignApplication'
+import { Engine } from '../Engine'
 
 import { DElement, IDElement, IDElementInstance } from './DElement'
 
@@ -19,7 +19,7 @@ export interface IDGraphics extends IDElement {
 }
 
 export interface DGraphicsOptions extends IDGraphics {
-  app: DesignApplication
+  engine: Engine
   parent?: DElement
 }
 
@@ -34,10 +34,9 @@ export abstract class DGraphics extends DElement implements IDElementInstance<Gr
       id: observable,
       name: observable,
       index: observable,
-      locked: observable,
       isDragging: observable,
       hidden: computed,
-      isHovered: computed,
+      locked: computed,
       isSelected: computed,
       type: computed,
       displayName: computed,
@@ -51,7 +50,7 @@ export abstract class DGraphics extends DElement implements IDElementInstance<Gr
       setWidth: action.bound,
       setHeight: action.bound,
       setHidden: action.bound,
-      setIsHovered: action.bound,
+      setLocked: action.bound,
       setPostion: action.bound,
       handlePointerEnter: action.bound,
       handlePointerLeave: action.bound,
@@ -69,11 +68,15 @@ export abstract class DGraphics extends DElement implements IDElementInstance<Gr
     })
     this._width = options.width
     this._height = options.height
-    this.setupInteractiveEvents()
+    this.setupInteractive()
   }
 
   get type() {
     return 'DGraphics'
+  }
+
+  get displayName() {
+    return this.name ?? 'DGraphics'
   }
 
   get displayWidth() {
@@ -82,10 +85,6 @@ export abstract class DGraphics extends DElement implements IDElementInstance<Gr
 
   get displayHeight() {
     return this.item.getBounds().height
-  }
-
-  get displayName() {
-    return this.name ?? 'DGraphics'
   }
 
   get width() {
@@ -112,10 +111,6 @@ export abstract class DGraphics extends DElement implements IDElementInstance<Gr
     this._height = value
   }
 
-  get globalPosition() {
-    return this.item.getGlobalPosition()
-  }
-
   get jsonData(): IDGraphics {
     return {
       id: this.id,
@@ -123,8 +118,8 @@ export abstract class DGraphics extends DElement implements IDElementInstance<Gr
       type: this.type,
       x: this.x,
       y: this.y,
-      width: this.width / this.scale.x,
-      height: this.height / this.scale.y,
+      width: this.width,
+      height: this.height,
       rotation: this.rotation,
       locked: this.locked,
       hidden: this.hidden,

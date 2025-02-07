@@ -2,11 +2,11 @@ import { DElement } from '../../elements/DElement'
 
 export interface IMutationElementEventData {
   //事件发生的数据源
-  source: DElement | DElement[]
+  source?: DElement | DElement[] | null
   //事件发生的目标对象
-  target?: DElement | DElement[]
+  target?: DElement | DElement[] | null
   // 事件发生的来源对象
-  originSourceParents?: DElement | DElement[]
+  originSourceParents?: DElement | DElement[] | null
   //扩展数据
   extra?: any
 }

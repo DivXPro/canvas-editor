@@ -1,31 +1,22 @@
-import { Application, ApplicationOptions, Size, EventEmitter, PointData, Graphics } from 'pixi.js'
+import { Application, ApplicationOptions, Size, PointData, EventEmitter } from 'pixi.js'
 
 import { DFrame, IDFrame } from './elements/DFrame'
 import { DElement, IDElement } from './elements/DElement'
 import { DGroup, IDGroup } from './elements/DGroup'
 import { DRectangle, IDRectangle } from './elements/DRectangle'
-import { OutlineLayer } from './OutlineLayer'
+import { OutlineLayer } from './components/OutlineLayer'
 import { DText, IDText } from './elements/DText'
-import { BoundingLayer } from './BoundingLayer'
-import { Selection } from './Selection'
-import { Cursor } from './Cursor'
-import { EventDriver, PointerMoveDriver, DragDropDriver, SelectionAreaDriver } from './drivers'
-import { BackgroundLayer } from './BackgroundLayer'
-import { SelectionAreaLayer } from './SelectionAreaLayer'
+import { BoundingLayer } from './components/BoundingLayer'
+import { EventDriver, SelectionAreaDriver } from './drivers'
+import { BackgroundLayer } from './components/BackgroundLayer'
+import { SelectionAreaLayer } from './components/SelectionAreaLayer'
+import { Operation } from './models/Operation'
 
-export interface DesignApplicationOptions extends Partial<ApplicationOptions> {
+export interface EngineOptions extends Partial<ApplicationOptions> {
   enableZoom?: boolean
   canvasSize?: Size
   data: IDApp
   background?: number
-}
-
-const DefaultFrame: IDFrame = {
-  width: 512,
-  height: 512,
-  type: 'Frame',
-  x: 0,
-  y: 0,
 }
 
 export interface IDApp {
@@ -34,7 +25,7 @@ export interface IDApp {
   frame: IDFrame
 }
 
-export class DesignApplication extends Application {
+export class Engine {
   id?: string
   name?: string
   maxZoom = 2
@@ -50,17 +41,17 @@ export class DesignApplication extends Application {
   backgroundLayer?: BackgroundLayer
   selectionAreaLayer?: SelectionAreaLayer
   events = new EventEmitter()
-  cursor = new Cursor(this)
-  selection = new Selection({ app: this })
   drivers: EventDriver[] = []
   data?: IDApp
+  app: Application
+  operation?: Operation
 
   constructor() {
-    super()
+    this.app = new Application()
   }
 
-  async init(options: DesignApplicationOptions) {
-    await super.init(options)
+  async init(options: EngineOptions) {
+    await this.app.init(options)
     const { enableZoom, data, background } = options
 
     this.id = data.id
@@ -70,9 +61,9 @@ export class DesignApplication extends Application {
 
     // 初始化背景层
     this.backgroundLayer = new BackgroundLayer({ app: this, color: background })
-    this.stage.addChildAt(this.backgroundLayer, 0)
+    this.app.stage.addChildAt(this.backgroundLayer, 0)
 
-    this.initFrame()
+    this.operation = new Operation(this)
     this.initGuideLayers()
     this.initEventEmitter()
     this.initDrivers()
@@ -81,37 +72,22 @@ export class DesignApplication extends Application {
     }
   }
 
-  initFrame() {
-    const frame = this.data?.frame ?? DefaultFrame
-
-    this.frame = new DFrame({
-      app: this,
-      x: frame.x,
-      y: frame.y,
-      width: frame.width,
-      height: frame.height,
-      rotation: frame.rotation,
-      items: frame.items,
-      type: 'Frame',
-    })
-    this.stage.addChild(this.frame.item)
-  }
-
   initGuideLayers() {
     this.outlineLayer = new OutlineLayer()
     this.boundingLayer = new BoundingLayer()
     this.selectionAreaLayer = new SelectionAreaLayer(this)
-    this.stage.addChild(this.outlineLayer, this.boundingLayer, this.selectionAreaLayer)
+    this.app.stage.addChild(this.outlineLayer, this.boundingLayer, this.selectionAreaLayer)
   }
 
   initEventEmitter() {
-    this.stage.eventMode = 'static'
+    this.app.stage.eventMode = 'static'
     // wheel
-    this.canvas.addEventListener('wheel', e => this.events.emit('wheel', e), { passive: false })
+    this.app.canvas.addEventListener('wheel', e => this.events.emit('wheel', e), { passive: false })
   }
 
   initDrivers() {
     this.drivers.push(new SelectionAreaDriver(this))
+    // this.drivers.push(new HoverDriver(this))
     this.drivers.forEach(driver => {
       driver.attach()
     })
@@ -148,16 +124,32 @@ export class DesignApplication extends Application {
   generateElement(item: IDElement, parent?: DElement) {
     switch (item.type) {
       case 'Frame':
-        return new DFrame({ app: this, ...(item as IDFrame) })
+        return new DFrame({ engine: this, ...(item as IDFrame) })
       case 'Group':
-        return new DGroup({ app: this, parent, ...(item as IDGroup) })
+        return new DGroup({ engine: this, parent, ...(item as IDGroup) })
       case 'Rectangle':
-        return new DRectangle({ app: this, parent, ...(item as IDRectangle) })
+        return new DRectangle({ engine: this, parent, ...(item as IDRectangle) })
       case 'Text':
-        return new DText({ app: this, parent, ...(item as IDText) })
+        return new DText({ engine: this, parent, ...(item as IDText) })
       default:
         break
     }
+  }
+
+  get stage() {
+    return this.app.stage
+  }
+
+  get screen() {
+    return this.app.screen
+  }
+
+  get renderer() {
+    return this.app.renderer
+  }
+
+  get canvas() {
+    return this.app.canvas
   }
 
   get jsonData() {
