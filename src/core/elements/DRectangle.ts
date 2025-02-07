@@ -33,7 +33,6 @@ export class DRectangle extends DGraphics {
     this.item.pivot.set(width / 2, height / 2)
     this.item.rotation = options.rotation ?? 0
     this.item.visible = this.hidden ? false : true
-    this.renderOutline()
   }
 
   get type() {
@@ -41,11 +40,11 @@ export class DRectangle extends DGraphics {
   }
 
   get displayWidth() {
-    return this.item.width * this.engine.zoomRatio
+    return this.width * this.engine.zoomRatio
   }
 
   get displayHeight() {
-    return this.item.height * this.engine.zoomRatio
+    return this.height * this.engine.zoomRatio
   }
 
   get jsonData(): IDRectangle {

@@ -37,10 +37,6 @@ export class Operation {
 
   hover: Hover
 
-  requests = {
-    snapshot: null,
-  }
-
   constructor(engine: Engine) {
     this.engine = engine
     const frame = this.engine.data?.frame ?? DefaultFrame
@@ -55,7 +51,7 @@ export class Operation {
       items: frame.items,
       type: 'Frame',
     })
-    this.engine.app.stage.addChild(this.frame.item)
+    this.engine.app.stage.addChildAt(this.frame.item, 1)
 
     this.hover = new Hover({
       engine: this.engine,
@@ -66,6 +62,7 @@ export class Operation {
       operation: this,
     })
   }
+
 
   serialize(): IOperation {
     return {

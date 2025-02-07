@@ -35,7 +35,6 @@ export class Engine {
   isZooming = false
   isDragging = false
   lastPointerDown?: PointData
-  frame?: DFrame
   outlineLayer?: OutlineLayer
   boundingLayer?: BoundingLayer
   backgroundLayer?: BackgroundLayer
@@ -52,6 +51,10 @@ export class Engine {
 
   async init(options: EngineOptions) {
     await this.app.init(options)
+    this.app.canvas.addEventListener('contextmenu', e => {
+      e.preventDefault()
+    })
+
     const { enableZoom, data, background } = options
 
     this.id = data.id
@@ -59,24 +62,21 @@ export class Engine {
     this.enableZoom = enableZoom ?? false
     this.data = data
 
-    // 初始化背景层
-    this.backgroundLayer = new BackgroundLayer({ app: this, color: background })
-    this.app.stage.addChildAt(this.backgroundLayer, 0)
-
-    this.operation = new Operation(this)
-    this.initGuideLayers()
+    this.initGuideLayers(background)
     this.initEventEmitter()
+    this.operation = new Operation(this)
     this.initDrivers()
     if (this.enableZoom) {
       this.activeWheelZoom()
     }
   }
 
-  initGuideLayers() {
-    this.outlineLayer = new OutlineLayer()
-    this.boundingLayer = new BoundingLayer()
+  initGuideLayers(background?: number | string) {
+    this.backgroundLayer = new BackgroundLayer({ app: this, color: background })
+    this.outlineLayer = new OutlineLayer(this)
+    this.boundingLayer = new BoundingLayer(this)
     this.selectionAreaLayer = new SelectionAreaLayer(this)
-    this.app.stage.addChild(this.outlineLayer, this.boundingLayer, this.selectionAreaLayer)
+    this.app.stage.addChild(this.backgroundLayer, this.outlineLayer, this.boundingLayer, this.selectionAreaLayer)
   }
 
   initEventEmitter() {
@@ -116,7 +116,7 @@ export class Engine {
     }
 
     this.zoomRatio = zoomRatio
-    this.frame?.setZoom(this.zoomRatio)
+    this.operation?.frame.setZoom(this.zoomRatio)
     event.preventDefault()
     event.stopPropagation()
   }
@@ -156,7 +156,7 @@ export class Engine {
     return {
       id: this.data?.id,
       name: this.data?.name,
-      frame: this.frame?.jsonData,
+      frame: this.operation?.frame.jsonData,
     }
   }
 }

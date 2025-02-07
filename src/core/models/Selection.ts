@@ -22,10 +22,6 @@ export class Selection {
   constructor(options: SelectionOptions) {
     this.engine = options.engine
     this.operation = options.operation
-
-    if (options.selected) {
-      this.selected.clear().push(...options.selected)
-    }
     makeObservable(this, {
       selected: observable,
       indexes: observable,
@@ -35,11 +31,14 @@ export class Selection {
       remove: action.bound,
       clear: action.bound,
     })
+    if (options.selected) {
+      this.selected.clear().push(...options.selected)
+    }
   }
 
   trigger(type = SelectElementEvent) {
     const event = new type({
-      target: this.engine.frame,
+      target: this.engine.operation?.frame,
       source: this.selectedElements,
     })
 
@@ -72,7 +71,7 @@ export class Selection {
   }
 
   get selectedElements() {
-    return this.selected.map(id => this.engine.frame?.findById(id)).filter(element => element != null)
+    return this.selected.map(id => this.engine.operation?.frame?.findById(id)).filter(element => element != null)
   }
 
   get first() {

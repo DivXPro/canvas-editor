@@ -1,6 +1,8 @@
 import { Container, Graphics, Point } from 'pixi.js'
 
 import { DElement } from '../elements/DElement'
+import { SelectElementEvent, UnselectElementEvent } from '../events'
+import { isArr } from '../utils/types'
 import * as UICfg from '../config'
 
 export class BoundingBox extends Container {
@@ -20,6 +22,29 @@ export class BoundingBox extends Container {
     this.initBorder()
     this.initHandles()
     this.update()
+    this.element.engine.events.on('element:select', this.handleSelectEvent.bind(this))
+    this.element.engine.events.on('element:unselect', this.handleSelectEvent.bind(this))
+  }
+
+  handleSelectEvent(event: SelectElementEvent | UnselectElementEvent) {
+    console.log('boundingbox handleSelectEvent', event)
+
+    const selected = event.data.source
+
+    if (isArr(selected)) {
+      if (selected.includes(this.element)) {
+        console.log('do show ')
+        this.show(true)
+      } else {
+        this.hide()
+      }
+    } else {
+      if (selected === this.element) {
+        this.show(true)
+      } else {
+        this.hide()
+      }
+    }
   }
 
   private initBorder() {
@@ -57,8 +82,8 @@ export class BoundingBox extends Container {
       color: UICfg.boudingBoxColor,
     })
     this.border.rect(
-      this.element.centerX - this.element.width / 2,
-      this.element.centerY - this.element.height / 2,
+      this.element.globalCenter.x - this.element.width / 2,
+      this.element.globalCenter.y - this.element.height / 2,
       this.element.width,
       this.element.height
     )
@@ -74,8 +99,10 @@ export class BoundingBox extends Container {
     }
   }
 
-  public show() {
-    this.update()
+  public show(update?: boolean) {
+    if (update) {
+      this.update()
+    }
     this.visible = true
   }
 
@@ -85,10 +112,22 @@ export class BoundingBox extends Container {
 
   private get handlePostions() {
     return [
-      new Point(this.element.centerX - this.element.width / 2, this.element.centerY - this.element.height / 2),
-      new Point(this.element.centerX + this.element.width / 2, this.element.centerY - this.element.height / 2),
-      new Point(this.element.centerX + this.element.width / 2, this.element.centerY + this.element.height / 2),
-      new Point(this.element.centerX - this.element.width / 2, this.element.centerY + this.element.height / 2),
+      new Point(
+        this.element.globalCenter.x - this.element.width / 2,
+        this.element.globalCenter.y - this.element.height / 2
+      ),
+      new Point(
+        this.element.globalCenter.x + this.element.width / 2,
+        this.element.globalCenter.y - this.element.height / 2
+      ),
+      new Point(
+        this.element.globalCenter.x + this.element.width / 2,
+        this.element.globalCenter.y + this.element.height / 2
+      ),
+      new Point(
+        this.element.globalCenter.x - this.element.width / 2,
+        this.element.globalCenter.y + this.element.height / 2
+      ),
     ]
   }
 }

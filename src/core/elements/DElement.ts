@@ -2,9 +2,7 @@ import { customAlphabet } from 'nanoid'
 import { Container, EventMode, FederatedPointerEvent, PointData } from 'pixi.js'
 
 import { Engine } from '../Engine'
-import { Outline } from '../components/Outline'
 import { BoundingBox } from '../components/BoundingBox'
-import { HoverElementEvent, SelectElementEvent, UnselectElementEvent } from '../events/mutation/SelectElementEvent'
 
 export interface IDElementBase {
   id?: string
@@ -68,8 +66,7 @@ export abstract class DElement implements IDElementInstance<any> {
   _locked?: boolean
   _hidden?: boolean
   isDragging?: boolean
-  outline: Outline
-  boundingBox: BoundingBox
+  boundingBox?: BoundingBox
   children?: DElement[]
   parent?: DElement
 
@@ -81,8 +78,7 @@ export abstract class DElement implements IDElementInstance<any> {
     this.index = options.index
     this._locked = !!options.locked
     this._hidden = !!options.hidden
-    this.outline = new Outline(this)
-    this.boundingBox = new BoundingBox(this)
+    this.boundingBox = this.engine.boundingLayer?.addBoundingBox(this)
   }
 
   get type() {
@@ -196,7 +192,6 @@ export abstract class DElement implements IDElementInstance<any> {
 
   setPostion(x: number, y: number) {
     this.item?.position.set(x, y)
-    this.outline.position.set(x, y)
   }
 
   setRotation(rotation: number) {
@@ -207,38 +202,25 @@ export abstract class DElement implements IDElementInstance<any> {
 
   setupInteractive() {
     if (this.item) {
-      this.item.on('pointerenter', this.handlePointerEnter)
-      this.item.on('pointerleave', this.handlePointerLeave)
-      this.item.on('pointerdown', this.handlePointerDown)
-      this.item.on('pointertap', this.handlePointerTap)
+      this.item.on('pointerenter', this.handlePointerEnter.bind(this))
+      this.item.on('pointerleave', this.handlePointerLeave.bind(this))
+      this.item.on('pointerdown', this.handlePointerDown.bind(this))
+      this.item.on('pointertap', this.handlePointerTap.bind(this))
       this.eventMode = this.locked ? 'none' : 'static'
     }
   }
 
-  renderOutline() {
-    this.outline.update()
-  }
-
   handlePointerEnter(event: FederatedPointerEvent) {
-    const hoverEvent = new HoverElementEvent({
-      source: this,
-      target: this,
-    })
-
-    this.engine.events.emit('element:hover', hoverEvent)
+    this.operation?.hover.setHover(this)
   }
 
   handlePointerLeave(event: FederatedPointerEvent) {
-    const hoverEvent = new HoverElementEvent({
-      source: null,
-      target: null,
-    })
-
-    this.engine.events.emit('element:hover', hoverEvent)
+    this.operation?.hover.setHover()
   }
 
   handlePointerDown(event: FederatedPointerEvent) {
-    this.handleDragStart(event)
+    console.log('hande pointer down')
+    this.operation?.selection.safeSelect(this)
     event.preventDefault()
     event.stopPropagation()
   }
@@ -280,8 +262,7 @@ export abstract class DElement implements IDElementInstance<any> {
         this.elementStartPosition.y + dy / this.engine.zoomRatio
       )
       // 更新 outline 位置
-      this.outline.hide()
-      this.boundingBox.hide()
+      this.boundingBox?.hide()
     }
   }
 
@@ -291,7 +272,7 @@ export abstract class DElement implements IDElementInstance<any> {
       this.engine.isDragging = false
 
       // TODO: 改为事件触发
-      this.boundingBox.show()
+      this.boundingBox?.show()
     }
   }
 
