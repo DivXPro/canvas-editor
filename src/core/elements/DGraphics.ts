@@ -1,4 +1,4 @@
-import { action, computed, makeObservable, observable } from 'mobx'
+import { action, computed, makeObservable, observable, override } from 'mobx'
 import { FillStyle, Graphics, StrokeStyle } from 'pixi.js'
 
 import { Engine } from '../Engine'
@@ -31,34 +31,12 @@ export abstract class DGraphics extends DElement implements IDElementInstance<Gr
   constructor(options: DGraphicsOptions) {
     super(options)
     makeObservable(this, {
-      id: observable,
-      name: observable,
-      index: observable,
-      isDragging: observable,
-      hidden: computed,
-      locked: computed,
-      isSelected: computed,
-      type: computed,
-      displayName: computed,
-      x: computed,
-      y: computed,
-      width: computed,
-      height: computed,
-      canSelect: computed,
-      globalPosition: computed,
-      jsonData: computed,
+      type: override,
+      jsonData: override,
+      displayName: override,
+      width: override,
       setWidth: action.bound,
       setHeight: action.bound,
-      setHidden: action.bound,
-      setLocked: action.bound,
-      setPostion: action.bound,
-      handlePointerEnter: action.bound,
-      handlePointerLeave: action.bound,
-      handlePointerTap: action.bound,
-      handlePointerDown: action.bound,
-      handleDragStart: action.bound,
-      handleDrageMove: action.bound,
-      handleDragEnd: action.bound,
     })
     this.item = new Graphics({
       x: options.x,
@@ -80,11 +58,11 @@ export abstract class DGraphics extends DElement implements IDElementInstance<Gr
   }
 
   get displayWidth() {
-    return this.item.getBounds().width
+    return this.width * this.engine.zoomRatio
   }
 
   get displayHeight() {
-    return this.item.getBounds().height
+    return this.height * this.engine.zoomRatio
   }
 
   get width() {

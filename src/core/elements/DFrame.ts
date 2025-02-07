@@ -1,49 +1,26 @@
-import { makeObservable, observable, computed, action, IObservableArray, observe } from 'mobx'
+import { makeObservable, computed, action, observe, override } from 'mobx'
 
-import { Engine } from '../Engine'
 import { Frame } from '../components/Frame'
 
-import { DElement, IDElement } from './DElement'
-import { IDElementInstance } from './DElement'
+import { DElement, IDElement, IDElementInstance } from './DElement'
+import { DGroup, DGroupOptions } from './DGroup'
 
-export interface DFrameOptions extends IDElement {
-  engine: Engine
-}
+export interface DFrameOptions extends DGroupOptions { }
 
 export interface IDFrame extends IDElement {
   type: 'Frame'
   items?: IDElement[]
 }
 
-export class DFrame extends DElement {
+export class DFrame extends DGroup {
   declare item: Frame
-
-  children: IObservableArray<DElement> = observable.array([])
 
   constructor(options: DFrameOptions) {
     super(options)
     makeObservable(this, {
-      id: observable,
-      name: observable,
-      index: observable,
-      children: observable,
-      type: computed,
-      displayName: computed,
-      x: computed,
-      y: computed,
-      centerX: computed,
-      centerY: computed,
+      type: override,
+      jsonData: override,
       zoomRatio: computed,
-      width: computed,
-      height: computed,
-      displayWidth: computed,
-      displayHeight: computed,
-      globalPosition: computed,
-      globalCenter: computed,
-      rotation: computed,
-      jsonData: computed,
-      setRotation: action.bound,
-      renderItems: action.bound,
       setZoom: action.bound,
     })
     this.item = new Frame({
@@ -54,8 +31,7 @@ export class DFrame extends DElement {
       width: options.width ?? 0,
       height: options.height ?? 0,
     })
-    this.setupChildrenObserver()
-    this.renderItems(options.items)
+    this.init(options.items)
   }
 
   get type() {
@@ -74,47 +50,6 @@ export class DFrame extends DElement {
     this.item.zoomRatio = zoom
   }
 
-  renderItems(items: IDElement[] = []) {
-    items
-      .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
-      .forEach(item => {
-        const child = this.engine.generateElement(item)
-
-        child && this.children.push(child)
-      })
-  }
-
-  protected setupChildrenObserver() {
-    observe(this.children, change => {
-      if (change.type === 'splice') {
-        if (change.added.length > 0) {
-          // 在这里处理添加元素的逻辑
-          this.onElementsAdded(change.added)
-        }
-        if (change.removed.length > 0) {
-          // 在这里处理移除元素的逻辑
-          this.onElementsRemoved(change.removed)
-        }
-      }
-    })
-  }
-
-  private onElementsAdded(elements: IDElementInstance<any>[]) {
-    // 处理添加元素的逻辑
-    elements.forEach(element => {
-      // 例如，将元素添加到 Frame 中
-      this.item.addChild(element.item)
-    })
-  }
-
-  private onElementsRemoved(elements: IDElementInstance<any>[]) {
-    // 处理移除元素的逻辑
-    elements.forEach(element => {
-      // 例如，从 Frame 中移除元素
-      this.item.removeChild(element.item)
-    })
-  }
-
   get jsonData() {
     return {
       id: this.id,
@@ -126,6 +61,8 @@ export class DFrame extends DElement {
       name: this.name,
       type: this.type,
       items: this.children.map(child => child.jsonData),
+      locked: this.locked,
+      hidden: this.hidden,
     }
   }
 }

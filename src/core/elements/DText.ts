@@ -1,5 +1,5 @@
 import { TextString, TextStyleOptions } from 'pixi.js'
-import { action, computed, makeObservable, observable } from 'mobx'
+import { action, makeObservable, override } from 'mobx'
 
 import { Engine } from '../Engine'
 import { TextBox } from '../components/TextBox'
@@ -23,38 +23,15 @@ export class DText extends DElement implements IDElementInstance<TextBox> {
   constructor(options: DTextOptions) {
     super(options)
     makeObservable(this, {
-      id: observable,
-      name: observable,
-      index: observable,
-      locked: computed,
-      hidden: computed,
-      type: computed,
-      displayName: computed,
-      x: computed,
-      y: computed,
-      centerX: computed,
-      centerY: computed,
-      width: computed,
-      height: computed,
-      displayWidth: computed,
-      displayHeight: computed,
-      globalCenter: computed,
-      rotation: computed,
-      globalPosition: computed,
-      canSelect: computed,
-      jsonData: computed,
+      type: override,
+      jsonData: override,
+      displayName: override,
+      width: override,
+      centerX: override,
+      centerY: override,
+      globalCenter: override,
       setWidth: action.bound,
       setHeight: action.bound,
-      setLocked: action.bound,
-      setHidden: action.bound,
-      setPostion: action.bound,
-      handlePointerEnter: action.bound,
-      handlePointerLeave: action.bound,
-      handlePointerDown: action.bound,
-      handlePointerTap: action.bound,
-      handleDragStart: action.bound,
-      handleDrageMove: action.bound,
-      handleDragEnd: action.bound,
     })
     const { parent: _, ...others } = options
 
@@ -102,11 +79,20 @@ export class DText extends DElement implements IDElementInstance<TextBox> {
   }
 
   setWidth(value: number) {
+    if (this.item.fixSize) {
+      this.item.fixWidth = value
+    } else {
+      this.item.width = value
+    }
     this.item.fixWidth = value
   }
 
   setHeight(value: number) {
-    this.item.fixHeight = value
+    if (this.item.fixSize) {
+      this.item.fixHeight = value
+    } else {
+      this.item.height = value
+    }
   }
 
   get jsonData(): IDText {

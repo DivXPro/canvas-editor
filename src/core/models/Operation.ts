@@ -31,7 +31,7 @@ export interface IOperation {
 export class Operation {
   engine: Engine
 
-  frame: DFrame
+  frame?: DFrame
 
   selection: Selection
 
@@ -39,8 +39,17 @@ export class Operation {
 
   constructor(engine: Engine) {
     this.engine = engine
-    const frame = this.engine.data?.frame ?? DefaultFrame
+    this.hover = new Hover({
+      engine: this.engine,
+      operation: this,
+    })
+    this.selection = new Selection({
+      engine: this.engine,
+      operation: this,
+    })
+  }
 
+  init(frame: IDFrame = DefaultFrame) {
     this.frame = new DFrame({
       engine: this.engine,
       x: frame.x,
@@ -52,21 +61,11 @@ export class Operation {
       type: 'Frame',
     })
     this.engine.app.stage.addChildAt(this.frame.item, 1)
-
-    this.hover = new Hover({
-      engine: this.engine,
-      operation: this,
-    })
-    this.selection = new Selection({
-      engine: this.engine,
-      operation: this,
-    })
   }
-
 
   serialize(): IOperation {
     return {
-      frame: this.frame.jsonData,
+      frame: this.frame?.jsonData,
     }
   }
 

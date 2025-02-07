@@ -1,4 +1,5 @@
 import { FillStyle, StrokeStyle } from 'pixi.js'
+import { makeObservable, override } from 'mobx'
 
 import { Engine } from '../Engine'
 
@@ -27,6 +28,10 @@ export interface DRectangleOptions extends IDRectangle {
 export class DRectangle extends DGraphics {
   constructor(options: DRectangleOptions) {
     super(options)
+    makeObservable(this, {
+      type: override,
+      name: override,
+    })
     const { width, height, radius } = options
 
     this.item.roundRect(0, 0, width, height, radius).fill(options.fillStyle).stroke(options.strokeStyle)
@@ -37,14 +42,6 @@ export class DRectangle extends DGraphics {
 
   get type() {
     return 'Rectangle'
-  }
-
-  get displayWidth() {
-    return this.width * this.engine.zoomRatio
-  }
-
-  get displayHeight() {
-    return this.height * this.engine.zoomRatio
   }
 
   get jsonData(): IDRectangle {

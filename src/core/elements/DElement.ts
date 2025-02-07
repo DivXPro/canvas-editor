@@ -3,6 +3,7 @@ import { Container, EventMode, FederatedPointerEvent, PointData } from 'pixi.js'
 
 import { Engine } from '../Engine'
 import { BoundingBox } from '../components/BoundingBox'
+import { action, computed, makeObservable, observable } from 'mobx'
 
 export interface IDElementBase {
   id?: string
@@ -78,11 +79,43 @@ export abstract class DElement implements IDElementInstance<any> {
     this.index = options.index
     this._locked = !!options.locked
     this._hidden = !!options.hidden
+
+    makeObservable(this, {
+      id: observable,
+      name: observable,
+      index: observable,
+      isDragging: observable,
+      hidden: computed,
+      locked: computed,
+      isSelected: computed,
+      type: computed,
+      displayName: computed,
+      x: computed,
+      y: computed,
+      centerX: computed,
+      centerY: computed,
+      width: computed,
+      height: computed,
+      canSelect: computed,
+      globalCenter: computed,
+      globalPosition: computed,
+      jsonData: computed,
+      setHidden: action.bound,
+      setLocked: action.bound,
+      setPostion: action.bound,
+      handlePointerEnter: action.bound,
+      handlePointerLeave: action.bound,
+      handlePointerTap: action.bound,
+      handlePointerDown: action.bound,
+      handleDragStart: action.bound,
+      handleDrageMove: action.bound,
+      handleDragEnd: action.bound,
+    })
     this.boundingBox = this.engine.boundingLayer?.addBoundingBox(this)
   }
 
   get type() {
-    return 'DGraphics'
+    return 'DElement'
   }
 
   get operation() {

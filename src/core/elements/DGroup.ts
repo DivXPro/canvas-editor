@@ -1,13 +1,11 @@
 import { Container } from 'pixi.js'
-import { makeObservable, observable, computed, action, observe, IObservableArray } from 'mobx'
+import { makeObservable, observable, action, observe, IObservableArray, override } from 'mobx'
 
 import { Engine } from '../Engine'
 
-import { DElement, eid, IDElement, IDElementInstance } from './DElement'
+import { DElement, IDElement, IDElementInstance } from './DElement'
 
-export interface IDGroup extends IDElement {
-  type: 'Group'
-}
+export interface IDGroup extends IDElement { }
 
 export interface DGroupOptions extends IDGroup {
   engine: Engine
@@ -23,36 +21,12 @@ export class DGroup extends DElement {
   constructor(options: DGroupOptions) {
     super(options)
     makeObservable(this, {
-      id: observable,
-      name: observable,
-      index: observable,
-      locked: observable,
-      children: observable,
-      hidden: computed,
-      type: computed,
-      displayName: computed,
-      x: computed,
-      y: computed,
-      centerX: computed,
-      centerY: computed,
-      width: computed,
-      height: computed,
-      rotation: computed,
-      canSelect: computed,
-      globalPosition: computed,
-      jsonData: computed,
-      setRotation: action.bound,
-      setHidden: action.bound,
+      type: override,
+      jsonData: override,
+      displayName: override,
+      children: observable.ref,
       renderItems: action.bound,
-      handlePointerEnter: action.bound,
-      handlePointerLeave: action.bound,
-      handlePointerDown: action.bound,
-      handlePointerTap: action.bound,
-      handleDragStart: action.bound,
-      handleDrageMove: action.bound,
-      handleDragEnd: action.bound,
     })
-    this.id = options.id ?? eid()
     this.item = new Container({
       x: options.x,
       y: options.y,
@@ -61,8 +35,6 @@ export class DGroup extends DElement {
       height: options.height,
       visible: !options.hidden,
     })
-    this.setupChildrenObserver()
-    this.renderItems(options.items)
   }
 
   get type() {
@@ -73,23 +45,18 @@ export class DGroup extends DElement {
     return this.name ?? 'Group'
   }
 
-  get globalPosition() {
-    return this.item.getGlobalPosition()
-  }
-
-  get rotation() {
-    return this.item.rotation
-  }
-
-  setHidden(value: boolean) {
-    this.item.visible = !value
+  init(items?: IDElement[]) {
+    this.setupChildrenObserver()
+    if (items) {
+      this.renderItems(items)
+    }
   }
 
   renderItems(items: IDElement[] = []) {
     items
       .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
       .forEach(item => {
-        const child = this.engine.generateElement(item, this)
+        const child = this.engine.operation?.generateElement(item, this)
 
         child && this.children.push(child)
       })
@@ -99,12 +66,10 @@ export class DGroup extends DElement {
     observe(this.children, change => {
       if (change.type === 'splice') {
         if (change.added.length > 0) {
-          console.log('Elements added:', change.added)
           // 在这里处理添加元素的逻辑
           this.onElementsAdded(change.added)
         }
         if (change.removed.length > 0) {
-          console.log('Elements removed:', change.removed)
           // 在这里处理移除元素的逻辑
           this.onElementsRemoved(change.removed)
         }
@@ -112,7 +77,7 @@ export class DGroup extends DElement {
     })
   }
 
-  private onElementsAdded(elements: IDElementInstance<any>[]) {
+  onElementsAdded(elements: IDElementInstance<any>[]) {
     // 处理添加元素的逻辑
     elements.forEach(element => {
       // 例如，将元素添加到 Frame 中
@@ -120,7 +85,7 @@ export class DGroup extends DElement {
     })
   }
 
-  private onElementsRemoved(elements: IDElementInstance<any>[]) {
+  onElementsRemoved(elements: IDElementInstance<any>[]) {
     // 处理移除元素的逻辑
     elements.forEach(element => {
       // 例如，从 Frame 中移除元素

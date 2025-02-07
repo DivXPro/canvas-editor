@@ -1,11 +1,7 @@
 import { Application, ApplicationOptions, Size, PointData, EventEmitter } from 'pixi.js'
 
-import { DFrame, IDFrame } from './elements/DFrame'
-import { DElement, IDElement } from './elements/DElement'
-import { DGroup, IDGroup } from './elements/DGroup'
-import { DRectangle, IDRectangle } from './elements/DRectangle'
+import { IDFrame } from './elements/DFrame'
 import { OutlineLayer } from './components/OutlineLayer'
-import { DText, IDText } from './elements/DText'
 import { BoundingLayer } from './components/BoundingLayer'
 import { EventDriver, SelectionAreaDriver } from './drivers'
 import { BackgroundLayer } from './components/BackgroundLayer'
@@ -65,6 +61,7 @@ export class Engine {
     this.initGuideLayers(background)
     this.initEventEmitter()
     this.operation = new Operation(this)
+    this.operation.init(data.frame)
     this.initDrivers()
     if (this.enableZoom) {
       this.activeWheelZoom()
@@ -116,26 +113,11 @@ export class Engine {
     }
 
     this.zoomRatio = zoomRatio
-    this.operation?.frame.setZoom(this.zoomRatio)
+    this.operation?.frame?.setZoom(this.zoomRatio)
     this.boundingLayer?.update()
     this.operation?.hover.clear()
     event.preventDefault()
     event.stopPropagation()
-  }
-
-  generateElement(item: IDElement, parent?: DElement) {
-    switch (item.type) {
-      case 'Frame':
-        return new DFrame({ engine: this, ...(item as IDFrame) })
-      case 'Group':
-        return new DGroup({ engine: this, parent, ...(item as IDGroup) })
-      case 'Rectangle':
-        return new DRectangle({ engine: this, parent, ...(item as IDRectangle) })
-      case 'Text':
-        return new DText({ engine: this, parent, ...(item as IDText) })
-      default:
-        break
-    }
   }
 
   get stage() {
@@ -158,7 +140,7 @@ export class Engine {
     return {
       id: this.data?.id,
       name: this.data?.name,
-      frame: this.operation?.frame.jsonData,
+      frame: this.operation?.frame?.jsonData,
     }
   }
 }
