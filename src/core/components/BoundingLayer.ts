@@ -20,4 +20,8 @@ export class BoundingLayer extends Container {
   removeBoundingBox(box: BoundingBox) {
     this.removeChild(box)
   }
+
+  update() {
+    this.children.filter(boundingBox => boundingBox.visible).forEach(boundingBox => boundingBox.update())
+  }
 }

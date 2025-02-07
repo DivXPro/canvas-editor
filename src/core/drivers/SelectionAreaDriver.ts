@@ -6,11 +6,22 @@ import { EventDriver } from './EventDriver'
 
 export class SelectionAreaDriver extends EventDriver {
   private request?: number
-  isSelecting = false
+
+  get selecting() {
+    return this.engine.operation?.selection.selecting ?? false
+  }
+
+  set selecting(value: boolean) {
+    if (this.engine.operation) {
+      this.engine.operation.selection.selecting = value
+    }
+  }
 
   onPointerDown = (e: FederatedPointerEvent) => {
-    this.isSelecting = true
-    const canvasPosition = this.app.stage.toLocal(e.global)
+    this.engine.operation?.selection.clear()
+    const canvasPosition = this.engine.stage.toLocal(e.global)
+
+    this.selecting = true
     const event = new SelectionAreaStartEvent({
       clientX: e.clientX,
       clientY: e.clientY,
@@ -26,11 +37,11 @@ export class SelectionAreaDriver extends EventDriver {
   }
 
   onPointerMove = (e: FederatedPointerEvent) => {
-    if (!this.isSelecting) return
+    if (!this.selecting) return
 
     this.request = requestAnimationFrame(() => {
       this.request != null && cancelAnimationFrame(this.request)
-      const canvasPosition = this.app.stage.toLocal(e.global)
+      const canvasPosition = this.engine.stage.toLocal(e.global)
       const event = new SelectionAreaMoveEvent({
         clientX: e.clientX,
         clientY: e.clientY,
@@ -47,10 +58,10 @@ export class SelectionAreaDriver extends EventDriver {
   }
 
   onPointerUp = (e: FederatedPointerEvent) => {
-    if (!this.isSelecting) return
+    if (!this.selecting) return
 
-    this.isSelecting = false
-    const canvasPosition = this.app.stage.toLocal(e.global)
+    this.selecting = false
+    const canvasPosition = this.engine.stage.toLocal(e.global)
     const event = new SelectionAreaEndEvent({
       clientX: e.clientX,
       clientY: e.clientY,
@@ -66,16 +77,16 @@ export class SelectionAreaDriver extends EventDriver {
   }
 
   attach() {
-    this.app.stage.on('pointerdown', this.onPointerDown.bind(this))
-    this.app.stage.on('pointermove', this.onPointerMove.bind(this))
-    this.app.stage.on('pointerup', this.onPointerUp.bind(this))
-    this.app.stage.on('pointerupoutside', this.onPointerUp.bind(this))
+    this.engine.stage.on('pointerdown', this.onPointerDown.bind(this))
+    this.engine.stage.on('pointermove', this.onPointerMove.bind(this))
+    this.engine.stage.on('pointerup', this.onPointerUp.bind(this))
+    this.engine.stage.on('pointerupoutside', this.onPointerUp.bind(this))
   }
 
   detach() {
-    this.app.stage.off('pointerdown', this.onPointerDown.bind(this))
-    this.app.stage.off('pointermove', this.onPointerMove.bind(this))
-    this.app.stage.off('pointerup', this.onPointerUp.bind(this))
-    this.app.stage.off('pointerupoutside', this.onPointerUp.bind(this))
+    this.engine.stage.off('pointerdown', this.onPointerDown.bind(this))
+    this.engine.stage.off('pointermove', this.onPointerMove.bind(this))
+    this.engine.stage.off('pointerup', this.onPointerUp.bind(this))
+    this.engine.stage.off('pointerupoutside', this.onPointerUp.bind(this))
   }
 }

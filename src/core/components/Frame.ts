@@ -13,7 +13,6 @@ export interface FrameOptions {
 export class Frame extends Container {
   app: Application
   background: Graphics
-  maskGraphic?: Graphics
 
   constructor(options: FrameOptions) {
     let { x, y, width, height, rotation } = options
@@ -43,14 +42,11 @@ export class Frame extends Container {
   }
 
   updateMask() {
-    if (this.maskGraphic instanceof Container) {
-      this.removeChild(this.maskGraphic)
-    }
     const mask = new Graphics({
       x: 0,
       y: 0,
     })
-      .rect(0, 0, this.width / this.scale.x, this.height / this.scale.y)
+      .rect(0, 0, this.width * this.scale.x, this.height * this.scale.y)
       .fill({ color: 'green' })
 
     mask.rotation = this.rotation

@@ -5,7 +5,7 @@ export const primaryColor = 0x238def
 export const outlineWidth = 2
 export const outlineColor = primaryColor
 
-export const boundingBoxWidth = 1
+export const boundingBoxWidth = 1.5
 export const boudingBoxColor = primaryColor
 
 export const boundingHandingSize = 8

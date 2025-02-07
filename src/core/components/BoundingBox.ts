@@ -11,7 +11,7 @@ export class BoundingBox extends Container {
   private handles: Graphics[]
 
   constructor(element: DElement) {
-    super({ x: element.centerX, y: element.centerY })
+    super({ x: element.globalCenter.x, y: element.globalCenter.y })
     this.element = element
     this.border = new Graphics()
     this.handles = []
@@ -19,6 +19,7 @@ export class BoundingBox extends Container {
   }
 
   private init() {
+    this.visible = false
     this.initBorder()
     this.initHandles()
     this.update()
@@ -27,13 +28,10 @@ export class BoundingBox extends Container {
   }
 
   handleSelectEvent(event: SelectElementEvent | UnselectElementEvent) {
-    console.log('boundingbox handleSelectEvent', event)
-
     const selected = event.data.source
 
     if (isArr(selected)) {
       if (selected.includes(this.element)) {
-        console.log('do show ')
         this.show(true)
       } else {
         this.hide()
@@ -59,7 +57,7 @@ export class BoundingBox extends Container {
     // 4个控制点：左上、右上、右下、左下
     this.handlePostions.forEach(pos => {
       const handle = new Graphics()
-        .rect(pos.x, pos.y, UICfg.boundingHandingSize, UICfg.boundingHandingSize)
+        .rect(0, 0, UICfg.boundingHandingSize, UICfg.boundingHandingSize)
         .fill({
           color: UICfg.white,
         })
@@ -75,19 +73,16 @@ export class BoundingBox extends Container {
   }
 
   public update() {
+    this.position.set(this.element.globalCenter.x, this.element.globalCenter.y)
+    this.pivot.set(this.element.displayWidth / 2, this.element.displayHeight / 2)
+    this.rotation = this.element.rotation ?? 0
     // 更新边框
     this.border.clear()
     this.border.setStrokeStyle({
       width: UICfg.boundingBoxWidth,
       color: UICfg.boudingBoxColor,
     })
-    this.border.rect(
-      this.element.globalCenter.x - this.element.width / 2,
-      this.element.globalCenter.y - this.element.height / 2,
-      this.element.width,
-      this.element.height
-    )
-    this.border.stroke()
+    this.border.rect(0, 0, this.element.displayWidth, this.element.displayHeight).stroke()
 
     // 更新控制点位置
     this.handles.forEach((handle, index) => {
@@ -112,22 +107,10 @@ export class BoundingBox extends Container {
 
   private get handlePostions() {
     return [
-      new Point(
-        this.element.globalCenter.x - this.element.width / 2,
-        this.element.globalCenter.y - this.element.height / 2
-      ),
-      new Point(
-        this.element.globalCenter.x + this.element.width / 2,
-        this.element.globalCenter.y - this.element.height / 2
-      ),
-      new Point(
-        this.element.globalCenter.x + this.element.width / 2,
-        this.element.globalCenter.y + this.element.height / 2
-      ),
-      new Point(
-        this.element.globalCenter.x - this.element.width / 2,
-        this.element.globalCenter.y + this.element.height / 2
-      ),
+      new Point(0, 0),
+      new Point(this.element.displayWidth, 0),
+      new Point(this.element.displayWidth, this.element.displayHeight),
+      new Point(0, this.element.displayHeight),
     ]
   }
 }

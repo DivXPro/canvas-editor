@@ -117,6 +117,8 @@ export class Engine {
 
     this.zoomRatio = zoomRatio
     this.operation?.frame.setZoom(this.zoomRatio)
+    this.boundingLayer?.update()
+    this.operation?.hover.clear()
     event.preventDefault()
     event.stopPropagation()
   }

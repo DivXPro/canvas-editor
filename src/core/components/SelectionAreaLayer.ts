@@ -41,7 +41,6 @@ export class SelectionAreaLayer extends Container {
 
     // 更新选区大小
     this.selectionArea.update(event.data.canvasX, event.data.canvasY)
-    console.log('this.selectionArea', this.selectionArea)
   }
 
   private onSelectionEnd(event: SelectionAreaEndEvent) {

@@ -28,6 +28,10 @@ export class Hover {
   }
 
   setHover(element?: DElement) {
+    console.log('setHover', this.operation.selection.selecting)
+    if (this.operation.selection.selecting) {
+      return
+    }
     if (element) {
       this.element = element
     } else {
@@ -37,7 +41,9 @@ export class Hover {
   }
 
   clear() {
+    console.log('clear hover')
     this.element = null
+    this.trigger()
   }
 
   trigger() {
