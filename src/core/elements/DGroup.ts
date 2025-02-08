@@ -19,13 +19,10 @@ export class DGroup extends DFrameBase {
       jsonData: override,
     })
 
-    this.item = new Frame({
-      app: this.engine.app,
+    this.item = new Container({
       x: this.position.x,
       y: this.position.y,
       rotation: this.rotation,
-      width: this.size.width,
-      height: this.size.height,
     })
     this.init(options.children)
   }

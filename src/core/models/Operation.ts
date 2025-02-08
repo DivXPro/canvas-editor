@@ -4,6 +4,7 @@ import { FrameBase, NodeBase } from '../elements/type'
 
 import { Selection } from './Selection'
 import { Hover } from './Hover'
+import { DGroup, IDGroupBase } from '../elements/DGroup'
 
 declare type DefaultFrameType = Omit<IDFrameBase, 'engine' | 'parent'>
 
@@ -70,12 +71,12 @@ export class Operation {
     switch (item.type) {
       case 'FRAME':
         return new DFrame({ engine: this.engine, ...(item as IDFrameBase) })
-      // case 'GROUP':
-      //   return new DFrameBase({
-      //     engine: this.engine,
-      //     parent,
-      //     ...(item as IDFrameBase),
-      //   })
+      case 'GROUP':
+        return new DGroup({
+          engine: this.engine,
+          parent,
+          ...(item as IDGroupBase),
+        })
       case 'RECTANGLE':
         return new DRectangle({ engine: this.engine, parent, ...(item as IDRectangleBase) })
       case 'TEXT':

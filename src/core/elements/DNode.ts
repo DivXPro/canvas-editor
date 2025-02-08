@@ -4,9 +4,9 @@ import { action, computed, makeObservable, observable } from 'mobx'
 
 import { Engine } from '../Engine'
 import { BoundingBox } from '../components/BoundingBox'
+import { Outline } from '../components/Outline'
 
 import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Vector2 } from './type'
-import { Outline } from '../components/Outline'
 
 export interface ScaleData {
   x: number

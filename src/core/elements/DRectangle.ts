@@ -2,11 +2,11 @@ import { computed, makeObservable, override } from 'mobx'
 import { Graphics } from 'pixi.js'
 
 import { Engine } from '../Engine'
-import { ColorUtils } from '../utils/styles'
 
 import { DVector, IDVectorBase } from './DVector'
 import { DNode } from './DNode'
-import { Size } from './type'
+import { Color, Size } from './type'
+import { ColorUtils } from '../utils/styles'
 
 export interface IDRectangleBase extends IDVectorBase {
   size: Size
@@ -24,6 +24,9 @@ export class DRectangle extends DVector<Graphics> {
   constructor(options: DRectangleOptions) {
     super(options)
     this._cornerRadius = options.cornerRadius ?? 0
+    if (this.fills.length === 0) {
+      this.fills.push(DVector.DEFAULT_FILL)
+    }
     makeObservable(this, {
       size: override,
       absoluteBoundingBox: override,
@@ -55,7 +58,7 @@ export class DRectangle extends DVector<Graphics> {
     this.item.rotation = this.rotation
     this.item
       .roundRect(-this.size.width / 2, -this.size.height / 2, this.size.width, this.size.height, this.cornerRadius)
-      .fill({ color: ColorUtils.rgbaToNumber(this.fills[0].color ?? DVector.DEFAULT_COLOR) })
+      .fill(ColorUtils.rgbaToNumber(this.fills[0].color ?? (DVector.DEFAULT_FILL.color as Color)))
       .stroke(this.strokes[0])
   }
 
