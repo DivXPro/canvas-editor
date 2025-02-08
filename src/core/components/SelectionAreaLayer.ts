@@ -28,8 +28,6 @@ export class SelectionAreaLayer extends Container {
       y: event.data.canvasY,
     }
 
-    console.log('onSelectionStart', this.startPoint)
-
     // 创建新的选区
     this.selectionArea = new SelectionArea(this.startPoint)
 

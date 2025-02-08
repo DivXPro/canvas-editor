@@ -1,30 +1,26 @@
 import { Engine } from '../Engine'
-import {
-  DElement,
-  DFrame,
-  DGroup,
-  DRectangle,
-  DText,
-  IDElement,
-  IDFrame,
-  IDGroup,
-  IDRectangle,
-  IDText,
-} from '../elements'
+import { DNode, DFrame, DRectangle, DText, IDFrameBase, IDRectangleBase, IDTextBase } from '../elements'
+import { FrameBase, NodeBase } from '../elements/type'
 
 import { Selection } from './Selection'
 import { Hover } from './Hover'
 
-const DefaultFrame: IDFrame = {
-  width: 512,
-  height: 512,
-  type: 'Frame',
-  x: 0,
-  y: 0,
+declare type DefaultFrameType = Omit<IDFrameBase, 'engine' | 'parent'>
+
+const DefaultFrame: DefaultFrameType = {
+  id: 'rootFrame',
+  name: 'Frame',
+  position: { x: 0, y: 0 },
+  size: {
+    width: 512,
+    height: 512,
+  },
+  type: 'FRAME',
+  backgroundColor: { r: 1, g: 1, b: 1, a: 1 },
 }
 
 export interface IOperation {
-  frame?: IDElement
+  frame?: FrameBase
   selected?: string[]
 }
 
@@ -49,16 +45,17 @@ export class Operation {
     })
   }
 
-  init(frame: IDFrame = DefaultFrame) {
+  init(frame: IDFrameBase | DefaultFrameType = DefaultFrame) {
     this.frame = new DFrame({
       engine: this.engine,
-      x: frame.x,
-      y: frame.y,
-      width: frame.width,
-      height: frame.height,
+      id: frame.id,
+      name: frame.name,
+      position: frame.position,
+      size: frame.size,
       rotation: frame.rotation,
-      items: frame.items,
-      type: 'Frame',
+      children: frame.children,
+      type: 'FRAME',
+      backgroundColor: frame.backgroundColor,
     })
     this.engine.app.stage.addChildAt(this.frame.item, 1)
   }
@@ -69,20 +66,20 @@ export class Operation {
     }
   }
 
-  generateElement(item: IDElement, parent?: DElement) {
+  generateElement(item: NodeBase, parent?: DNode): DNode | undefined {
     switch (item.type) {
-      case 'Frame':
-        return new DFrame({ engine: this.engine, ...(item as IDFrame) })
-      case 'Group':
-        return new DGroup({
-          engine: this.engine,
-          parent,
-          ...(item as IDGroup),
-        })
-      case 'Rectangle':
-        return new DRectangle({ engine: this.engine, parent, ...(item as IDRectangle) })
-      case 'Text':
-        return new DText({ engine: this.engine, parent, ...(item as IDText) })
+      case 'FRAME':
+        return new DFrame({ engine: this.engine, ...(item as IDFrameBase) })
+      // case 'GROUP':
+      //   return new DFrameBase({
+      //     engine: this.engine,
+      //     parent,
+      //     ...(item as IDFrameBase),
+      //   })
+      case 'RECTANGLE':
+        return new DRectangle({ engine: this.engine, parent, ...(item as IDRectangleBase) })
+      case 'TEXT':
+        return new DText({ engine: this.engine, parent, ...(item as IDTextBase) })
       default:
         break
     }

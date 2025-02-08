@@ -1,29 +1,48 @@
-import { Text, TextOptions, TextStyleOptions } from 'pixi.js'
+import { Text, TextOptions } from 'pixi.js'
+
+import { Size, Vector2 } from '../elements/type'
 
 export interface TextBoxOptions extends TextOptions {
-  fixSize?: boolean
-  style?: TextStyleOptions
+  size?: Size
 }
 
 export class TextBox extends Text {
-  fixSize?: boolean
-  fixWidth: number
-  fixHeight: number
+  _boxPostion: Vector2
+  fixWidth?: number
+  fixHeight?: number
 
   constructor(options: TextBoxOptions) {
-    let { fixSize = false, width, height, ...others } = options
+    const { size, ...rest } = options
 
-    super(others)
-
-    this.fixSize = fixSize
-    this.fixWidth = width ?? this.width
-    this.fixHeight = height ?? this.height
-
-    this.render()
+    super(rest)
+    this._boxPostion = options.position ?? { x: 0, y: 0 }
+    this.anchor.set(0.5, 0.5)
+    this.fixWidth = size?.width
+    this.fixHeight = size?.height
+    this.update()
   }
 
-  render() {
-    if (this.fixSize && this.width <= this.fixWidth) {
+  get fixSize() {
+    return this.fixWidth != null && this.fixHeight != null
+  }
+
+  get boxPostion() {
+    return this._boxPostion
+  }
+
+  set boxPostion(value: Vector2) {
+    this._boxPostion = value
+    this.position.set(value.x, value.y)
+    this.update()
+  }
+
+  update() {
+    if (this.fixSize && this.fixWidth) {
+      this.style.wordWrap = this.fixSize
+      this.style.wordWrapWidth = this.fixWidth
+    }
+    this.position.set(this.x + this.width / 2, this.y + this.height / 2)
+    if (this.fixWidth && this.width < this.fixWidth) {
       switch (this.style.align) {
         case 'center':
           this.x = this.x + (this.fixWidth - this.width) / 2
@@ -34,9 +53,6 @@ export class TextBox extends Text {
         default:
           break
       }
-    } else if (this.fixSize && this.width > this.fixWidth) {
-      this.style.wordWrap = this.fixSize
-      this.style.wordWrapWidth = this.fixWidth
     }
   }
 }

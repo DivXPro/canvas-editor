@@ -1,12 +1,12 @@
-import { DElement } from '../../elements/DElement'
+import { DNode } from '../../elements/DNode'
 
 export interface IMutationElementEventData {
   //事件发生的数据源
-  source?: DElement | DElement[] | null
+  source?: DNode | DNode[] | null
   //事件发生的目标对象
-  target?: DElement | DElement[] | null
+  target?: DNode | DNode[] | null
   // 事件发生的来源对象
-  originSourceParents?: DElement | DElement[] | null
+  originSourceParents?: DNode | DNode[] | null
   //扩展数据
   extra?: any
 }

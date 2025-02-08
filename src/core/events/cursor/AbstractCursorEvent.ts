@@ -1,4 +1,4 @@
-import { DElement } from '../../elements'
+import { DNode } from '../../elements'
 import { globalThisPolyfill } from '../../utils/globalThisPolyfill'
 
 export interface Position {
@@ -11,7 +11,7 @@ export interface Position {
 }
 
 export interface ICursorEventData extends Position {
-  target: DElement | any
+  target: DNode | any
   view?: Window
 }
 

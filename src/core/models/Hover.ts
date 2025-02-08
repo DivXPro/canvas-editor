@@ -1,7 +1,7 @@
 import { action, makeObservable, observable } from 'mobx'
 
 import { Engine } from '../Engine'
-import { DElement } from '../elements'
+import { DNode } from '../elements'
 import { HoverElementEvent } from '../events'
 
 import { Operation } from './Operation'
@@ -14,7 +14,7 @@ export interface IHoverOptions {
 export class Hover {
   engine: Engine
   operation: Operation
-  element?: DElement | null
+  element?: DNode | null
 
   constructor(options: IHoverOptions) {
     this.engine = options.engine
@@ -27,8 +27,7 @@ export class Hover {
     })
   }
 
-  setHover(element?: DElement) {
-    console.log('setHover', this.operation.selection.selecting)
+  setHover(element?: DNode) {
     if (this.operation.selection.selecting) {
       return
     }
@@ -41,7 +40,6 @@ export class Hover {
   }
 
   clear() {
-    console.log('clear hover')
     this.element = null
     this.trigger()
   }

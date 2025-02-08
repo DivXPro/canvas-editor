@@ -1,7 +1,7 @@
 import { Container } from 'pixi.js'
 
 import { Engine } from '../Engine'
-import { DElement } from '../elements'
+import { DNode } from '../elements'
 
 import { BoundingBox } from './BoundingBox'
 
@@ -13,7 +13,7 @@ export class BoundingLayer extends Container {
     this.engine = engine
   }
 
-  addBoundingBox(element: DElement) {
+  addBoundingBox(element: DNode) {
     return this.addChild(new BoundingBox(element))
   }
 

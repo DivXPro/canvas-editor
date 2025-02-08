@@ -1,6 +1,6 @@
 import { Application, ApplicationOptions, Size, PointData, EventEmitter } from 'pixi.js'
 
-import { IDFrame } from './elements/DFrame'
+import { IDFrameBase } from './elements/DFrame'
 import { OutlineLayer } from './components/OutlineLayer'
 import { BoundingLayer } from './components/BoundingLayer'
 import { EventDriver, SelectionAreaDriver } from './drivers'
@@ -18,7 +18,7 @@ export interface EngineOptions extends Partial<ApplicationOptions> {
 export interface IDApp {
   id: string
   name: string
-  frame: IDFrame
+  frame: IDFrameBase
 }
 
 export class Engine {
@@ -79,7 +79,7 @@ export class Engine {
   initEventEmitter() {
     this.app.stage.eventMode = 'static'
     // wheel
-    this.app.canvas.addEventListener('wheel', e => this.events.emit('wheel', e), { passive: false })
+    // this.app.canvas.addEventListener('wheel', e => this.events.emit('wheel', e), { passive: false })
   }
 
   initDrivers() {
@@ -92,7 +92,7 @@ export class Engine {
 
   activeWheelZoom() {
     if (this.enableZoom) {
-      this.events.on('wheel', this.applyZoom.bind(this))
+      // this.events.on('wheel', this.applyZoom.bind(this))
     }
   }
 

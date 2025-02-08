@@ -1,108 +1,132 @@
 import { customAlphabet } from 'nanoid'
-import { Container, EventMode, FederatedPointerEvent, PointData } from 'pixi.js'
+import { Container, EventMode, FederatedPointerEvent, Size } from 'pixi.js'
+import { action, computed, makeObservable, observable } from 'mobx'
 
 import { Engine } from '../Engine'
 import { BoundingBox } from '../components/BoundingBox'
-import { action, computed, makeObservable, observable } from 'mobx'
 
-export interface IDElementBase {
-  id?: string
-  name?: string
-  type: string
-  index?: number
-  x: number
-  y: number
-  width?: number
-  height?: number
-  rotation?: number
-  locked?: boolean
-  hidden?: boolean
-}
-
-export interface IDElement extends IDElementBase {
-  items?: IDElement[]
-  [key: string]: any
-}
+import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Vector2 } from './type'
 
 export interface ScaleData {
   x: number
   y: number
 }
 
-export interface IDElementInstance<Item extends Container> extends IDElementBase {
-  engine: Engine
-  displayName: string
+export interface INodeBase extends NodeBase {
+  locked?: boolean
+  index?: number
+}
+
+export interface IDNode<Item extends Container> extends INodeBase {
+  position: Vector2
   displayWidth: number
   displayHeight: number
-  centerX: number
-  centerY: number
   item?: Item
-  children?: IDElementInstance<any>[]
-  globalPosition: PointData
-  globalCenter: PointData
-  offset: PointData
-  jsonData: IDElementBase
-  locked?: boolean
-  hidden?: boolean
+  globalPosition: Vector2
+  globalCenter: Vector2
+  absoluteBoundingBox: Rect
+  jsonData: NodeBase
   isSelected?: boolean
   isHovered?: boolean
   isDragging?: boolean
   eventMode?: EventMode
 }
 
-export interface DElementOptions extends IDElement {
+export interface DNodeOptions extends INodeBase {
   engine: Engine
-  parent?: DElement
+  parent?: DNode
 }
 
-export abstract class DElement implements IDElementInstance<any> {
+export abstract class DNode implements IDNode<any> {
   protected dragStartPosition?: { x: number; y: number }
   protected elementStartPosition?: { x: number; y: number }
+  protected _locked?: boolean
+  protected _visible: boolean = true
+  protected _rotation?: number
+  protected _position: Vector2
+  protected _size?: Size
 
   engine: Engine
+  parent?: DNode
+
   id: string
-  index?: number
-  name?: string
-  item?: Container
-  _locked?: boolean
-  _hidden?: boolean
+  name: string
+  type: NodeType
+  blendMode: BlendMode = 'NORMAL'
+  fills = observable.array<Paint>([])
+  strokes = observable.array<Paint>([])
+  strokeWeight: number = 1
+  strokeAlign: 'INSIDE' | 'OUTSIDE' | 'CENTER' = 'CENTER'
+  effects = observable.array<Effect>([])
+  isMask?: boolean | undefined
+  children?: DNode[]
   isDragging?: boolean
   boundingBox?: BoundingBox
-  children?: DElement[]
-  parent?: DElement
+  isHovered?: boolean | undefined
+  pluginData?: any
+  sharedPluginData?: any
 
-  constructor(options: DElementOptions) {
+  item?: Container
+
+  constructor(options: DNodeOptions) {
     this.engine = options.engine
     this.parent = options.parent
     this.id = options.id ?? eid()
     this.name = options.name
-    this.index = options.index
-    this._locked = !!options.locked
-    this._hidden = !!options.hidden
+    this.type = options.type
+    this.blendMode = options.blendMode ?? 'NORMAL'
+    this.strokeAlign = options.strokeAlign ?? 'CENTER'
+    this.strokeWeight = options.strokeWeight ?? 1
+    this.isMask = options.isMask ?? false
+    if (options.strokes) {
+      options.strokes.forEach(paint => {
+        this.strokes.push(paint)
+      })
+    }
+    if (options.fills) {
+      options.fills.forEach(paint => {
+        this.fills.push(paint)
+      })
+    }
+    if (options.effects) {
+      options.effects.forEach(effect => {
+        this.effects.push(effect)
+      })
+    }
+
+    this._position = options.position ?? { x: 0, y: 0 }
+    this._size = options.size
+    this._locked = options.locked ?? false
+    this._visible = options.visible ?? true
+    this._rotation = options.rotation
 
     makeObservable(this, {
       id: observable,
       name: observable,
-      index: observable,
+      type: observable,
+      blendMode: observable,
+      fills: observable,
+      strokes: observable,
+      strokeAlign: observable,
+      strokeWeight: observable,
+      effects: observable,
+      isMask: observable,
       isDragging: observable,
-      hidden: computed,
+      rotation: computed,
+      index: computed,
+      absoluteBoundingBox: computed,
+      visible: computed,
       locked: computed,
       isSelected: computed,
-      type: computed,
-      displayName: computed,
-      x: computed,
-      y: computed,
-      centerX: computed,
-      centerY: computed,
-      width: computed,
-      height: computed,
-      canSelect: computed,
+      position: computed,
+      size: computed,
       globalCenter: computed,
       globalPosition: computed,
       jsonData: computed,
       setHidden: action.bound,
       setLocked: action.bound,
       setPostion: action.bound,
+      setRotation: action.bound,
       handlePointerEnter: action.bound,
       handlePointerLeave: action.bound,
       handlePointerTap: action.bound,
@@ -113,9 +137,102 @@ export abstract class DElement implements IDElementInstance<any> {
     })
     this.boundingBox = this.engine.boundingLayer?.addBoundingBox(this)
   }
+  visable?: boolean | undefined
 
-  get type() {
-    return 'DElement'
+  get index() {
+    return this.parent?.children?.indexOf(this) ?? 0
+  }
+
+  get position() {
+    return this._position
+  }
+
+  get size() {
+    return this._size
+  }
+
+  get rotation(): number {
+    return this._rotation ?? 0
+  }
+
+  set rotation(value: number) {
+    this.setRotation(value)
+  }
+
+  setRotation(rotation: number) {
+    this._rotation = rotation
+    if (this.item) {
+      this.item.rotation = rotation
+    }
+  }
+
+  get locked() {
+    return this._locked ?? false
+  }
+
+  set locked(locked: boolean) {
+    this.setLocked(locked)
+  }
+
+  setLocked(locked: boolean) {
+    this._locked = locked
+    this.eventMode = this._locked ? 'none' : 'auto'
+  }
+
+  get visible() {
+    return this._visible ?? false
+  }
+
+  set visible(value: boolean) {
+    this.setHidden(value)
+  }
+
+  setHidden(value: boolean) {
+    this._visible = value
+    if (this.item) {
+      this.item.visible = !value
+    }
+  }
+
+  get isSelected() {
+    return this.operation?.selection.has(this) ?? false
+  }
+
+  get displayWidth() {
+    if (this.item) {
+      return this.item.width * this.engine.zoomRatio
+    }
+
+    return 0
+  }
+
+  get displayHeight() {
+    if (this.item) {
+      return this.item.height * this.engine.zoomRatio
+    }
+
+    return 0
+  }
+
+  get globalPosition() {
+    return this.item?.getGlobalPosition() ?? { x: 0, y: 0 }
+  }
+
+  get globalCenter() {
+    return this.globalPosition
+  }
+
+  get absoluteBoundingBox() {
+    return {
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+    }
+  }
+
+  setPostion(x: number, y: number) {
+    this.item?.position.set(x, y)
   }
 
   get operation() {
@@ -132,108 +249,7 @@ export abstract class DElement implements IDElementInstance<any> {
     }
   }
 
-  get rotation() {
-    return this.item?.rotation
-  }
-
-  get canSelect() {
-    return this.parent?.type === 'Frame'
-  }
-
-  get locked() {
-    return this._locked ?? false
-  }
-
-  set locked(locked: boolean) {
-    this.setLocked(locked)
-  }
-
-  setLocked(locked: boolean) {
-    this._locked = locked
-    this.eventMode = this._locked ? 'none' : 'auto'
-  }
-
-  get hidden() {
-    return this._hidden ?? false
-  }
-
-  set hidden(value: boolean) {
-    this.setHidden(value)
-  }
-
-  setHidden(value: boolean) {
-    this._hidden = value
-    if (this.item) {
-      this.item.visible = !value
-    }
-  }
-
-  get isSelected() {
-    return this.operation?.selection.has(this) ?? false
-  }
-
-  get displayName() {
-    return this.name ?? 'Element'
-  }
-
-  get x() {
-    return this.item?.x ?? 0
-  }
-
-  get y() {
-    return this.item?.y ?? 0
-  }
-
-  get centerX() {
-    return this.item?.x ?? 0
-  }
-
-  get centerY() {
-    return this.item?.y ?? 0
-  }
-
-  get width() {
-    return this.item?.width ?? 0
-  }
-
-  get height() {
-    return this.item?.height ?? 0
-  }
-
-  get displayWidth() {
-    return this.width * this.engine.zoomRatio
-  }
-
-  get displayHeight() {
-    return this.height * this.engine.zoomRatio
-  }
-
-  get globalPosition() {
-    return this.item?.getGlobalPosition() ?? { x: 0, y: 0 }
-  }
-
-  get globalCenter() {
-    return this.globalPosition
-  }
-
-  get offset() {
-    return {
-      x: this.x - (this.globalPosition?.x ?? 0),
-      y: this.y - (this.globalPosition?.y ?? 0),
-    }
-  }
-
-  setPostion(x: number, y: number) {
-    this.item?.position.set(x, y)
-  }
-
-  setRotation(rotation: number) {
-    if (this.item) {
-      this.item.rotation = rotation
-    }
-  }
-
-  setupInteractive() {
+  initInteractive() {
     if (this.item) {
       this.item.on('pointerenter', this.handlePointerEnter.bind(this))
       this.item.on('pointerleave', this.handlePointerLeave.bind(this))
@@ -252,18 +268,15 @@ export abstract class DElement implements IDElementInstance<any> {
   }
 
   handlePointerDown(event: FederatedPointerEvent) {
-    console.log('hande pointer down')
     this.operation?.selection.safeSelect(this)
     event.preventDefault()
     event.stopPropagation()
   }
 
   handlePointerTap(event: FederatedPointerEvent) {
-    if (this.canSelect) {
-      this.operation?.selection.safeSelect(this)
-      event.stopPropagation()
-      event.preventDefault()
-    }
+    this.operation?.selection.safeSelect(this)
+    event.stopPropagation()
+    event.preventDefault()
   }
 
   handleDragStart(event: PointerEvent) {
@@ -276,8 +289,8 @@ export abstract class DElement implements IDElementInstance<any> {
     }
     // 记录元素开始时的位置
     this.elementStartPosition = {
-      x: this.x,
-      y: this.y,
+      x: this.position.x,
+      y: this.position.y,
     }
     this.engine.events.on('pointermove', this.handleDrageMove)
     this.engine.events.on('pointerup', this.handleDragEnd)
@@ -309,7 +322,7 @@ export abstract class DElement implements IDElementInstance<any> {
     }
   }
 
-  findById(id: string): DElement | undefined {
+  findById(id: string): DNode | undefined {
     if (this.id === id) {
       return this
     }
@@ -324,13 +337,23 @@ export abstract class DElement implements IDElementInstance<any> {
     }
   }
 
-  get jsonData(): IDElementBase {
+  get jsonData(): NodeBase {
     return {
       id: this.id,
       name: this.name,
       type: this.type,
-      x: this.x,
-      y: this.y,
+      blendMode: this.blendMode,
+      position: this.position,
+      size: this.size,
+      rotation: this.rotation,
+      locked: this.locked,
+      visible: this.visible,
+      absoluteBoundingBox: this.absoluteBoundingBox,
+      fills: this.fills.slice(), // 添加 fills 属性
+      strokes: this.strokes.slice(), // 添加 strokes 属性
+      strokeWeight: this.strokeWeight, // 添加 strokeWeight 属性
+      strokeAlign: this.strokeAlign, // 添加 strokeAlign 属性
+      effects: this.effects.slice(), // 添加 effects 属性
     }
   }
 }

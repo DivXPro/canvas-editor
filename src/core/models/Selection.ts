@@ -1,6 +1,6 @@
 import { action, computed, makeObservable, observable } from 'mobx'
 
-import { DElement } from '../elements'
+import { DNode } from '../elements'
 import { SelectElementEvent, UnselectElementEvent } from '../events/mutation'
 import { Engine } from '../Engine'
 
@@ -45,11 +45,11 @@ export class Selection {
     this.engine.events.emit('element:select', event)
   }
 
-  mapIds(ids: string | DElement | string[] | DElement[]) {
+  mapIds(ids: string | DNode | string[] | DNode[]) {
     return Array.isArray(ids) ? ids.map((node: any) => (typeof node === 'string' ? node : node?.id)) : []
   }
 
-  select(id: string | DElement) {
+  select(id: string | DNode) {
     if (typeof id === 'string') {
       if (this.selected.length === 1 && this.selected.includes(id)) {
         this.trigger(SelectElementEvent)
@@ -65,7 +65,7 @@ export class Selection {
     }
   }
 
-  safeSelect(id: string | DElement) {
+  safeSelect(id: string | DNode) {
     if (!id) return
     this.select(id)
   }
@@ -88,7 +88,7 @@ export class Selection {
     return this.selected.length
   }
 
-  add(...ids: string[] | DElement[]) {
+  add(...ids: string[] | DNode[]) {
     this.mapIds(ids).forEach(id => {
       if (typeof ids === 'string') {
         if (!this.selected.includes(id)) {
@@ -102,7 +102,7 @@ export class Selection {
     this.trigger()
   }
 
-  remove(...ids: string[] | DElement[]) {
+  remove(...ids: string[] | DNode[]) {
     this.mapIds(ids).forEach(id => {
       if (typeof ids === 'string') {
         this.selected.clear()
@@ -115,7 +115,7 @@ export class Selection {
     this.trigger(UnselectElementEvent)
   }
 
-  has(...ids: string[] | DElement[]): boolean {
+  has(...ids: string[] | DNode[]): boolean {
     return this.mapIds(ids).some(id => {
       if (typeof ids === 'string') {
         return this.indexes[id]

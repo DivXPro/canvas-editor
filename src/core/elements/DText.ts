@@ -1,70 +1,99 @@
-import { TextString, TextStyleOptions } from 'pixi.js'
-import { action, makeObservable, override } from 'mobx'
+import { action, computed, makeObservable, override } from 'mobx'
 
 import { Engine } from '../Engine'
 import { TextBox } from '../components/TextBox'
 
-import { DElement, IDElement, IDElementInstance } from './DElement'
+import { DNode, IDNode } from './DNode'
+import { Text } from './type'
+import { DVector } from './DVector'
 
-export interface IDText extends IDElement {
-  fixSize?: boolean
-  text?: TextString
-  style?: TextStyleOptions
+export interface IDTextBase extends Text {
+  type: 'TEXT'
 }
 
-export interface DTextOptions extends IDText {
+export type TDText = IDNode<TextBox> & IDTextBase
+
+export interface DTextOptions extends IDTextBase {
   engine: Engine
-  parent?: DElement
+  parent?: DNode
 }
 
-export class DText extends DElement implements IDElementInstance<TextBox> {
-  item: TextBox
+export class DText extends DVector<TextBox> implements TDText {
+  declare type: 'TEXT'
+  style: any // 添加缺失的属性
+  characterStyleOverrides: any // 添加缺失的属性
+  styleOverrideTable: any // 添加缺失的属性
+  _characters: string = ''
 
   constructor(options: DTextOptions) {
     super(options)
+    this._characters = options.characters
+    this.item = new TextBox({
+      text: this.characters,
+      position: this.position,
+      size: this.size,
+      rotation: this.rotation,
+    })
     makeObservable(this, {
-      type: override,
       jsonData: override,
-      displayName: override,
-      width: override,
-      centerX: override,
-      centerY: override,
       globalCenter: override,
+      absoluteBoundingBox: override,
+      characters: computed,
+      displayWidth: computed,
+      displayHeight: computed,
       setWidth: action.bound,
       setHeight: action.bound,
     })
-    const { parent: _, ...others } = options
-
-    this.item = new TextBox(others)
-    this.setupInteractive()
+    this.initInteractive()
   }
 
-  get type() {
-    return 'Text'
+  get displayWidth() {
+    if (this.item) {
+      return (this.item.fixWidth ?? this.item.width) * this.engine.zoomRatio
+    }
+
+    return 0
   }
 
-  get displayName() {
-    return this.name ?? 'Text'
-  }
+  get displayHeight() {
+    if (this.item) {
+      return (this.item.fixHeight ?? this.item.height) * this.engine.zoomRatio
+    }
 
-  get centerX() {
-    return (this.item?.x ?? 0) + this.width / 2
-  }
-
-  get centerY() {
-    return (this.item?.y ?? 0) + this.height / 2
+    return 0
   }
 
   get globalCenter() {
+    if (this.item == null) {
+      return super.globalPosition
+    }
+
     return {
-      x: this.globalPosition.x + this.displayWidth / 2,
-      y: this.globalPosition.y + this.displayHeight / 2,
+      x: this.globalPosition.x,
+      y:
+        this.globalPosition.y -
+        (this.item.fixSize && this.item.fixHeight != null ? (this.item.height - this.item.fixHeight) / 2 : 0),
+    }
+  }
+
+  get characters() {
+    return this._characters
+  }
+
+  get absoluteBoundingBox() {
+    const bounds = this.item.getBounds()
+
+    return {
+      x: bounds.minX,
+      y: bounds.minY,
+      width: bounds.width,
+      height: bounds.height,
     }
   }
 
   get width() {
     if (this.item) {
-      return this.item.fixSize ? this.item.fixWidth : this.item.width
+      return this.item.fixWidth ?? this.item.width
     }
 
     return 0
@@ -72,7 +101,7 @@ export class DText extends DElement implements IDElementInstance<TextBox> {
 
   get height() {
     if (this.item) {
-      return this.item.fixSize ? this.item.fixHeight : this.item.height
+      return this.item.fixHeight ?? this.item.height
     }
 
     return 0
@@ -95,19 +124,10 @@ export class DText extends DElement implements IDElementInstance<TextBox> {
     }
   }
 
-  get jsonData(): IDText {
+  get jsonData() {
     return {
-      id: this.id,
-      name: this.name,
-      type: this.type,
-      x: this.x,
-      y: this.y,
-      width: this.width,
-      height: this.height,
-      rotation: this.rotation,
-      text: this.item.text,
-      locked: this.locked,
-      hidden: this.hidden,
+      ...super.jsonData,
+      contr: this.item.text,
       style: this.item.style,
     }
   }

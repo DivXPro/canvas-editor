@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { Assets, Sprite, Texture } from 'pixi.js'
 
-import DefaultLayout from '@/layouts/default'
-import { IDRectangle, IDText } from '@/core/elements'
 import { Engine } from '../core/Engine'
+import { ColorUtils } from '../core/utils/styles'
+
+import DefaultLayout from '@/layouts/default'
+import { IDRectangleBase, IDTextBase } from '@/core/elements'
 
 export default function IndexPage() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -24,59 +26,93 @@ export default function IndexPage() {
             id: 'app-1',
             name: 'app-1',
             frame: {
-              x: 100,
-              y: 100,
-              width: 512,
-              height: 512,
-              type: 'Frame',
-              items: [
+              id: 'frame-1',
+              name: 'Frame 1',
+              backgroundColor: {
+                r: 1,
+                g: 1,
+                b: 1,
+                a: 1,
+              },
+              position: {
+                x: 50,
+                y: 50,
+              },
+              size: {
+                width: 1024,
+                height: 1024,
+              },
+              type: 'FRAME',
+              children: [
                 {
                   id: 'rectangle-1',
                   name: 'Rectangle 1',
-                  type: 'Rectangle',
-                  x: 50,
-                  y: 50,
-                  width: 50,
-                  height: 50,
-                  radius: 20,
+                  type: 'RECTANGLE',
+                  position: {
+                    x: 500,
+                    y: 500,
+                  },
+                  size: {
+                    width: 100,
+                    height: 100,
+                  },
+                  cornerRadius: 20,
                   rotation: Math.PI / 4,
-                  fillStyle: { color: 'orange' },
-                } as IDRectangle,
+                  fills: [{ color: ColorUtils.hexToRGBA('#EB2424') }],
+                } as IDRectangleBase,
                 {
                   id: 'text-1',
                   name: 'Text 1',
-                  type: 'Text',
-                  x: 100,
-                  y: 100,
-                  fixSize: false,
-                  text: 'This is text of example 1',
-                  style: { fill: { color: 'orange' }, align: 'center' },
-                } as IDText,
+                  type: 'TEXT',
+                  position: {
+                    x: 0,
+                    y: 0,
+                  },
+                  size: {
+                    width: 100,
+                    height: 50,
+                  },
+                  locked: false,
+                  characters: 'This is text of example 1',
+                  style: {
+                    fills: [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 } }],
+                    fontSize: 24,
+                    fontWeight: 400,
+                  },
+                } as IDTextBase,
                 {
                   id: 'text-2',
                   name: 'Text 2',
-                  type: 'Text',
-                  x: 100,
-                  y: 200,
-                  width: 150,
-                  height: 100,
-                  fixSize: true,
-                  text: 'This is text of example 2',
-                  style: { fill: { color: 'pink' }, align: 'left' },
-                } as IDText,
+                  type: 'TEXT',
+                  position: {
+                    x: 0,
+                    y: 300,
+                  },
+                  locked: false,
+                  rotation: Math.PI / 4,
+                  characters: 'This is text of example 2',
+                  style: {
+                    fills: [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 } }],
+                    fontSize: 24,
+                    fontWeight: 400,
+                  },
+                } as IDTextBase,
                 {
                   id: 'text-3',
                   name: 'Text 3',
-                  type: 'Text',
-                  x: 100,
-                  y: 300,
-                  width: 150,
-                  height: 100,
-                  fixSize: true,
-                  locked: true,
-                  text: 'This is text of example 3 locked',
-                  style: { fill: { color: 'pink' }, align: 'right' },
-                } as IDText,
+                  type: 'TEXT',
+                  position: {
+                    x: 0,
+                    y: 300,
+                  },
+                  locked: false,
+                  characters: 'This is text of example 3',
+                  style: {
+                    fills: [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 } }],
+                    fontSize: 24,
+                    fontWeight: 400,
+                  },
+                } as IDTextBase,
               ],
             },
           },

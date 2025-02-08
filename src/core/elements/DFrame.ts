@@ -1,41 +1,37 @@
-import { makeObservable, computed, action, observe, override } from 'mobx'
+import { makeObservable, computed, action, override } from 'mobx'
 
 import { Frame } from '../components/Frame'
 
-import { DElement, IDElement, IDElementInstance } from './DElement'
-import { DGroup, DGroupOptions } from './DGroup'
+import { DFrameBase, DFrameBaseOptions, IDFrameBaseBase } from './DFrameBase'
 
-export interface DFrameOptions extends DGroupOptions { }
+export interface DFrameOptions extends DFrameBaseOptions { }
 
-export interface IDFrame extends IDElement {
-  type: 'Frame'
-  items?: IDElement[]
-}
+export interface IDFrameBase extends IDFrameBaseBase { }
 
-export class DFrame extends DGroup {
+export class DFrame extends DFrameBase {
   declare item: Frame
+  private _clipsContent: boolean = true
 
   constructor(options: DFrameOptions) {
     super(options)
+    this._clipsContent = options.clipsContent ?? true
     makeObservable(this, {
       type: override,
       jsonData: override,
+      clipsContent: computed,
       zoomRatio: computed,
       setZoom: action.bound,
     })
+
     this.item = new Frame({
       app: this.engine.app,
-      x: options.x,
-      y: options.y,
-      rotation: options.rotation ?? 0,
-      width: options.width ?? 0,
-      height: options.height ?? 0,
+      x: this.position.x,
+      y: this.position.y,
+      rotation: this.rotation,
+      width: this.size.width,
+      height: this.size.height,
     })
-    this.init(options.items)
-  }
-
-  get type() {
-    return 'Frame'
+    this.init(options.children)
   }
 
   get zoomRatio() {
@@ -50,19 +46,14 @@ export class DFrame extends DGroup {
     this.item.zoomRatio = zoom
   }
 
+  get clipsContent() {
+    return this._clipsContent
+  }
+
   get jsonData() {
     return {
-      id: this.id,
-      x: this.x,
-      y: this.y,
-      width: this.width / this.engine.zoomRatio,
-      height: this.height / this.engine.zoomRatio,
-      rotation: this.rotation,
-      name: this.name,
-      type: this.type,
-      items: this.children.map(child => child.jsonData),
-      locked: this.locked,
-      hidden: this.hidden,
+      ...super.jsonData,
+      clipsContent: this.clipsContent,
     }
   }
 }

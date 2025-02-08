@@ -1,63 +1,82 @@
-import { FillStyle, StrokeStyle } from 'pixi.js'
-import { makeObservable, override } from 'mobx'
+import { computed, makeObservable, override } from 'mobx'
+import { Graphics } from 'pixi.js'
 
 import { Engine } from '../Engine'
+import { ColorUtils } from '../utils/styles'
 
-import { DGraphics } from './DGraphics'
-import { DElement, IDElement } from './DElement'
+import { DVector, IDVectorBase } from './DVector'
+import { DNode } from './DNode'
+import { Size } from './type'
 
-export interface DRectangleData {
-  data: { x: number; y: number; width: number; height: number; radius?: number }
-  fillStyle: FillStyle
-  strokeStyle: StrokeStyle
+export interface IDRectangleBase extends IDVectorBase {
+  size: Size
+  cornerRadius?: number
+  type: 'RECTANGLE'
 }
 
-export interface IDRectangle extends IDElement {
-  radius?: number
-  width: number
-  height: number
-  fillStyle: FillStyle
-  strokeStyle: StrokeStyle
-}
-
-export interface DRectangleOptions extends IDRectangle {
+export interface DRectangleOptions extends IDRectangleBase {
   engine: Engine
-  parent?: DElement
+  parent?: DNode
 }
 
-export class DRectangle extends DGraphics {
+export class DRectangle extends DVector<Graphics> {
+  _cornerRadius: number = 0
   constructor(options: DRectangleOptions) {
     super(options)
+    this._cornerRadius = options.cornerRadius ?? 0
     makeObservable(this, {
-      type: override,
-      name: override,
+      size: override,
+      absoluteBoundingBox: override,
+      cornerRadius: computed,
     })
-    const { width, height, radius } = options
-
-    this.item.roundRect(0, 0, width, height, radius).fill(options.fillStyle).stroke(options.strokeStyle)
-    this.item.pivot.set(width / 2, height / 2)
-    this.item.rotation = options.rotation ?? 0
-    this.item.visible = this.hidden ? false : true
+    this.item = new Graphics()
+    this.update()
+    this.initInteractive()
   }
 
-  get type() {
-    return 'Rectangle'
+  get cornerRadius() {
+    return this._cornerRadius
   }
 
-  get jsonData(): IDRectangle {
+  set cornerRadius(value: number) {
+    this.setCornerRadius(value)
+  }
+
+  setCornerRadius(value: number) {
+    this._cornerRadius = value
+    this.update()
+  }
+
+  private update() {
+    this.item.clear()
+    this.item.position.set(this.position.x, this.position.y)
+    this.item.visible = this.visible
+    this.item.pivot.set(0, 0)
+    this.item.rotation = this.rotation
+    this.item
+      .roundRect(-this.size.width / 2, -this.size.height / 2, this.size.width, this.size.height, this.cornerRadius)
+      .fill({ color: ColorUtils.rgbaToNumber(this.fills[0].color ?? DVector.DEFAULT_COLOR) })
+      .stroke(this.strokes[0])
+  }
+
+  get size() {
+    return this._size
+  }
+
+  get absoluteBoundingBox() {
+    const bounds = this.item.getBounds()
+
     return {
-      id: this.id,
-      name: this.name,
-      type: this.type,
-      x: this.x,
-      y: this.y,
-      width: this.width,
-      height: this.height,
-      rotation: this.rotation,
-      locked: this.locked,
-      hidden: this.hidden,
-      fillStyle: this.item.fillStyle,
-      strokeStyle: this.item.strokeStyle,
+      x: bounds.minX,
+      y: bounds.minY,
+      width: bounds.width,
+      height: bounds.height,
+    }
+  }
+
+  get jsonData() {
+    return {
+      ...super.jsonData,
     }
   }
 }

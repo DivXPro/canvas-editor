@@ -1,16 +1,16 @@
 import { Container, Graphics, Point } from 'pixi.js'
 
-import { DElement } from '../elements/DElement'
+import { DNode } from '../elements/DNode'
 import { SelectElementEvent, UnselectElementEvent } from '../events'
 import { isArr } from '../utils/types'
 import * as UICfg from '../config'
 
 export class BoundingBox extends Container {
-  private element: DElement
+  private element: DNode
   private border: Graphics
   private handles: Graphics[]
 
-  constructor(element: DElement) {
+  constructor(element: DNode) {
     super({ x: element.globalCenter.x, y: element.globalCenter.y })
     this.element = element
     this.border = new Graphics()
