@@ -6,6 +6,7 @@ import { Engine } from '../Engine'
 import { BoundingBox } from '../components/BoundingBox'
 
 import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Vector2 } from './type'
+import { Outline } from '../components/Outline'
 
 export interface ScaleData {
   x: number
@@ -61,12 +62,13 @@ export abstract class DNode implements IDNode<any> {
   isMask?: boolean | undefined
   children?: DNode[]
   isDragging?: boolean
-  boundingBox?: BoundingBox
   isHovered?: boolean | undefined
   pluginData?: any
   sharedPluginData?: any
 
+  boundingBox?: BoundingBox
   item?: Container
+  outline?: Outline
 
   constructor(options: DNodeOptions) {
     this.engine = options.engine
@@ -135,6 +137,7 @@ export abstract class DNode implements IDNode<any> {
       handleDrageMove: action.bound,
       handleDragEnd: action.bound,
     })
+    this.outline = this.engine.outlineLayer?.addOutline(this)
     this.boundingBox = this.engine.boundingLayer?.addBoundingBox(this)
   }
   visable?: boolean | undefined
@@ -355,6 +358,12 @@ export abstract class DNode implements IDNode<any> {
       strokeAlign: this.strokeAlign, // 添加 strokeAlign 属性
       effects: this.effects.slice(), // 添加 effects 属性
     }
+  }
+
+  destory() {
+    this.item?.destroy()
+    this.outline?.destroy()
+    this.boundingBox?.destroy()
   }
 }
 

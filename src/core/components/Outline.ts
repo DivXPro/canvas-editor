@@ -1,9 +1,8 @@
 import { Graphics } from 'pixi.js'
 
 import { DNode } from '../elements/DNode'
-import { Engine } from '../Engine'
 import { HoverElementEvent } from '../events'
-import { outlineWidth } from '../config'
+import { outlineWidth, primaryColor } from '../config'
 
 export interface IOutline {
   update: (element: DNode) => void
@@ -12,13 +11,13 @@ export interface IOutline {
 }
 
 export class Outline extends Graphics implements IOutline {
-  engine: Engine
-  constructor(engine: Engine) {
+  node: DNode
+  constructor(node: DNode) {
     super({
       x: 0,
       y: 0,
     })
-    this.engine = engine
+    this.node = node
     this.visible = false
 
     this.engine.events.on('element:hover', (event: HoverElementEvent) => {
@@ -30,13 +29,16 @@ export class Outline extends Graphics implements IOutline {
     })
   }
 
+  get engine() {
+    return this.node.engine
+  }
+
   update(element: DNode) {
     if (element.displayWidth && element.displayHeight) {
-      console.log('outline element', element.absoluteBoundingBox)
       this.position.set(element.globalCenter.x, element.globalCenter.y)
       this.clear()
         .rect(-element.displayWidth / 2, -element.displayHeight / 2, element.displayWidth, element.displayHeight)
-        .stroke({ color: 0x238def, width: outlineWidth })
+        .stroke({ color: primaryColor, width: outlineWidth })
       this.pivot.set(0, 0)
       this.rotation = element.rotation ?? 0
       if (this.parent == null) {
@@ -55,5 +57,10 @@ export class Outline extends Graphics implements IOutline {
 
   hide() {
     this.visible = false
+  }
+
+  destroy() {
+    this.parent.removeChild(this)
+    super.destroy()
   }
 }

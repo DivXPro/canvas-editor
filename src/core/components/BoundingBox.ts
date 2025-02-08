@@ -113,4 +113,9 @@ export class BoundingBox extends Container {
       new Point(0, this.element.displayHeight),
     ]
   }
+
+  destroy() {
+    this.parent.removeChild(this)
+    super.destroy()
+  }
 }
