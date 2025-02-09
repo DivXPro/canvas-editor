@@ -4,7 +4,7 @@ import { Engine } from '../Engine'
 import { TextBox } from '../components/TextBox'
 
 import { DNode, IDNode } from './DNode'
-import { Text } from './type'
+import { Text, Vector2 } from './type'
 import { DVector } from './DVector'
 
 export interface IDTextBase extends Text {
@@ -105,6 +105,11 @@ export class DText extends DVector<TextBox> implements TDText {
     }
 
     return 0
+  }
+
+  setPostion(x: number, y: number) {
+    this._position = { x, y }
+    this.item.boxPosition = { x, y }
   }
 
   setWidth(value: number) {

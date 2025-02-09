@@ -7,7 +7,7 @@ export interface TextBoxOptions extends TextOptions {
 }
 
 export class TextBox extends Text {
-  _boxPostion: Vector2
+  _boxPosition: Vector2
   fixWidth?: number
   fixHeight?: number
 
@@ -15,7 +15,7 @@ export class TextBox extends Text {
     const { size, ...rest } = options
 
     super(rest)
-    this._boxPostion = options.position ?? { x: 0, y: 0 }
+    this._boxPosition = options.position ?? { x: 0, y: 0 }
     this.anchor.set(0.5, 0.5)
     this.fixWidth = size?.width
     this.fixHeight = size?.height
@@ -26,12 +26,12 @@ export class TextBox extends Text {
     return this.fixWidth != null && this.fixHeight != null
   }
 
-  get boxPostion() {
-    return this._boxPostion
+  get boxPosition() {
+    return this._boxPosition
   }
 
-  set boxPostion(value: Vector2) {
-    this._boxPostion = value
+  set boxPosition(value: Vector2) {
+    this._boxPosition = value
     this.position.set(value.x, value.y)
     this.update()
   }

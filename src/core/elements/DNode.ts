@@ -148,6 +148,10 @@ export abstract class DNode implements IDNode<any> {
     return this._position
   }
 
+  set postion(value: Vector2) {
+    this.setPostion(value.x, value.y)
+  }
+
   get size() {
     return this._size
   }
