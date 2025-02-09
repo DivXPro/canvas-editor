@@ -1,10 +1,12 @@
 import { Engine } from '../Engine'
 import { DNode, DFrame, DRectangle, DText, IDFrameBase, IDRectangleBase, IDTextBase } from '../elements'
 import { FrameBase, NodeBase } from '../elements/type'
+import { DGroup, IDGroupBase } from '../elements/DGroup'
 
 import { Selection } from './Selection'
 import { Hover } from './Hover'
-import { DGroup, IDGroupBase } from '../elements/DGroup'
+import { DragMove } from './DragMove'
+import { makeObservable, observable } from 'mobx'
 
 declare type DefaultFrameType = Omit<IDFrameBase, 'engine' | 'parent'>
 
@@ -34,6 +36,8 @@ export class Operation {
 
   hover: Hover
 
+  dragMove: DragMove
+
   constructor(engine: Engine) {
     this.engine = engine
     this.hover = new Hover({
@@ -43,6 +47,13 @@ export class Operation {
     this.selection = new Selection({
       engine: this.engine,
       operation: this,
+    })
+    this.dragMove = new DragMove({
+      engine: this.engine,
+      operation: this,
+    })
+    makeObservable(this, {
+      frame: observable,
     })
   }
 

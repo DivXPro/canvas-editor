@@ -1,5 +1,4 @@
 export * from './DNode'
-export * from './DEllipse'
 export * from './DFrame'
 export * from './DVector'
 export * from './DFrameBase'

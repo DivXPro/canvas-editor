@@ -1,50 +1,31 @@
 import { FederatedPointerEvent } from 'pixi.js'
 
-import { DragStartEvent } from '../events'
-
 import { EventDriver } from './EventDriver'
 
-const GlobalState = {
-  isDragging: false,
-  onPointerDownAt: 0,
-  startEvent: null,
-  moveEvent: null,
-}
-
 export class DragDropDriver extends EventDriver {
-  private handlePointerDown(event: FederatedPointerEvent) {
-    GlobalState.isDragging = false
-    const canvasPosition = this.app.stage.toLocal(event.global)
-    const dragStartEvent = new DragStartEvent({
-      clientX: event.clientX,
-      clientY: event.clientY,
-      pageX: event.pageX,
-      pageY: event.pageY,
-      target: event.target,
-      view: event.view,
-      canvasX: canvasPosition.x,
-      canvasY: canvasPosition.y,
-    })
-
-    this.events.emit(dragStartEvent.type, dragStartEvent)
+  private onPointerDown(event: FederatedPointerEvent) {
+    this.engine.operation?.dragMove.dragStart(event)
   }
 
-  private handlePointerMove(event: PointerEvent) {
-    if (!GlobalState.isDragging) return
-
-    this.events.emit('drag', event)
+  private onPointerMove(event: FederatedPointerEvent) {
+    this.engine.operation?.dragMove.dragMove(event)
   }
 
-  private handlePointerUp(event: PointerEvent) {
-    if (!GlobalState.isDragging) return
-
-    GlobalState.isDragging = false
-    this.events.emit('dragend', event)
+  private onPointerUp(event: FederatedPointerEvent) {
+    this.engine.operation?.dragMove.dragStop(event)
   }
 
   attach() {
+    this.engine.stage.on('pointerdown', this.onPointerDown.bind(this))
+    this.engine.stage.on('pointermove', this.onPointerMove.bind(this))
+    this.engine.stage.on('pointerup', this.onPointerUp.bind(this))
+    this.engine.stage.on('pointerupoutside', this.onPointerUp.bind(this))
   }
 
   detach() {
+    this.engine.stage.off('pointerdown', this.onPointerDown.bind(this))
+    this.engine.stage.off('pointermove', this.onPointerMove.bind(this))
+    this.engine.stage.off('pointerup', this.onPointerUp.bind(this))
+    this.engine.stage.off('pointerupoutside', this.onPointerUp.bind(this))
   }
 }

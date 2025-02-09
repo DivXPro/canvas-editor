@@ -25,6 +25,11 @@ export class BoundingBox extends Container {
     this.update()
     this.element.engine.events.on('element:select', this.handleSelectEvent.bind(this))
     this.element.engine.events.on('element:unselect', this.handleSelectEvent.bind(this))
+    this.element.engine.events.on('drag:move', this.handleDragMoveEvent.bind(this))
+  }
+
+  handleDragMoveEvent() {
+    this.hide()
   }
 
   handleSelectEvent(event: SelectElementEvent | UnselectElementEvent) {

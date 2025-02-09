@@ -2,11 +2,11 @@ import { computed, makeObservable, override } from 'mobx'
 import { Graphics } from 'pixi.js'
 
 import { Engine } from '../Engine'
+import { ColorUtils } from '../utils/styles'
 
 import { DVector, IDVectorBase } from './DVector'
 import { DNode } from './DNode'
 import { Color, Size } from './type'
-import { ColorUtils } from '../utils/styles'
 
 export interface IDRectangleBase extends IDVectorBase {
   size: Size

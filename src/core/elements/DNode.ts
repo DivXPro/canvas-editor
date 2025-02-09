@@ -7,6 +7,8 @@ import { BoundingBox } from '../components/BoundingBox'
 import { Outline } from '../components/Outline'
 
 import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Vector2 } from './type'
+import { DragElementEvent } from '../events/mutation/DragElementEvent'
+import { DragMoveEvent, DragStartEvent } from '../events'
 
 export interface ScaleData {
   x: number
@@ -49,6 +51,7 @@ export abstract class DNode implements IDNode<any> {
 
   engine: Engine
   parent?: DNode
+  root?: DNode
 
   id: string
   name: string
@@ -66,13 +69,15 @@ export abstract class DNode implements IDNode<any> {
   pluginData?: any
   sharedPluginData?: any
 
-  boundingBox?: BoundingBox
   item?: Container
+  boundingBox?: BoundingBox
   outline?: Outline
 
   constructor(options: DNodeOptions) {
     this.engine = options.engine
     this.parent = options.parent
+    this.root = options.parent?.root
+
     this.id = options.id ?? eid()
     this.name = options.name
     this.type = options.type
@@ -129,13 +134,6 @@ export abstract class DNode implements IDNode<any> {
       setLocked: action.bound,
       setPostion: action.bound,
       setRotation: action.bound,
-      handlePointerEnter: action.bound,
-      handlePointerLeave: action.bound,
-      handlePointerTap: action.bound,
-      handlePointerDown: action.bound,
-      handleDragStart: action.bound,
-      handleDrageMove: action.bound,
-      handleDragEnd: action.bound,
     })
     this.outline = this.engine.outlineLayer?.addOutline(this)
     this.boundingBox = this.engine.boundingLayer?.addBoundingBox(this)
@@ -179,7 +177,7 @@ export abstract class DNode implements IDNode<any> {
 
   setLocked(locked: boolean) {
     this._locked = locked
-    this.eventMode = this._locked ? 'none' : 'auto'
+    this.eventMode = this._locked ? 'none' : 'dynamic'
   }
 
   get visible() {
@@ -235,6 +233,7 @@ export abstract class DNode implements IDNode<any> {
   }
 
   setPostion(x: number, y: number) {
+    this._position = { x, y }
     this.item?.position.set(x, y)
   }
 
@@ -252,78 +251,51 @@ export abstract class DNode implements IDNode<any> {
     }
   }
 
-  initInteractive() {
+  protected initInteractive() {
     if (this.item) {
       this.item.on('pointerenter', this.handlePointerEnter.bind(this))
       this.item.on('pointerleave', this.handlePointerLeave.bind(this))
       this.item.on('pointerdown', this.handlePointerDown.bind(this))
-      this.item.on('pointertap', this.handlePointerTap.bind(this))
-      this.eventMode = this.locked ? 'none' : 'static'
+      // this.item.on('pointerup', this.handlePointerUp.bind(this))
+      // this.item.on('pointermove', this.handlePointerMove.bind(this))
+      // this.item.on('pointertap', this.handlePointerTap.bind(this))
+      this.eventMode = this.locked ? 'none' : 'dynamic'
     }
   }
 
-  handlePointerEnter(event: FederatedPointerEvent) {
+  protected handlePointerEnter(event: FederatedPointerEvent) {
     this.operation?.hover.setHover(this)
   }
 
-  handlePointerLeave(event: FederatedPointerEvent) {
+  protected handlePointerLeave(event: FederatedPointerEvent) {
     this.operation?.hover.setHover()
   }
 
-  handlePointerDown(event: FederatedPointerEvent) {
+  protected handlePointerDown(event: FederatedPointerEvent) {
     this.operation?.selection.safeSelect(this)
-    event.preventDefault()
+    this.operation?.dragMove.dragStart(event)
     event.stopPropagation()
   }
 
-  handlePointerTap(event: FederatedPointerEvent) {
-    this.operation?.selection.safeSelect(this)
+  protected handlePointerMove(event: FederatedPointerEvent) {
+    if (this.operation?.dragMove.dragging) {
+      this.operation?.dragMove.dragMove(event)
+    }
     event.stopPropagation()
-    event.preventDefault()
   }
 
-  handleDragStart(event: PointerEvent) {
-    this.isDragging = true
-    this.engine.isDragging = true
-    // 记录拖拽开始时的鼠标位置
-    this.dragStartPosition = {
-      x: event.clientX,
-      y: event.clientY,
+  protected handlePointerUp(event: FederatedPointerEvent) {
+    if (this.operation?.dragMove.dragging) {
+      this.operation?.dragMove.dragStop(event)
     }
-    // 记录元素开始时的位置
-    this.elementStartPosition = {
-      x: this.position.x,
-      y: this.position.y,
-    }
-    this.engine.events.on('pointermove', this.handleDrageMove)
-    this.engine.events.on('pointerup', this.handleDragEnd)
+    event.stopPropagation()
   }
 
-  handleDrageMove(event: PointerEvent) {
-    if (this.isDragging && this.dragStartPosition && this.elementStartPosition) {
-      // 计算鼠标移动的距离
-      const dx = event.clientX - this.dragStartPosition.x
-      const dy = event.clientY - this.dragStartPosition.y
-
-      // 更新元素位置
-      this.setPostion(
-        this.elementStartPosition.x + dx / this.engine.zoomRatio,
-        this.elementStartPosition.y + dy / this.engine.zoomRatio
-      )
-      // 更新 outline 位置
-      this.boundingBox?.hide()
-    }
-  }
-
-  handleDragEnd() {
-    if (this.isDragging) {
-      this.isDragging = false
-      this.engine.isDragging = false
-
-      // TODO: 改为事件触发
-      this.boundingBox?.show()
-    }
-  }
+  // protected handlePointerTap(event: FederatedPointerEvent) {
+  //   this.operation?.selection.safeSelect(this)
+  //   event.stopPropagation()
+  //   event.preventDefault()
+  // }
 
   findById(id: string): DNode | undefined {
     if (this.id === id) {
@@ -358,6 +330,10 @@ export abstract class DNode implements IDNode<any> {
       strokeAlign: this.strokeAlign, // 添加 strokeAlign 属性
       effects: this.effects.slice(), // 添加 effects 属性
     }
+  }
+
+  moveTo(point: Vector2) {
+    this.setPostion(point.x, point.y)
   }
 
   destory() {

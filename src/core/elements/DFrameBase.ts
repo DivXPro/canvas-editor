@@ -40,12 +40,12 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
       type: override,
       jsonData: override,
       size: override,
-      children: observable.ref,
+      children: observable,
       renderItems: action.bound,
     })
   }
 
-  protected init(items?: INodeBase[]) {
+  protected initChildren(items?: INodeBase[]) {
     this.setupChildrenObserver()
     if (items) {
       this.renderItems(items)

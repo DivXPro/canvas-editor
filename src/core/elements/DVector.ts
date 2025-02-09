@@ -2,10 +2,10 @@ import { makeObservable, override } from 'mobx'
 import { Container } from 'pixi.js'
 
 import { Engine } from '../Engine'
+import { ColorUtils } from '../utils/styles'
 
 import { DNode, IDNode } from './DNode'
-import { Color, EasingType, LayoutConstraint, NodeType, Paint, Path, Size, StylesObject, Transform, Vector } from './type'
-import { ColorUtils } from '../utils/styles'
+import { EasingType, LayoutConstraint, NodeType, Paint, Path, Size, StylesObject, Transform, Vector } from './type'
 
 export interface IDVectorBase extends Omit<Vector, 'type'> {
   locked?: boolean

@@ -17,7 +17,7 @@ export class SelectionAreaDriver extends EventDriver {
     }
   }
 
-  onPointerDown = (e: FederatedPointerEvent) => {
+  private onPointerDown = (e: FederatedPointerEvent) => {
     this.engine.operation?.selection.clear()
     const canvasPosition = this.engine.stage.toLocal(e.global)
 
@@ -36,7 +36,7 @@ export class SelectionAreaDriver extends EventDriver {
     this.events.emit(event.type, event)
   }
 
-  onPointerMove = (e: FederatedPointerEvent) => {
+  private onPointerMove = (e: FederatedPointerEvent) => {
     if (!this.selecting) return
 
     this.request = requestAnimationFrame(() => {
@@ -57,7 +57,7 @@ export class SelectionAreaDriver extends EventDriver {
     })
   }
 
-  onPointerUp = (e: FederatedPointerEvent) => {
+  private onPointerUp = (e: FederatedPointerEvent) => {
     if (!this.selecting) return
 
     this.selecting = false

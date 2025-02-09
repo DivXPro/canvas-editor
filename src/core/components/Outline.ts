@@ -27,10 +27,15 @@ export class Outline extends Graphics implements IOutline {
         this.hide()
       }
     })
+    this.engine.events.on('drag:move', this.handleDragMoveEvent.bind(this))
   }
 
   get engine() {
     return this.node.engine
+  }
+
+  handleDragMoveEvent() {
+    this.hide()
   }
 
   update(element: DNode) {

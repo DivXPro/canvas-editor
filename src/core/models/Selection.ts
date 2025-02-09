@@ -25,8 +25,9 @@ export class Selection {
     makeObservable(this, {
       selected: observable,
       indexes: observable,
-      selectedElements: computed,
+      selectedNodes: computed,
       select: action.bound,
+      trigger: action.bound,
       add: action.bound,
       remove: action.bound,
       clear: action.bound,
@@ -39,7 +40,7 @@ export class Selection {
   trigger(type = SelectElementEvent) {
     const event = new type({
       target: this.engine.operation?.frame,
-      source: this.selectedElements,
+      source: this.selectedNodes,
     })
 
     this.engine.events.emit('element:select', event)
@@ -70,8 +71,8 @@ export class Selection {
     this.select(id)
   }
 
-  get selectedElements() {
-    return this.selected.map(id => this.engine.operation?.frame?.findById(id)).filter(element => element != null)
+  get selectedNodes() {
+    return this.selected.map(id => this.engine.operation?.frame?.findById(id)).filter(node => node != null)
   }
 
   get first() {
