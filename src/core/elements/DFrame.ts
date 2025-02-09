@@ -33,42 +33,8 @@ export class DFrame extends DFrameBase {
       width: this.size.width,
       height: this.size.height,
     })
-    console.log('Frame Pos', this.item.getGlobalPosition(new Point(0, 0)))
     this.initChildren(options.children)
-    // this.initInteractive()
   }
-
-  // protected initInteractive() {
-  //   if (this.item) {
-  //     // this.item.on('pointerenter', this.handlePointerEnter.bind(this))
-  //     // this.item.on('pointerleave', this.handlePointerLeave.bind(this))
-  //     this.item.on('pointerdown', this.handlePointerDown.bind(this))
-  //     this.item.on('pointerup', this.handlePointerUp.bind(this))
-  //     this.item.on('pointermove', this.handlePointerMove.bind(this))
-  //     // this.item.on('pointertap', this.handlePointerTap.bind(this))
-  //     this.eventMode = this.locked ? 'none' : 'static'
-  //   }
-  // }
-
-  // protected handlePointerDown(event: FederatedPointerEvent) {
-  //   this.operation?.selection.clear()
-  //   this.operation?.dragMove.dragStart(event)
-  //   // event.stopPropagation()
-  // }
-
-  // protected handlePointerMove(event: FederatedPointerEvent) {
-  //   if (this.operation?.dragMove.dragging) {
-  //     this.operation?.dragMove.dragMove(event)
-  //   }
-  //   // event.stopPropagation()
-  // }
-
-  // protected handlePointerUp(event: FederatedPointerEvent) {
-  //   if (this.operation?.dragMove.dragging) {
-  //     this.operation?.dragMove.dragStop(event)
-  //   }
-  //   // event.stopPropagation()
-  // }
 
   get zoomRatio() {
     return this.item.scale.x

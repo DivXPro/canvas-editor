@@ -81,7 +81,6 @@ export class DragMove {
           x: event.clientX + offset.x,
           y: event.clientY + offset.y,
         }
-        console.log('distance', node.position.x)
 
         this.trigger(node, vector)
       }
