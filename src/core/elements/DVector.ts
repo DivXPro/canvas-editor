@@ -6,6 +6,7 @@ import { ColorUtils } from '../utils/styles'
 
 import { DNode, IDNode } from './DNode'
 import { EasingType, LayoutConstraint, NodeType, Paint, Path, Size, StylesObject, Transform, Vector } from './type'
+import { DFrameBase } from '.'
 
 export interface IDVectorBase extends Omit<Vector, 'type'> {
   locked?: boolean
@@ -16,7 +17,7 @@ export type TDVector = IDNode<Container> & IDVectorBase
 
 export interface DVectorOptions extends Omit<IDVectorBase, 'type'> {
   engine: Engine
-  parent?: DNode
+  parent?: DFrameBase
   size?: Size
   type: NodeType
 }

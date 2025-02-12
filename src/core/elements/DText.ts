@@ -3,9 +3,10 @@ import { action, computed, makeObservable, override } from 'mobx'
 import { Engine } from '../Engine'
 import { TextBox } from '../components/TextBox'
 
-import { DNode, IDNode } from './DNode'
-import { Text, Vector2 } from './type'
+import { IDNode } from './DNode'
+import { Text } from './type'
 import { DVector } from './DVector'
+import { DFrameBase } from './DFrameBase'
 
 export interface IDTextBase extends Text {
   type: 'TEXT'
@@ -15,7 +16,7 @@ export type TDText = IDNode<TextBox> & IDTextBase
 
 export interface DTextOptions extends IDTextBase {
   engine: Engine
-  parent?: DNode
+  parent?: DFrameBase
 }
 
 export class DText extends DVector<TextBox> implements TDText {
@@ -31,16 +32,18 @@ export class DText extends DVector<TextBox> implements TDText {
     this.item = new TextBox({
       text: this.characters,
       position: this.position,
-      size: this.size,
+      size: this._size,
       rotation: this.rotation,
     })
     makeObservable(this, {
+      size: override,
       jsonData: override,
       globalCenter: override,
       absoluteBoundingBox: override,
       characters: computed,
-      displayWidth: computed,
-      displayHeight: computed,
+      displayWidth: override,
+      displayHeight: override,
+      setPosition: override,
       setWidth: action.bound,
       setHeight: action.bound,
     })
@@ -65,7 +68,7 @@ export class DText extends DVector<TextBox> implements TDText {
 
   get globalCenter() {
     if (this.item == null) {
-      return super.globalPosition
+      return super.globalCenter
     }
 
     return {
@@ -78,17 +81,6 @@ export class DText extends DVector<TextBox> implements TDText {
 
   get characters() {
     return this._characters
-  }
-
-  get absoluteBoundingBox() {
-    const bounds = this.item.getBounds()
-
-    return {
-      x: bounds.minX,
-      y: bounds.minY,
-      width: bounds.width,
-      height: bounds.height,
-    }
   }
 
   get width() {
@@ -107,9 +99,19 @@ export class DText extends DVector<TextBox> implements TDText {
     return 0
   }
 
-  setPostion(x: number, y: number) {
+  get size() {
+    return { width: this.width, height: this.height }
+  }
+
+  setPosition(x: number, y: number) {
     this._position = { x, y }
-    this.item.boxPosition = { x, y }
+    if (this.root) {
+      const pos = this.root.tansformRoot2Local({ x, y })
+
+      this.item.boxPosition = { x: pos.x, y: pos.y }
+    } else {
+      this.item.boxPosition = { x, y }
+    }
   }
 
   setWidth(value: number) {

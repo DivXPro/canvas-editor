@@ -5,8 +5,7 @@ import { Engine } from '../core/Engine'
 import { ColorUtils } from '../core/utils/styles'
 
 import DefaultLayout from '@/layouts/default'
-import { IDRectangleBase, IDTextBase } from '@/core/elements'
-import { IDGroupBase } from '../core/elements/DGroup'
+import { IDRectangleBase, IDTextBase, IDGroupBase } from '@/core/elements'
 
 export default function IndexPage() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -114,45 +113,45 @@ export default function IndexPage() {
                     fontWeight: 400,
                   },
                 } as IDTextBase,
-                // {
-                //   id: 'group-1',
-                //   name: 'Group 1',
-                //   type: 'GROUP',
-                //   position: {
-                //     x: 600,
-                //     y: 600,
-                //   },
-                //   children: [
-                //     {
-                //       id: 'rectangle-2',
-                //       name: 'Rectangle 2',
-                //       type: 'RECTANGLE',
-                //       position: {
-                //         x: 0,
-                //         y: 0,
-                //       },
-                //       size: {
-                //         width: 20,
-                //         height: 20,
-                //       },
-                //       fills: [{ type: 'SOLID', color: ColorUtils.hexToRGBA('#d9d9d9') }],
-                //     },
-                //     {
-                //       id: 'rectangle-3',
-                //       name: 'Rectangle 3',
-                //       type: 'RECTANGLE',
-                //       position: {
-                //         x: 70,
-                //         y: 70,
-                //       },
-                //       size: {
-                //         width: 20,
-                //         height: 20,
-                //       },
-                //       fills: [{ type: 'SOLID', color: ColorUtils.hexToRGBA('#d9d9d9') }],
-                //     },
-                //   ],
-                // } as IDGroupBase,
+                {
+                  id: 'group-1',
+                  name: 'Group 1',
+                  type: 'GROUP',
+                  position: {
+                    x: 600,
+                    y: 600,
+                  },
+                  children: [
+                    {
+                      id: 'rectangle-2',
+                      name: 'Rectangle 2',
+                      type: 'RECTANGLE',
+                      position: {
+                        x: 20,
+                        y: 20,
+                      },
+                      size: {
+                        width: 20,
+                        height: 20,
+                      },
+                      fills: [{ type: 'SOLID', color: ColorUtils.hexToRGBA('#d9d9d9') }],
+                    },
+                    {
+                      id: 'rectangle-3',
+                      name: 'Rectangle 3',
+                      type: 'RECTANGLE',
+                      position: {
+                        x: 70,
+                        y: 70,
+                      },
+                      size: {
+                        width: 20,
+                        height: 20,
+                      },
+                      fills: [{ type: 'SOLID', color: ColorUtils.hexToRGBA('#d9d9d9') }],
+                    },
+                  ],
+                } as IDGroupBase,
               ],
             },
           },

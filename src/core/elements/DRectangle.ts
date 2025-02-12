@@ -5,8 +5,8 @@ import { Engine } from '../Engine'
 import { ColorUtils } from '../utils/styles'
 
 import { DVector, IDVectorBase } from './DVector'
-import { DNode } from './DNode'
 import { Color, Size } from './type'
+import { DFrameBase } from './DFrameBase'
 
 export interface IDRectangleBase extends IDVectorBase {
   size: Size
@@ -16,7 +16,7 @@ export interface IDRectangleBase extends IDVectorBase {
 
 export interface DRectangleOptions extends IDRectangleBase {
   engine: Engine
-  parent?: DNode
+  parent?: DFrameBase
 }
 
 export class DRectangle extends DVector<Graphics> {
@@ -52,10 +52,14 @@ export class DRectangle extends DVector<Graphics> {
 
   private update() {
     this.item.clear()
-    this.item.position.set(this.position.x, this.position.y)
+    const position =
+      (this.root === this.parent ? this.position : this.root?.tansformRoot2Local(this.position)) ?? this.position
+
+    this.item.position.set(position.x, position.y)
     this.item.visible = this.visible
     this.item.pivot.set(0, 0)
     this.item.rotation = this.rotation
+
     this.item
       .roundRect(-this.size.width / 2, -this.size.height / 2, this.size.width, this.size.height, this.cornerRadius)
       .fill(ColorUtils.rgbaToNumber(this.fills[0].color ?? (DVector.DEFAULT_FILL.color as Color)))
@@ -64,17 +68,6 @@ export class DRectangle extends DVector<Graphics> {
 
   get size() {
     return this._size
-  }
-
-  get absoluteBoundingBox() {
-    const bounds = this.item.getBounds()
-
-    return {
-      x: bounds.minX,
-      y: bounds.minY,
-      width: bounds.width,
-      height: bounds.height,
-    }
   }
 
   get jsonData() {

@@ -1,5 +1,5 @@
 import { customAlphabet } from 'nanoid'
-import { Container, EventMode, FederatedPointerEvent, Size } from 'pixi.js'
+import { Container, EventMode, FederatedPointerEvent, Matrix, Size, Point, Graphics } from 'pixi.js'
 import { action, computed, makeObservable, observable } from 'mobx'
 
 import { Engine } from '../Engine'
@@ -7,8 +7,7 @@ import { BoundingBox } from '../components/BoundingBox'
 import { Outline } from '../components/Outline'
 
 import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Vector2 } from './type'
-import { DragElementEvent } from '../events/mutation/DragElementEvent'
-import { DragMoveEvent, DragStartEvent } from '../events'
+import { DFrameBase } from './DFrameBase'
 
 export interface ScaleData {
   x: number
@@ -28,6 +27,7 @@ export interface IDNode<Item extends Container> extends INodeBase {
   globalPosition: Vector2
   globalCenter: Vector2
   absoluteBoundingBox: Rect
+  absRectPoints: Vector2[]
   jsonData: NodeBase
   isSelected?: boolean
   isHovered?: boolean
@@ -37,7 +37,7 @@ export interface IDNode<Item extends Container> extends INodeBase {
 
 export interface DNodeOptions extends INodeBase {
   engine: Engine
-  parent?: DNode
+  parent?: DFrameBase
 }
 
 export abstract class DNode implements IDNode<any> {
@@ -50,8 +50,8 @@ export abstract class DNode implements IDNode<any> {
   protected _size?: Size
 
   engine: Engine
-  parent?: DNode
-  root?: DNode
+  parent?: DFrameBase
+  root?: DFrameBase
 
   id: string
   name: string
@@ -85,6 +85,7 @@ export abstract class DNode implements IDNode<any> {
     this.strokeAlign = options.strokeAlign ?? 'CENTER'
     this.strokeWeight = options.strokeWeight ?? 1
     this.isMask = options.isMask ?? false
+
     if (options.strokes) {
       options.strokes.forEach(paint => {
         this.strokes.push(paint)
@@ -102,7 +103,7 @@ export abstract class DNode implements IDNode<any> {
     }
 
     this._position = options.position ?? { x: 0, y: 0 }
-    this._size = options.size
+    this._size = options.size ?? this._size
     this._locked = options.locked ?? false
     this._visible = options.visible ?? true
     this._rotation = options.rotation
@@ -129,10 +130,14 @@ export abstract class DNode implements IDNode<any> {
       size: computed,
       globalCenter: computed,
       globalPosition: computed,
+      globalRotation: computed,
+      absRectPoints: computed,
+      displayWidth: computed,
+      displayHeight: computed,
       jsonData: computed,
       setHidden: action.bound,
       setLocked: action.bound,
-      setPostion: action.bound,
+      setPosition: action.bound,
       setRotation: action.bound,
     })
     this.outline = this.engine.outlineLayer?.addOutline(this)
@@ -148,8 +153,8 @@ export abstract class DNode implements IDNode<any> {
     return this._position
   }
 
-  set postion(value: Vector2) {
-    this.setPostion(value.x, value.y)
+  set position(value: Vector2) {
+    this.setPosition(value.x, value.y)
   }
 
   get size() {
@@ -169,6 +174,39 @@ export abstract class DNode implements IDNode<any> {
     if (this.item) {
       this.item.rotation = rotation
     }
+  }
+
+  get globalRotation() {
+    return this.rotation + (this.parent?.rotation ?? 0)
+  }
+
+  get absRectPoints() {
+    const rect = [
+      {
+        x: this.globalCenter.x - (this.size?.width ?? 0) / 2,
+        y: this.globalCenter.y - (this.size?.height ?? 0) / 2,
+      },
+      {
+        x: this.globalCenter.x + (this.size?.width ?? 0) / 2,
+        y: this.globalCenter.y - (this.size?.height ?? 0) / 2,
+      },
+      {
+        x: this.globalCenter.x + (this.size?.width ?? 0) / 2,
+        y: this.globalCenter.y + (this.size?.height ?? 0) / 2,
+      },
+      {
+        x: this.globalCenter.x - (this.size?.width ?? 0) / 2,
+        y: this.globalCenter.y + (this.size?.height ?? 0) / 2,
+      },
+    ]
+
+    const mt = new Matrix()
+
+    mt.translate(-this.globalCenter.x, -this.globalCenter.y)
+    mt.rotate(this.globalRotation)
+    mt.translate(this.globalCenter.x, this.globalCenter.y)
+
+    return rect.map(p => mt.apply({ x: p.x, y: p.y }))
   }
 
   get locked() {
@@ -228,17 +266,33 @@ export abstract class DNode implements IDNode<any> {
   }
 
   get absoluteBoundingBox() {
+    if (this.item == null) {
+      return {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+      }
+    }
+    const bounds = this.item.getLocalBounds()
+
     return {
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0,
+      x: bounds.minX,
+      y: bounds.minY,
+      width: bounds.width,
+      height: bounds.height,
     }
   }
 
-  setPostion(x: number, y: number) {
+  setPosition(x: number, y: number) {
     this._position = { x, y }
-    this.item?.position.set(x, y)
+    if (this.root) {
+      const pos = this.root.tansformRoot2Local({ x, y })
+
+      this.item?.position.set(pos.x, pos.y)
+    } else {
+      this.item?.position.set(x, y)
+    }
   }
 
   get operation() {
@@ -336,8 +390,17 @@ export abstract class DNode implements IDNode<any> {
     }
   }
 
+  addTo(parent: DFrameBase) {
+    parent.children?.push(this)
+    if (this.item && parent.item) {
+      const position = parent.item.toLocal(this.globalPosition)
+
+      this.item?.position.set(position.x, position.y)
+    }
+  }
+
   moveTo(point: Vector2) {
-    this.setPostion(point.x, point.y)
+    this.setPosition(point.x, point.y)
   }
 
   destory() {

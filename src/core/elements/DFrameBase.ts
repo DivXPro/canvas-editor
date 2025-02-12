@@ -2,8 +2,8 @@ import { makeObservable, observable, action, observe, IObservableArray, override
 
 import { Engine } from '../Engine'
 
-import { DNode, IDNode, INodeBase } from './DNode'
-import { Size, Color, LayoutConstraint } from './type'
+import { DNode, INodeBase } from './DNode'
+import { Size, Color, LayoutConstraint, Vector2 } from './type'
 
 export interface IDFrameBaseBase extends INodeBase {
   children?: INodeBase[]
@@ -15,7 +15,7 @@ export interface IDFrameBaseBase extends INodeBase {
 
 export interface DFrameBaseOptions extends IDFrameBaseBase {
   engine: Engine
-  parent?: DNode
+  parent?: DFrameBase
 }
 
 export type ItemPostionType = 'relative' | 'absolute'
@@ -41,25 +41,37 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
       jsonData: override,
       size: override,
       children: observable,
-      renderItems: action.bound,
+      renderNodes: action.bound,
     })
   }
 
-  protected initChildren(items?: INodeBase[]) {
+  protected initChildren(nodes?: INodeBase[]) {
     this.setupChildrenObserver()
-    if (items) {
-      this.renderItems(items)
-    }
+    const children = this.renderNodes(nodes)
+
+    children.forEach(child => this.children.push(child))
   }
 
-  renderItems(items: INodeBase[] = []) {
-    items
+  tansformRoot2Local(point: Vector2) {
+    if (this.root == null) {
+      return point
+    }
+
+    return this.item?.toLocal(this.root.item?.toGlobal(point) ?? point) ?? point
+  }
+
+  renderNodes(nodes: INodeBase[] = []) {
+    const children: DNode[] = []
+
+    nodes
       .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
       .forEach(item => {
         const child = this.engine.operation?.generateElement(item, this)
 
-        child && this.children.push(child)
+        child && children.push(child)
       })
+
+    return children
   }
 
   protected setupChildrenObserver() {
@@ -77,19 +89,23 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
     })
   }
 
-  onElementsAdded(elements: IDNode<any>[]) {
+  protected onElementsAdded(elements: DNode[]) {
     // 处理添加元素的逻辑
     elements.forEach(element => {
       // 例如，将元素添加到 Frame 中
-      this.item?.addChild(element.item)
+      if (element.item) {
+        this.item?.addChild(element.item)
+      }
     })
   }
 
-  onElementsRemoved(elements: IDNode<any>[]) {
+  protected onElementsRemoved(elements: DNode[]) {
     // 处理移除元素的逻辑
     elements.forEach(element => {
       // 例如，从 Frame 中移除元素
-      this.item?.removeChild(element.item)
+      if (element.item) {
+        this.item?.removeChild(element.item)
+      }
     })
   }
 

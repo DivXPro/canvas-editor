@@ -60,7 +60,7 @@ export class BoundingBox extends Container {
 
   private initHandles() {
     // 4个控制点：左上、右上、右下、左下
-    this.handlePostions.forEach(pos => {
+    this.handlePostions.forEach(() => {
       const handle = new Graphics()
         .rect(0, 0, UICfg.boundingHandingSize, UICfg.boundingHandingSize)
         .fill({
