@@ -66,18 +66,18 @@ export class DText extends DVector<TextBox> implements TDText {
     return 0
   }
 
-  get globalCenter() {
-    if (this.item == null) {
-      return super.globalCenter
-    }
+  // get globalCenter() {
+  //   if (this.item == null) {
+  //     return super.globalCenter
+  //   }
 
-    return {
-      x: this.globalPosition.x,
-      y:
-        this.globalPosition.y -
-        (this.item.fixSize && this.item.fixHeight != null ? (this.item.height - this.item.fixHeight) / 2 : 0),
-    }
-  }
+  //   return {
+  //     x: this.globalPosition.x,
+  //     y:
+  //       this.globalPosition.y -
+  //       (this.item.fixSize && this.item.fixHeight != null ? (this.item.height - this.item.fixHeight) / 2 : 0),
+  //   }
+  // }
 
   get characters() {
     return this._characters

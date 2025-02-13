@@ -23,9 +23,9 @@ export class BoundingBox extends Container {
     this.initBorder()
     this.initHandles()
     this.update()
-    this.element.engine.events.on('element:select', this.handleSelectEvent.bind(this))
-    this.element.engine.events.on('element:unselect', this.handleSelectEvent.bind(this))
-    this.element.engine.events.on('drag:move', this.handleDragMoveEvent.bind(this))
+    // this.element.engine.events.on('element:select', this.handleSelectEvent.bind(this))
+    // this.element.engine.events.on('element:unselect', this.handleSelectEvent.bind(this))
+    // this.element.engine.events.on('drag:move', this.handleDragMoveEvent.bind(this))
   }
 
   handleDragMoveEvent() {
@@ -78,16 +78,26 @@ export class BoundingBox extends Container {
   }
 
   public update() {
+    // console.log('size', this.element.size?.width, this.element.displayWidth)
+    // console.log('center', this.element.center, this.element.globalCenter)
+
     this.position.set(this.element.globalCenter.x, this.element.globalCenter.y)
-    this.pivot.set(this.element.displayWidth / 2, this.element.displayHeight / 2)
-    this.rotation = this.element.rotation ?? 0
+    this.pivot.set(-this.element.displayWidth / 2, -this.element.displayHeight / 2)
+    this.rotation = this.element.globalRotation ?? 0
     // 更新边框
     this.border.clear()
     this.border.setStrokeStyle({
       width: UICfg.boundingBoxWidth,
       color: UICfg.boudingBoxColor,
     })
-    this.border.rect(0, 0, this.element.displayWidth, this.element.displayHeight).stroke()
+    this.border
+      .rect(
+        -this.element.displayWidth / 2,
+        -this.element.displayHeight / 2,
+        this.element.displayWidth,
+        this.element.displayHeight
+      )
+      .stroke()
 
     // 更新控制点位置
     this.handles.forEach((handle, index) => {

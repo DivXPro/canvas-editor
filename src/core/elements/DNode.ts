@@ -1,5 +1,5 @@
 import { customAlphabet } from 'nanoid'
-import { Container, EventMode, FederatedPointerEvent, Matrix, Size, Point, Graphics } from 'pixi.js'
+import { Container, EventMode, FederatedPointerEvent, Matrix, Size } from 'pixi.js'
 import { action, computed, makeObservable, observable } from 'mobx'
 
 import { Engine } from '../Engine'
@@ -41,6 +41,17 @@ export interface DNodeOptions extends INodeBase {
 }
 
 export abstract class DNode implements IDNode<any> {
+  static GetNodeCenter(position: Vector2, r: number, rotation: number) {
+    return {
+      x: position.x + Math.cos(Math.PI / 4 + rotation) * r,
+      y: position.y + Math.sin(Math.PI / 4 + rotation) * r,
+    }
+  }
+
+  static GetNodeR(size: Size) {
+    return Math.sqrt(Math.pow(size?.width ?? 0, 2) + Math.pow(size?.height ?? 0, 2)) / 2
+  }
+
   protected dragStartPosition?: { x: number; y: number }
   protected elementStartPosition?: { x: number; y: number }
   protected _locked?: boolean
@@ -161,6 +172,14 @@ export abstract class DNode implements IDNode<any> {
     return this._size
   }
 
+  get r() {
+    return this.size != null ? DNode.GetNodeR(this.size) : 0
+  }
+
+  get center() {
+    return DNode.GetNodeCenter(this.position, this.r, this.rotation)
+  }
+
   get rotation(): number {
     return this._rotation ?? 0
   }
@@ -172,39 +191,43 @@ export abstract class DNode implements IDNode<any> {
   setRotation(rotation: number) {
     this._rotation = rotation
     if (this.item) {
-      this.item.rotation = rotation
+      this.item.rotation = this.relationRotation
     }
   }
 
   get globalRotation() {
-    return this.rotation + (this.parent?.rotation ?? 0)
+    return this.rotation + (this.root?.rotation ?? 0)
+  }
+
+  get relationRotation(): number {
+    return this.rotation - (this.parent?.relationRotation ?? 0)
   }
 
   get absRectPoints() {
     const rect = [
       {
-        x: this.globalCenter.x - (this.size?.width ?? 0) / 2,
-        y: this.globalCenter.y - (this.size?.height ?? 0) / 2,
+        x: this.globalPosition.x,
+        y: this.globalPosition.y,
       },
       {
-        x: this.globalCenter.x + (this.size?.width ?? 0) / 2,
-        y: this.globalCenter.y - (this.size?.height ?? 0) / 2,
+        x: this.globalPosition.x + (this.size?.width ?? 0),
+        y: this.globalPosition.y,
       },
       {
-        x: this.globalCenter.x + (this.size?.width ?? 0) / 2,
-        y: this.globalCenter.y + (this.size?.height ?? 0) / 2,
+        x: this.globalPosition.x + (this.size?.width ?? 0),
+        y: this.globalPosition.y + (this.size?.height ?? 0),
       },
       {
-        x: this.globalCenter.x - (this.size?.width ?? 0) / 2,
-        y: this.globalCenter.y + (this.size?.height ?? 0) / 2,
+        x: this.globalPosition.x,
+        y: this.globalPosition.y + (this.size?.height ?? 0),
       },
     ]
 
     const mt = new Matrix()
 
-    mt.translate(-this.globalCenter.x, -this.globalCenter.y)
+    mt.translate(-this.globalPosition.x, -this.globalPosition.y)
     mt.rotate(this.globalRotation)
-    mt.translate(this.globalCenter.x, this.globalCenter.y)
+    mt.translate(this.globalPosition.x, this.globalPosition.y)
 
     return rect.map(p => mt.apply({ x: p.x, y: p.y }))
   }
@@ -242,19 +265,11 @@ export abstract class DNode implements IDNode<any> {
   }
 
   get displayWidth() {
-    if (this.item) {
-      return this.item.width * this.engine.zoomRatio
-    }
-
-    return 0
+    return (this.size?.width ?? 0) * this.engine.zoomRatio
   }
 
   get displayHeight() {
-    if (this.item) {
-      return this.item.height * this.engine.zoomRatio
-    }
-
-    return 0
+    return (this.size?.height ?? 0) * this.engine.zoomRatio
   }
 
   get globalPosition() {
@@ -262,7 +277,7 @@ export abstract class DNode implements IDNode<any> {
   }
 
   get globalCenter() {
-    return this.globalPosition
+    return this.item?.toGlobal(this.center) ?? { x: 0, y: 0 }
   }
 
   get absoluteBoundingBox() {
@@ -309,30 +324,66 @@ export abstract class DNode implements IDNode<any> {
     }
   }
 
+  get topGroup(): DFrameBase | undefined {
+    if (this.parent == null || this.parent === this.root) {
+      return
+    }
+    if (this.parent.parent === this.root) {
+      return this.parent
+    }
+
+    return this.parent.topGroup
+  }
+
   protected initInteractive() {
     if (this.item) {
       this.item.on('pointerenter', this.handlePointerEnter.bind(this))
       this.item.on('pointerleave', this.handlePointerLeave.bind(this))
       this.item.on('pointerdown', this.handlePointerDown.bind(this))
-      // this.item.on('pointerup', this.handlePointerUp.bind(this))
-      // this.item.on('pointermove', this.handlePointerMove.bind(this))
-      // this.item.on('pointertap', this.handlePointerTap.bind(this))
       this.eventMode = this.locked ? 'none' : 'dynamic'
     }
   }
 
   protected handlePointerEnter(event: FederatedPointerEvent) {
-    this.operation?.hover.setHover(this)
+    if (this.locked) {
+      return
+    }
+    if (this.parent === this.root) {
+      this.operation?.hover.setHover(this)
+      event.preventDefault()
+      event.stopPropagation()
+    } else {
+      this.operation?.hover.setHover(this.topGroup)
+      event.preventDefault()
+      event.stopPropagation()
+    }
   }
 
   protected handlePointerLeave(event: FederatedPointerEvent) {
+    if (this.locked) {
+      return
+    }
+    if (this.parent === this.root) {
+      this.operation?.hover.setHover()
+    }
     this.operation?.hover.setHover()
   }
 
   protected handlePointerDown(event: FederatedPointerEvent) {
-    this.operation?.selection.safeSelect(this)
-    this.operation?.dragMove.dragStart(event)
-    event.stopPropagation()
+    if (this.locked) {
+      return
+    }
+    if (this.parent === this.root) {
+      this.operation?.selection.safeSelect(this)
+      this.operation?.dragMove.dragStart(event)
+      event.preventDefault()
+      event.stopPropagation()
+    } else if (this.topGroup) {
+      this.operation?.selection.safeSelect(this.topGroup)
+      this.operation?.dragMove.dragStart(event)
+      event.preventDefault()
+      event.stopPropagation()
+    }
   }
 
   protected handlePointerMove(event: FederatedPointerEvent) {

@@ -1,6 +1,9 @@
 import { Container, Matrix } from 'pixi.js'
 import { computed, makeObservable, override } from 'mobx'
 
+import { Group } from '../components/Group'
+import { calculateBoundsFromPoints } from '../utils/transform'
+
 import { DFrameBase, DFrameBaseOptions, IDFrameBaseBase } from './DFrameBase'
 
 import { INodeBase, Vector2 } from '.'
@@ -12,20 +15,6 @@ export interface IDGroupBase extends IDFrameBaseBase { }
 export class DGroup extends DFrameBase {
   declare item: Container
 
-  static CalculateBoundsFromPoints(points: Vector2[]) {
-    const x = Math.min(...points.map(p => p.x))
-    const y = Math.min(...points.map(p => p.y))
-    const maxX = Math.max(...points.map(p => p.x))
-    const maxY = Math.max(...points.map(p => p.y))
-
-    return {
-      x,
-      y,
-      width: maxX - x,
-      height: maxY - y,
-    }
-  }
-
   constructor(options: DGroupOptions) {
     super(options)
     makeObservable(this, {
@@ -36,8 +25,12 @@ export class DGroup extends DFrameBase {
       childrenPoints: computed,
     })
 
-    this.item = new Container({
+    this.item = new Group({
       rotation: this.rotation,
+      x: this.position.x,
+      y: this.position.y,
+      width: options.size.width,
+      height: options.size.height,
     })
     this.initChildren(options.children)
   }
@@ -63,14 +56,7 @@ export class DGroup extends DFrameBase {
   }
 
   get absBounds() {
-    return DGroup.CalculateBoundsFromPoints(this.childrenPoints)
-  }
-
-  get size() {
-    return {
-      width: this.absBounds.width,
-      height: this.absBounds.height,
-    }
+    return calculateBoundsFromPoints(this.childrenPoints)
   }
 
   get localRectPoints() {
@@ -88,18 +74,25 @@ export class DGroup extends DFrameBase {
   }
 
   get absRectPoints() {
+    const bounds = calculateBoundsFromPoints(this.localRectPoints)
+    const points = [
+      { x: bounds.x, y: bounds.y },
+      { x: bounds.x + bounds.width, y: bounds.y },
+      { x: bounds.x + bounds.width, y: bounds.y + bounds.height },
+      { x: bounds.x, y: bounds.y + bounds.height },
+    ]
     const mt = new Matrix()
 
     mt.translate(-this.globalCenter.x, -this.globalCenter.y)
     mt.rotate(this.globalRotation)
     mt.translate(this.globalCenter.x, this.globalCenter.y)
 
-    return this.localRectPoints.map(point => {
+    return points.map(point => {
       return mt.apply(point)
     })
   }
 
   get absoluteBoundingBox() {
-    return DGroup.CalculateBoundsFromPoints(this.childrenPoints)
+    return calculateBoundsFromPoints(this.childrenPoints)
   }
 }

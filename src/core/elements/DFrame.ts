@@ -3,7 +3,6 @@ import { makeObservable, computed, action, override } from 'mobx'
 import { Frame } from '../components/Frame'
 
 import { DFrameBase, DFrameBaseOptions, IDFrameBaseBase } from './DFrameBase'
-import { FederatedPointerEvent, Point } from 'pixi.js'
 
 export interface DFrameOptions extends DFrameBaseOptions { }
 

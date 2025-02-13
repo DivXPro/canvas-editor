@@ -16,7 +16,6 @@ export class TextBox extends Text {
 
     super(rest)
     this._boxPosition = options.position ?? { x: 0, y: 0 }
-    this.anchor.set(0.5, 0.5)
     this.fixWidth = size?.width
     this.fixHeight = size?.height
     this.update()
@@ -41,7 +40,7 @@ export class TextBox extends Text {
       this.style.wordWrap = this.fixSize
       this.style.wordWrapWidth = this.fixWidth
     }
-    this.position.set(this.x + this.width / 2, this.y + this.height / 2)
+    // this.position.set(this.x + this.width / 2, this.y + this.height / 2)
     if (this.fixWidth && this.width < this.fixWidth) {
       switch (this.style.align) {
         case 'center':

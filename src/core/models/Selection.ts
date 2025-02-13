@@ -1,8 +1,9 @@
 import { action, computed, makeObservable, observable } from 'mobx'
 
-import { DNode } from '../elements'
+import { DNode, Vector2 } from '../elements'
 import { SelectElementEvent, UnselectElementEvent } from '../events/mutation'
 import { Engine } from '../Engine'
+import { calculateBoundsFromPoints } from '../utils/transform'
 
 import { Operation } from './Operation'
 
@@ -87,6 +88,32 @@ export class Selection {
 
   get length() {
     return this.selected.length
+  }
+
+  get selectedRectPoints(): Vector2[] {
+    if (this.selectedNodes.length === 1) {
+      return this.selectedNodes[0].absRectPoints
+    }
+    if (this.selectedNodes.length > 1) {
+      const nodeRects = this.selectedNodes.map(node => node.absRectPoints)
+
+      const boundPoints: Vector2[] = []
+
+      nodeRects.map(rectPoint => {
+        boundPoints.push(...rectPoint)
+      })
+
+      const bounds = calculateBoundsFromPoints(boundPoints)
+
+      return [
+        { x: bounds.x, y: bounds.y },
+        { x: bounds.x + bounds.width, y: bounds.y },
+        { x: bounds.x + bounds.width, y: bounds.y + bounds.height },
+        { x: bounds.x + bounds.width, y: bounds.y + bounds.height },
+      ]
+    }
+
+    return []
   }
 
   add(...ids: string[] | DNode[]) {

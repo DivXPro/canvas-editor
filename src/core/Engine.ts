@@ -7,6 +7,8 @@ import { DragDropDriver, EventDriver, SelectionAreaDriver } from './drivers'
 import { BackgroundLayer } from './components/BackgroundLayer'
 import { SelectionAreaLayer } from './components/SelectionAreaLayer'
 import { Operation } from './models/Operation'
+import { DNode } from './elements'
+import { ControlBox } from './components/ControlBox'
 
 export interface EngineOptions extends Partial<ApplicationOptions> {
   enableZoom?: boolean
@@ -35,11 +37,13 @@ export class Engine {
   boundingLayer?: BoundingLayer
   backgroundLayer?: BackgroundLayer
   selectionAreaLayer?: SelectionAreaLayer
+  controlBox?: ControlBox
   events = new EventEmitter()
   drivers: EventDriver[] = []
   data?: IDApp
   app: Application
   operation?: Operation
+  focus?: DNode
 
   constructor() {
     this.app = new Application()
@@ -72,8 +76,15 @@ export class Engine {
     this.backgroundLayer = new BackgroundLayer({ app: this, color: background })
     this.outlineLayer = new OutlineLayer(this)
     this.boundingLayer = new BoundingLayer(this)
+    this.controlBox = new ControlBox(this)
     this.selectionAreaLayer = new SelectionAreaLayer(this)
-    this.app.stage.addChild(this.backgroundLayer, this.outlineLayer, this.boundingLayer, this.selectionAreaLayer)
+    this.app.stage.addChild(
+      this.backgroundLayer,
+      this.outlineLayer,
+      this.boundingLayer,
+      this.controlBox,
+      this.selectionAreaLayer
+    )
   }
 
   initEventEmitter() {

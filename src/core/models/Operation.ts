@@ -1,5 +1,5 @@
 import { Engine } from '../Engine'
-import { DNode, DFrame, DRectangle, DText, IDFrameBase, IDRectangleBase, IDTextBase } from '../elements'
+import { DNode, DFrame, DRectangle, DText, IDFrameBase, IDRectangleBase, IDTextBase, DFrameBase } from '../elements'
 import { FrameBase, NodeBase } from '../elements/type'
 import { DGroup, IDGroupBase } from '../elements/DGroup'
 
@@ -78,7 +78,7 @@ export class Operation {
     }
   }
 
-  generateElement(item: NodeBase, parent?: DNode): DNode | undefined {
+  generateElement(item: NodeBase, parent?: DFrameBase): DNode | undefined {
     switch (item.type) {
       case 'FRAME':
         return new DFrame({ engine: this.engine, ...(item as IDFrameBase) })

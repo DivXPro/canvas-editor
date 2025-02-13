@@ -4,9 +4,9 @@ import { Container } from 'pixi.js'
 import { Engine } from '../Engine'
 import { ColorUtils } from '../utils/styles'
 
-import { DNode, IDNode } from './DNode'
 import { EasingType, LayoutConstraint, NodeType, Paint, Path, Size, StylesObject, Transform, Vector } from './type'
-import { DFrameBase } from '.'
+import { DNode, IDNode } from './DNode'
+import { DFrameBase } from './DFrameBase'
 
 export interface IDVectorBase extends Omit<Vector, 'type'> {
   locked?: boolean
@@ -45,15 +45,7 @@ export abstract class DVector<Item extends Container> extends DNode implements T
     super(options)
     makeObservable(this, {
       jsonData: override,
-      globalCenter: override,
     })
-  }
-
-  get globalCenter() {
-    return {
-      x: this.globalPosition.x,
-      y: this.globalPosition.y,
-    }
   }
 
   get jsonData() {

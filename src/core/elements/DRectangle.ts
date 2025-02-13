@@ -54,14 +54,12 @@ export class DRectangle extends DVector<Graphics> {
     this.item.clear()
     const position =
       (this.root === this.parent ? this.position : this.root?.tansformRoot2Local(this.position)) ?? this.position
-
+    console.log(this.id, position)
     this.item.position.set(position.x, position.y)
     this.item.visible = this.visible
-    this.item.pivot.set(0, 0)
-    this.item.rotation = this.rotation
-
+    this.item.rotation = this.relationRotation
     this.item
-      .roundRect(-this.size.width / 2, -this.size.height / 2, this.size.width, this.size.height, this.cornerRadius)
+      .roundRect(0, 0, this.size.width, this.size.height, this.cornerRadius)
       .fill(ColorUtils.rgbaToNumber(this.fills[0].color ?? (DVector.DEFAULT_FILL.color as Color)))
       .stroke(this.strokes[0])
   }
