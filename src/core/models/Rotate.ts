@@ -25,7 +25,7 @@ export interface IMoveDragDropPorps {
   point: Vector2
 }
 
-export class DragMove {
+export class Rotate {
   engine: Engine
   operation: Operation
   dragOffsets: Record<string, Vector2> = {}

@@ -109,10 +109,6 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
     })
   }
 
-  moveTo(point: { x: number; y: number }) {
-    this.item?.position.set(point.x, point.y)
-  }
-
   get size() {
     return this._size
   }

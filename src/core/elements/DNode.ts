@@ -386,12 +386,12 @@ export abstract class DNode implements IDNode<any> {
     }
   }
 
-  protected handlePointerMove(event: FederatedPointerEvent) {
-    if (this.operation?.dragMove.dragging) {
-      this.operation?.dragMove.dragMove(event)
-    }
-    event.stopPropagation()
-  }
+  // protected handlePointerMove(event: FederatedPointerEvent) {
+  //   if (this.operation?.dragMove.dragging) {
+  //     this.operation?.dragMove.dragMove(event)
+  //   }
+  //   event.stopPropagation()
+  // }
 
   protected handlePointerUp(event: FederatedPointerEvent) {
     if (this.operation?.dragMove.dragging) {

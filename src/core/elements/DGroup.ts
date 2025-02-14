@@ -7,6 +7,7 @@ import { calculateBoundsFromPoints } from '../utils/transform'
 import { DFrameBase, DFrameBaseOptions, IDFrameBaseBase } from './DFrameBase'
 
 import { INodeBase, Vector2 } from '.'
+import { chdir } from 'process'
 
 export interface DGroupOptions extends DFrameBaseOptions { }
 
@@ -94,5 +95,16 @@ export class DGroup extends DFrameBase {
 
   get absoluteBoundingBox() {
     return calculateBoundsFromPoints(this.childrenPoints)
+  }
+
+  setPosition(x: number, y: number) {
+    this._position = { x, y }
+    const pos = this.root != null ? this.root.tansformRoot2Local({ x, y }) : { x, y }
+    const offset = { x: x - this.position.x, y: y - this.position.y }
+
+    this.item?.position.set(pos.x, pos.y)
+    this.children.forEach(child => {
+      child.setPosition(child.position.x + offset.x, child.position.y + offset.y)
+    })
   }
 }

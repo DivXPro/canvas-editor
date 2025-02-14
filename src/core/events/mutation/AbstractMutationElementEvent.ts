@@ -7,14 +7,12 @@ export interface IMutationElementEventData {
   target?: DNode | DNode[] | null
   // 事件发生的来源对象
   originSourceParents?: DNode | DNode[] | null
-  //扩展数据
-  extra?: any
 }
 
-export class AbstractMutationElementEvent {
-  data: IMutationElementEventData
+export class AbstractMutationElementEvent<Data extends IMutationElementEventData = IMutationElementEventData> {
+  data: Data
   context: any
-  constructor(data: IMutationElementEventData) {
+  constructor(data: Data) {
     this.data = data
   }
 }
