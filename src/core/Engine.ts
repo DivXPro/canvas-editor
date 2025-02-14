@@ -90,7 +90,7 @@ export class Engine {
   initEventEmitter() {
     this.app.stage.eventMode = 'static'
     // wheel
-    // this.app.canvas.addEventListener('wheel', e => this.events.emit('wheel', e), { passive: false })
+    this.app.canvas.addEventListener('wheel', e => this.events.emit('wheel', e), { passive: false })
   }
 
   initDrivers() {
@@ -103,7 +103,7 @@ export class Engine {
 
   activeWheelZoom() {
     if (this.enableZoom) {
-      // this.events.on('wheel', this.applyZoom.bind(this))
+      this.events.on('wheel', this.applyZoom.bind(this))
     }
   }
 

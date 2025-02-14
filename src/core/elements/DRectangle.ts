@@ -52,12 +52,15 @@ export class DRectangle extends DVector<Graphics> {
 
   private update() {
     this.item.clear()
-    const position =
-      (this.root === this.parent ? this.position : this.root?.tansformRoot2Local(this.position)) ?? this.position
+    // const position =
+    //   (this.root === this.parent ? this.position : this.root?.tansformRoot2Local(this.position)) ?? this.position
+    const position = this.position
 
     this.item.position.set(position.x, position.y)
+    this.item.pivot.set(this.size.width / 2, this.size.height / 2)
+
     this.item.visible = this.visible
-    this.item.rotation = this.relationRotation
+    this.item.rotation = this.rotation
     this.item
       .roundRect(0, 0, this.size.width, this.size.height, this.cornerRadius)
       .fill(ColorUtils.rgbaToNumber(this.fills[0].color ?? (DVector.DEFAULT_FILL.color as Color)))

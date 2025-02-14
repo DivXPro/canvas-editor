@@ -1,5 +1,5 @@
 import { customAlphabet } from 'nanoid'
-import { Container, EventMode, FederatedPointerEvent, Matrix, Size } from 'pixi.js'
+import { Container, EventMode, FederatedPointerEvent, Matrix, Point, Size } from 'pixi.js'
 import { action, computed, makeObservable, observable } from 'mobx'
 
 import { Engine } from '../Engine'
@@ -177,7 +177,8 @@ export abstract class DNode implements IDNode<any> {
   }
 
   get center() {
-    return DNode.GetNodeCenter(this.position, this.r, this.rotation)
+    return this.position
+    // return DNode.GetNodeCenter(this.position, this.r, this.rotation)
   }
 
   get rotation(): number {
@@ -191,35 +192,31 @@ export abstract class DNode implements IDNode<any> {
   setRotation(rotation: number) {
     this._rotation = rotation
     if (this.item) {
-      this.item.rotation = this.relationRotation
+      this.item.rotation = this._rotation
     }
   }
 
-  get globalRotation() {
-    return this.rotation + (this.root?.rotation ?? 0)
-  }
-
-  get relationRotation(): number {
-    return this.rotation - (this.parent?.relationRotation ?? 0)
+  get globalRotation(): number {
+    return this.rotation + (this.parent?.globalRotation ?? 0)
   }
 
   get absRectPoints() {
     const rect = [
       {
-        x: this.globalPosition.x,
-        y: this.globalPosition.y,
+        x: this.globalPosition.x - (this.size?.width ?? 0) / 2,
+        y: this.globalPosition.y - (this.size?.height ?? 0) / 2,
       },
       {
-        x: this.globalPosition.x + (this.size?.width ?? 0),
-        y: this.globalPosition.y,
+        x: this.globalPosition.x + (this.size?.width ?? 0) / 2,
+        y: this.globalPosition.y - (this.size?.height ?? 0) / 2,
       },
       {
-        x: this.globalPosition.x + (this.size?.width ?? 0),
-        y: this.globalPosition.y + (this.size?.height ?? 0),
+        x: this.globalPosition.x + (this.size?.width ?? 0) / 2,
+        y: this.globalPosition.y + (this.size?.height ?? 0) / 2,
       },
       {
-        x: this.globalPosition.x,
-        y: this.globalPosition.y + (this.size?.height ?? 0),
+        x: this.globalPosition.x - (this.size?.width ?? 0) / 2,
+        y: this.globalPosition.y + (this.size?.height ?? 0) / 2,
       },
     ]
 
@@ -277,7 +274,7 @@ export abstract class DNode implements IDNode<any> {
   }
 
   get globalCenter() {
-    return this.item?.toGlobal(this.center) ?? { x: 0, y: 0 }
+    return this.item?.getGlobalPosition(new Point(this.center.x, this.center.y)) ?? { x: 0, y: 0 }
   }
 
   get absoluteBoundingBox() {

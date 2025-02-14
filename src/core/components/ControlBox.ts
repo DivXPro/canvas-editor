@@ -23,8 +23,6 @@ export class ControlBox extends Container {
     this.engine.events.on('element:select', this.handleSelectChange.bind(this))
     this.engine.events.on('element:unselect', this.handleSelectChange.bind(this))
     this.engine.events.on('element:drag', this.handleDragElement.bind(this))
-    // this.engine.events.on('drag:move', this.hide.bind(this))
-    // this.engine.events.on('drag:stop', this.show.bind(this))
   }
 
   private initBorder() {
@@ -77,7 +75,7 @@ export class ControlBox extends Container {
 
   private handleRotateStart(event: FederatedPointerEvent) {
     console.log('RotateElementEvent')
-    this.engine.operation?.dragMove.dragStart(event)
+    this.engine.operation?.dragMove.rotateStart(event)
     // this.lastRotatePoint = { x: event.globalX, y: event.globalY }
     // event.stopPropagation()
   }
@@ -146,8 +144,6 @@ export class ControlBox extends Container {
   destroy() {
     this.engine.events.off('element:select', this.handleSelectChange.bind(this))
     this.engine.events.off('element:unselect', this.handleSelectChange.bind(this))
-    this.engine.events.off('drag:move', this.hide.bind(this))
-    this.engine.events.off('drag:stop', this.show.bind(this))
     this.parent.removeChild(this)
     super.destroy()
   }

@@ -5,9 +5,9 @@ import { Engine } from '../Engine'
 import { DNode } from '../elements'
 import { Vector2 } from '../elements/type'
 import { DragMoveEvent, DragStartEvent, DragStopEvent } from '../events'
+import { DragElementEvent } from '../events/mutation/DragElementEvent'
 
 import { Operation } from './Operation'
-import { DragElementEvent } from '../events/mutation/DragElementEvent'
 
 export interface IMoveOptions {
   engine: Engine
@@ -28,9 +28,14 @@ export interface IMoveDragDropPorps {
 export class DragMove {
   engine: Engine
   operation: Operation
+
   dragOffsets: Record<string, Vector2> = {}
   dragStartPoint?: Vector2
   dragging = false
+
+  rotates: Record<string, number> = {}
+  rotateStartPoint?: Vector2
+  rotating = false
 
   constructor(options: IMoveOptions) {
     this.engine = options.engine
@@ -43,6 +48,32 @@ export class DragMove {
       dragStop: action.bound,
       trigger: action.bound,
     })
+  }
+
+  rotateStart(event: FederatedPointerEvent) {
+    if (this.operation.selection.selectedNodes.length > 0) {
+      this.rotates = {}
+      this.rotateStartPoint = {
+        x: event.clientX,
+        y: event.clientY,
+      }
+      this.operation.selection.selectedNodes.forEach(node => {
+        this.rotates[node.id] = node.rotation
+      })
+
+      const dragStartEvent = new DragStartEvent({
+        clientX: event.clientX,
+        clientY: event.clientY,
+        pageX: event.pageX,
+        pageY: event.pageY,
+        target: event.target,
+        view: event.view,
+        canvasX: event.global.x,
+        canvasY: event.global.y,
+      })
+
+      this.engine.events.emit(dragStartEvent.type, dragStartEvent)
+    }
   }
 
   dragStart(event: FederatedPointerEvent) {
@@ -69,6 +100,54 @@ export class DragMove {
 
       this.engine.events.emit(dragStartEvent.type, dragStartEvent)
     }
+  }
+
+  dragRotate(event: FederatedPointerEvent) {
+    if (this.operation.selection.selectedNodes.length > 0) {
+      if (this.rotateStartPoint == null) {
+        return
+      }
+      const distance = Math.sqrt(
+        Math.pow(event.clientX - this.rotateStartPoint.x, 2) + Math.pow(event.clientY - this.rotateStartPoint.y, 2)
+      )
+
+      if (distance < 5) {
+        return
+      }
+      this.rotating = true
+    }
+
+    const rotatePoint = {
+      x: event.clientX,
+      y: event.clientY,
+    }
+
+    this.operation.selection.selectedNodes.forEach(node => {
+      if (!node.locked) {
+        const rotate = this.rotates[node.id]
+
+        if (rotate == null) {
+          return
+        }
+        const angle = Math.atan2(rotatePoint.y - node.position.y, rotatePoint.x - node.position.x)
+        const newAngle = angle - rotate
+
+        node.rotation = newAngle
+      }
+    })
+
+    const rotateMoveEvent = new DragMoveEvent({
+      clientX: event.clientX,
+      clientY: event.clientY,
+      pageX: event.pageX,
+      pageY: event.pageY,
+      target: event.target,
+      view: event.view,
+      canvasX: event.global.x,
+      canvasY: event.global.y,
+    })
+
+    this.engine.events.emit(rotateMoveEvent.type, rotateMoveEvent)
   }
 
   dragMove(event: FederatedPointerEvent) {
@@ -111,6 +190,25 @@ export class DragMove {
     })
 
     this.engine.events.emit(dragMoveEvent.type, dragMoveEvent)
+  }
+
+  rotationStop(event: FederatedPointerEvent) {
+    this.dragging = false
+    this.dragOffsets = {}
+    this.dragStartPoint = undefined
+
+    const dragStopEvent = new DragStopEvent({
+      clientX: event.clientX,
+      clientY: event.clientY,
+      pageX: event.pageX,
+      pageY: event.pageY,
+      target: event.target,
+      view: event.view,
+      canvasX: event.global.x,
+      canvasY: event.global.y,
+    })
+
+    this.engine.events.emit(dragStopEvent.type, dragStopEvent)
   }
 
   dragStop(event: FederatedPointerEvent) {

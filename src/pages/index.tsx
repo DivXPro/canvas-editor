@@ -28,63 +28,59 @@ const data: any = {
     },
     type: 'FRAME',
     children: [
-      {
-        id: 'rectangle-1',
-        name: 'Rectangle 1',
-        type: 'RECTANGLE',
-        // position: {
-        //   x: -20.71,
-        //   y: 50,
-        // },
-        position: {
-          x: 50,
-          y: 50,
-        },
-        size: {
-          width: 100,
-          height: 100,
-        },
-        // cornerRadius: 20,
-        // rotation: -Math.PI / 4,
-        fills: [{ type: 'SOLID', color: ColorUtils.hexToRGBA('#EB2424') }],
-      },
-      {
-        id: 'text-1',
-        name: 'Text 1',
-        type: 'TEXT',
-        position: {
-          x: 0,
-          y: 250,
-        },
-        size: {
-          width: 100,
-          height: 50,
-        },
-        locked: false,
-        characters: 'This is text of example 1',
-        style: {
-          fills: [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 } }],
-          fontSize: 24,
-          fontWeight: 400,
-        },
-      },
-      {
-        id: 'text-2',
-        name: 'Text 2',
-        type: 'TEXT',
-        position: {
-          x: 0,
-          y: 400,
-        },
-        locked: false,
-        // rotation: Math.PI / 4,
-        characters: 'This is text of example 2',
-        style: {
-          fills: [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 } }],
-          fontSize: 24,
-          fontWeight: 400,
-        },
-      },
+      // {
+      //   id: 'rectangle-1',
+      //   name: 'Rectangle 1',
+      //   type: 'RECTANGLE',
+      //   position: {
+      //     x: 150,
+      //     y: 50,
+      //   },
+      //   size: {
+      //     width: 100,
+      //     height: 100,
+      //   },
+      //   // cornerRadius: 20,
+      //   // rotation: -Math.PI / 4,
+      //   fills: [{ type: 'SOLID', color: ColorUtils.hexToRGBA('#EB2424') }],
+      // },
+      // {
+      //   id: 'text-1',
+      //   name: 'Text 1',
+      //   type: 'TEXT',
+      //   position: {
+      //     x: 0,
+      //     y: 250,
+      //   },
+      //   size: {
+      //     width: 100,
+      //     height: 50,
+      //   },
+      //   locked: false,
+      //   characters: 'This is text of example 1',
+      //   style: {
+      //     fills: [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 } }],
+      //     fontSize: 24,
+      //     fontWeight: 400,
+      //   },
+      // },
+      // {
+      //   id: 'text-2',
+      //   name: 'Text 2',
+      //   type: 'TEXT',
+      //   position: {
+      //     x: 0,
+      //     y: 400,
+      //   },
+      //   locked: false,
+      //   rotation: Math.PI / 4,
+      //   characters: 'This is text of example 2',
+      //   style: {
+      //     fills: [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 } }],
+      //     fontSize: 24,
+      //     fontWeight: 400,
+      //   },
+      // },
       // {
       //   id: 'text-3',
       //   name: 'Text 3',
@@ -107,21 +103,21 @@ const data: any = {
         type: 'GROUP',
         position: {
           x: 300,
-          y: 0,
+          y: 300,
         },
         size: {
-          width: 150,
+          width: 100,
           height: 100,
         },
-        // rotation: Math.PI / 4,
+        rotation: Math.PI / 4,
         children: [
           {
             id: 'rectangle-2',
             name: 'Rectangle 2',
             type: 'RECTANGLE',
             position: {
-              x: 300,
-              y: 0,
+              x: -25,
+              y: -25,
             },
             size: {
               width: 50,
@@ -134,8 +130,8 @@ const data: any = {
             name: 'Rectangle 3',
             type: 'RECTANGLE',
             position: {
-              x: 400,
-              y: 50,
+              x: 25,
+              y: 25,
             },
             size: {
               width: 50,

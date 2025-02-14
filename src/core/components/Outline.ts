@@ -5,7 +5,7 @@ import { HoverElementEvent } from '../events'
 import { outlineWidth, primaryColor } from '../config'
 
 export interface IOutline {
-  update: (element: DNode) => void
+  update: (node: DNode) => void
   show: () => void
   hide: () => void
 }
@@ -38,20 +38,38 @@ export class Outline extends Graphics implements IOutline {
     this.hide()
   }
 
-  update(element: DNode) {
-    if (element.displayWidth && element.displayHeight) {
-      const bounds = this.node.absRectPoints
+  update(node: DNode) {
+    if (node.displayWidth && node.displayHeight) {
+      // const bounds = this.node.absRectPoints
+
+      // this.clear()
+      // this.moveTo(bounds[0].x, bounds[0].y) // 左上角
+      // this.lineTo(bounds[1].x, bounds[1].y) // 右上角
+      // this.lineTo(bounds[2].x, bounds[2].y) // 右下角
+      // this.lineTo(bounds[3].x, bounds[3].y) // 左下角
+      // this.lineTo(bounds[0].x, bounds[0].y) // 回到起点
+      // this.closePath()
+      // this.stroke({ color: primaryColor, pixelLine: false, width: outlineWidth })
+
+      console.debug(
+        'outline',
+        node.center,
+        node.globalCenter.x,
+        node.globalCenter.y,
+        node.displayWidth,
+        node.displayHeight
+      )
 
       this.clear()
-      this.moveTo(bounds[0].x, bounds[0].y) // 左上角
-      this.lineTo(bounds[1].x, bounds[1].y) // 右上角
-      this.lineTo(bounds[2].x, bounds[2].y) // 右下角
-      this.lineTo(bounds[3].x, bounds[3].y) // 左下角
-      this.lineTo(bounds[0].x, bounds[0].y) // 回到起点
-      this.closePath()
-      this.stroke({ color: primaryColor, pixelLine: false, width: outlineWidth })
+      this.position.set(node.globalCenter.x, node.globalCenter.y)
+      this.pivot.set(node.displayWidth / 2, node.displayHeight / 2)
+
+      this.rect(0, 0, node.displayWidth, node.displayHeight).stroke({ color: primaryColor, width: outlineWidth })
+
+      this.rotation = node.globalRotation
+      this.rotation = Math.PI / 4
       if (this.parent == null) {
-        element.engine.outlineLayer?.addChild(this)
+        node.engine.outlineLayer?.addChild(this)
       }
       this.show()
     } else {
