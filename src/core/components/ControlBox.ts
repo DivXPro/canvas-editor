@@ -42,6 +42,7 @@ export class ControlBox extends Container {
           color: UICfg.boundingHandingStrokeColor,
         })
 
+      handle.pivot.set(UICfg.boundingHandingSize / 2, UICfg.boundingHandingSize / 2)
       this.handles.push(handle)
       this.addChild(handle)
     }
@@ -66,10 +67,6 @@ export class ControlBox extends Container {
     this.rotateHandle.eventMode = 'static'
     this.rotateHandle.cursor = 'pointer'
     this.rotateHandle.on('pointerdown', this.handleRotateStart.bind(this))
-    // this.rotateHandle.on('globalpointermove', this.handleRotateMove.bind(this))
-    // this.rotateHandle.on('pointerup', this.handleRotateEnd.bind(this))
-    // this.rotateHandle.on('pointerupoutside', this.handleRotateEnd.bind(this))
-
     this.addChild(this.rotateHandle)
   }
 
@@ -77,8 +74,6 @@ export class ControlBox extends Container {
     this.engine.operation?.dragMove.rotateStart(event)
     event.preventDefault()
     event.stopPropagation()
-    // this.lastRotatePoint = { x: event.globalX, y: event.globalY }
-    // event.stopPropagation()
   }
 
   private handleRotateMove(event: FederatedPointerEvent) {
@@ -91,7 +86,7 @@ export class ControlBox extends Container {
   }
 
   update() {
-    if (this.selection == null) {
+    if (this.selection == null || this.selection.selected.length === 0) {
       return
     }
     const rect = this.selection?.selectedRectPoints
@@ -99,6 +94,8 @@ export class ControlBox extends Container {
     if (rect.length === 0) {
       return
     }
+    const firstSelected = this.engine.operation?.findById(this.selection.selected[0])
+    const handleRotation = this.selection.selected.length === 1 ? (firstSelected?.rotation ?? 0) : 0
 
     this.border
       .clear()
@@ -111,7 +108,8 @@ export class ControlBox extends Container {
       .stroke({ color: UICfg.primaryColor, width: UICfg.boundingBoxWidth })
 
     this.handles.forEach((handle, i) => {
-      handle.position.set(rect[i].x - UICfg.boundingHandingSize / 2, rect[i].y - UICfg.boundingHandingSize / 2)
+      handle.rotation = handleRotation
+      handle.position.set(rect[i].x, rect[i].y)
     })
 
     // 更新旋转控制点位置

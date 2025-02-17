@@ -68,7 +68,6 @@ export class Selection {
   }
 
   safeSelect(id: string | DNode) {
-    console.log('safeSelect', id)
     if (!id) return
     this.select(id)
   }

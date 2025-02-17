@@ -394,12 +394,6 @@ export abstract class DNode implements IDNode<any> {
     event.stopPropagation()
   }
 
-  // protected handlePointerTap(event: FederatedPointerEvent) {
-  //   this.operation?.selection.safeSelect(this)
-  //   event.stopPropagation()
-  //   event.preventDefault()
-  // }
-
   findById(id: string): DNode | undefined {
     if (this.id === id) {
       return this

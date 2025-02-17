@@ -1,3 +1,5 @@
+import { makeObservable, observable } from 'mobx'
+
 import { Engine } from '../Engine'
 import { DNode, DFrame, DRectangle, DText, IDFrameBase, IDRectangleBase, IDTextBase, DFrameBase } from '../elements'
 import { FrameBase, NodeBase } from '../elements/type'
@@ -6,7 +8,6 @@ import { DGroup, IDGroupBase } from '../elements/DGroup'
 import { Selection } from './Selection'
 import { Hover } from './Hover'
 import { DragMove } from './DragMove'
-import { makeObservable, observable } from 'mobx'
 
 declare type DefaultFrameType = Omit<IDFrameBase, 'engine' | 'parent'>
 
@@ -70,6 +71,10 @@ export class Operation {
       backgroundColor: frame.backgroundColor,
     })
     this.engine.app.stage.addChildAt(this.frame.item, 1)
+  }
+
+  findById(id: string) {
+    return this.frame?.findById(id)
   }
 
   serialize(): IOperation {
