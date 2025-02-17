@@ -2,7 +2,7 @@ import { action, computed, makeObservable, observable } from 'mobx'
 
 import { DNode, Vector2 } from '../elements'
 import { SelectElementEvent, UnselectElementEvent } from '../events/mutation'
-import { Engine } from '../Engine'
+import { Engine } from './Engine'
 import { calculateBoundsFromPoints } from '../utils/transform'
 import { isArr } from '../utils/types'
 

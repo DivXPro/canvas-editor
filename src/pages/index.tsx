@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Assets, Sprite, Texture } from 'pixi.js'
 
-import { Engine } from '../core/Engine'
+import { Engine } from '../core/models/Engine'
 import { ColorUtils } from '../core/utils/styles'
 
 import DefaultLayout from '@/layouts/default'

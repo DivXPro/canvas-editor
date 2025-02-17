@@ -1,6 +1,6 @@
 import { makeObservable, observable, action, observe, IObservableArray, override } from 'mobx'
 
-import { Engine } from '../Engine'
+import { Engine } from '../models/Engine'
 
 import { DNode, INodeBase } from './DNode'
 import { Size, Color, LayoutConstraint, Vector2 } from './type'

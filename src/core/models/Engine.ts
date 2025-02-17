@@ -1,13 +1,15 @@
 import { Application, ApplicationOptions, Size, PointData, EventEmitter } from 'pixi.js'
 
-import { IDFrameBase } from './elements/DFrame'
-import { OutlineLayer } from './components/OutlineLayer'
-import { DragDriver, EventDriver, SelectionAreaDriver } from './drivers'
-import { BackgroundLayer } from './components/BackgroundLayer'
-import { SelectionAreaLayer } from './components/SelectionAreaLayer'
-import { Operation } from './models/Operation'
-import { DNode } from './elements'
-import { ControlBox } from './components/ControlBox'
+import { IDFrameBase } from '../elements/DFrame'
+import { OutlineLayer } from '../components/OutlineLayer'
+import { DragDriver, EventDriver, SelectionAreaDriver } from '../drivers'
+import { BackgroundLayer } from '../components/BackgroundLayer'
+import { SelectionAreaLayer } from '../components/SelectionAreaLayer'
+import { DNode } from '../elements'
+import { ControlBox } from '../components/ControlBox'
+
+import { Operation } from './Operation'
+import { ZoomChangeEvent } from '../events/view/ZoomChangeEvent'
 
 export interface EngineOptions extends Partial<ApplicationOptions> {
   enableZoom?: boolean
@@ -118,6 +120,7 @@ export class Engine {
     this.zoomRatio = zoomRatio
     this.operation?.frame?.setZoom(this.zoomRatio)
     this.operation?.hover.clear()
+    this.events.emit('zoom:change', new ZoomChangeEvent({ zoomRatio }))
     event.preventDefault()
     event.stopPropagation()
   }

@@ -2,7 +2,7 @@ import { customAlphabet } from 'nanoid'
 import { Container, EventMode, FederatedPointerEvent, Matrix, Point, Size } from 'pixi.js'
 import { action, computed, makeObservable, observable } from 'mobx'
 
-import { Engine } from '../Engine'
+import { Engine } from '../models/Engine'
 import { Outline } from '../components/Outline'
 
 import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Vector2 } from './type'
@@ -200,20 +200,20 @@ export abstract class DNode implements IDNode<any> {
   get absRectPoints() {
     const rect = [
       {
-        x: this.globalPosition.x - (this.size?.width ?? 0) / 2,
-        y: this.globalPosition.y - (this.size?.height ?? 0) / 2,
+        x: this.globalPosition.x - ((this.size?.width ?? 0) / 2) * this.engine.zoomRatio,
+        y: this.globalPosition.y - ((this.size?.height ?? 0) / 2) * this.engine.zoomRatio,
       },
       {
-        x: this.globalPosition.x + (this.size?.width ?? 0) / 2,
-        y: this.globalPosition.y - (this.size?.height ?? 0) / 2,
+        x: this.globalPosition.x + ((this.size?.width ?? 0) / 2) * this.engine.zoomRatio,
+        y: this.globalPosition.y - ((this.size?.height ?? 0) / 2) * this.engine.zoomRatio,
       },
       {
-        x: this.globalPosition.x + (this.size?.width ?? 0) / 2,
-        y: this.globalPosition.y + (this.size?.height ?? 0) / 2,
+        x: this.globalPosition.x + ((this.size?.width ?? 0) / 2) * this.engine.zoomRatio,
+        y: this.globalPosition.y + ((this.size?.height ?? 0) / 2) * this.engine.zoomRatio,
       },
       {
-        x: this.globalPosition.x - (this.size?.width ?? 0) / 2,
-        y: this.globalPosition.y + (this.size?.height ?? 0) / 2,
+        x: this.globalPosition.x - ((this.size?.width ?? 0) / 2) * this.engine.zoomRatio,
+        y: this.globalPosition.y + ((this.size?.height ?? 0) / 2) * this.engine.zoomRatio,
       },
     ]
 

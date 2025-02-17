@@ -1,7 +1,8 @@
 import { Container, FederatedPointerEvent, Graphics, Point } from 'pixi.js'
 
-import { Engine } from '../Engine'
+import { Engine } from '../models/Engine'
 import * as UICfg from '../config'
+import { ZoomChangeEvent } from '../events/view/ZoomChangeEvent'
 
 export class ControlBox extends Container {
   private engine: Engine
@@ -23,6 +24,7 @@ export class ControlBox extends Container {
     this.engine.events.on('element:select', this.handleSelectChange.bind(this))
     this.engine.events.on('element:unselect', this.handleSelectChange.bind(this))
     this.engine.events.on('node:transform', this.handleTransformNode.bind(this))
+    this.engine.events.on('zoom:change', this.handleZoomChange.bind(this))
   }
 
   private initBorder() {
@@ -82,7 +84,12 @@ export class ControlBox extends Container {
 
   private handleRotateEnd() {
     // this.isRotating = false
-    // this.lastRotatePoint = null
+    // this.last
+    // RotatePoint = null
+  }
+
+  private handleZoomChange() {
+    this.update()
   }
 
   update() {

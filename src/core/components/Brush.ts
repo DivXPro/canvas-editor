@@ -1,6 +1,6 @@
 import { Graphics } from 'pixi.js'
 
-import { Engine } from '../Engine'
+import { Engine } from '../models/Engine'
 
 export class Brush {
   private engine: Engine

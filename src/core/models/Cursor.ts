@@ -1,7 +1,7 @@
 import { makeObservable, observable, action } from 'mobx'
 
 import { Position } from '../events'
-import { Engine } from '../Engine'
+import { Engine } from './Engine'
 
 export enum CursorStatus {
   Normal = 'normal',

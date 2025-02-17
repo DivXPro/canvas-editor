@@ -1,7 +1,7 @@
 import { computed, makeObservable, override } from 'mobx'
 import { Graphics } from 'pixi.js'
 
-import { Engine } from '../Engine'
+import { Engine } from '../models/Engine'
 import { ColorUtils } from '../utils/styles'
 
 import { DVector, IDVectorBase } from './DVector'

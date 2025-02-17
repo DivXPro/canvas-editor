@@ -15,7 +15,7 @@ export interface ICursorEventData extends Position {
   view?: Window
 }
 
-export class AbstractCursorEvent {
+export abstract class AbstractCursorEvent {
   data: ICursorEventData
 
   context: any

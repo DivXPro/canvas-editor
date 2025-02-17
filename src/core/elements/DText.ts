@@ -1,6 +1,6 @@
 import { action, computed, makeObservable, override } from 'mobx'
 
-import { Engine } from '../Engine'
+import { Engine } from '../models/Engine'
 import { TextBox } from '../components/TextBox'
 
 import { IDNode } from './DNode'

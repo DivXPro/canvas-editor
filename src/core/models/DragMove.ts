@@ -1,13 +1,13 @@
 import { action, makeObservable, observable } from 'mobx'
 import { FederatedPointerEvent } from 'pixi.js'
 
-import { Engine } from '../Engine'
 import { DNode } from '../elements'
 import { Vector2 } from '../elements/type'
-import { DragMoveEvent, DragStartEvent, DragStopEvent } from '../events'
+import { DragMoveEvent, DragStartEvent } from '../events'
 import { NodeTransformEvent } from '../events/mutation/DragElementEvent'
 import { calculateAngleABC } from '../utils/transform'
 
+import { Engine } from './Engine'
 import { Operation } from './Operation'
 
 export interface IMoveOptions {
@@ -109,7 +109,7 @@ export class DragMove {
   rotateMove(event: FederatedPointerEvent) {
     if (this.operation.selection.selectedNodes.length > 0 && this.rotateStartPoint != null) {
       const distance = Math.sqrt(
-        Math.pow(event.clientX - this.rotateStartPoint.x, 2) + Math.pow(event.clientY - this.rotateStartPoint.y, 2)
+        Math.pow(event.globalX - this.rotateStartPoint.x, 2) + Math.pow(event.globalY - this.rotateStartPoint.y, 2)
       )
 
       if (distance < 5) {
@@ -117,9 +117,16 @@ export class DragMove {
       }
 
       const rotatePoint = {
-        x: event.clientX,
-        y: event.clientY,
+        x: event.globalX,
+        y: event.globalY,
       }
+
+      const rect = this.operation.selection.selectedRectPoints
+      const center = {
+        x: (rect[0].x + rect[2].x) / 2,
+        y: (rect[0].y + rect[2].y) / 2,
+      }
+      const angle = calculateAngleABC(this.rotateStartPoint as Vector2, center, rotatePoint)
 
       this.operation.selection.selectedNodes.forEach(node => {
         if (!node.locked) {
@@ -128,7 +135,7 @@ export class DragMove {
           if (rotate == null) {
             return
           }
-          const angle = calculateAngleABC(this.rotateStartPoint as Vector2, node.globalPosition, rotatePoint)
+          // const angle = calculateAngleABC(this.rotateStartPoint as Vector2, node.globalPosition, rotatePoint)
 
           // 使用取模运算限制角度在 0-360 度范围内
           const newRotation = (rotate + (Math.PI * angle) / 180) % (Math.PI * 2)
@@ -177,37 +184,38 @@ export class DragMove {
         this.triggerMove(node, vector)
       }
     })
-    const dragMoveEvent = new DragMoveEvent({
-      clientX: event.clientX,
-      clientY: event.clientY,
-      pageX: event.pageX,
-      pageY: event.pageY,
-      target: event.target,
-      view: event.view,
-      canvasX: event.global.x,
-      canvasY: event.global.y,
-    })
+    // const dragMoveEvent = new DragMoveEvent({
+    //   clientX: event.clientX,
+    //   clientY: event.clientY,
+    //   pageX: event.pageX,
+    //   pageY: event.pageY,
+    //   target: event.target,
+    //   view: event.view,
+    //   canvasX: event.global.x,
+    //   canvasY: event.global.y,
+    // })
 
-    this.engine.events.emit(dragMoveEvent.type, dragMoveEvent)
+    // this.engine.events.emit(dragMoveEvent.type, dragMoveEvent)
   }
 
   rotateStop(event: FederatedPointerEvent) {
+    console.log('rotateStop')
     this.rotating = false
     this.rotates = {}
     this.rotateStartPoint = undefined
 
-    const dragStopEvent = new DragStopEvent({
-      clientX: event.clientX,
-      clientY: event.clientY,
-      pageX: event.pageX,
-      pageY: event.pageY,
-      target: event.target,
-      view: event.view,
-      canvasX: event.global.x,
-      canvasY: event.global.y,
-    })
+    // const dragStopEvent = new DragStopEvent({
+    //   clientX: event.clientX,
+    //   clientY: event.clientY,
+    //   pageX: event.pageX,
+    //   pageY: event.pageY,
+    //   target: event.target,
+    //   view: event.view,
+    //   canvasX: event.global.x,
+    //   canvasY: event.global.y,
+    // })
 
-    this.engine.events.emit(dragStopEvent.type, dragStopEvent)
+    // this.engine.events.emit(dragStopEvent.type, dragStopEvent)
   }
 
   dragStop(event: FederatedPointerEvent) {
@@ -215,18 +223,18 @@ export class DragMove {
     this.dragOffsets = {}
     this.dragStartPoint = undefined
 
-    const dragStopEvent = new DragStopEvent({
-      clientX: event.clientX,
-      clientY: event.clientY,
-      pageX: event.pageX,
-      pageY: event.pageY,
-      target: event.target,
-      view: event.view,
-      canvasX: event.global.x,
-      canvasY: event.global.y,
-    })
+    // const dragStopEvent = new DragStopEvent({
+    //   clientX: event.clientX,
+    //   clientY: event.clientY,
+    //   pageX: event.pageX,
+    //   pageY: event.pageY,
+    //   target: event.target,
+    //   view: event.view,
+    //   canvasX: event.global.x,
+    //   canvasY: event.global.y,
+    // })
 
-    this.engine.events.emit(dragStopEvent.type, dragStopEvent)
+    // this.engine.events.emit(dragStopEvent.type, dragStopEvent)
   }
 
   triggerMove(node: DNode, position: Vector2) {

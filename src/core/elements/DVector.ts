@@ -1,7 +1,7 @@
 import { makeObservable, override } from 'mobx'
 import { Container } from 'pixi.js'
 
-import { Engine } from '../Engine'
+import { Engine } from '../models/Engine'
 import { ColorUtils } from '../utils/styles'
 
 import { EasingType, LayoutConstraint, NodeType, Paint, Path, Size, StylesObject, Transform, Vector } from './type'

@@ -1,4 +1,4 @@
-import { Engine } from '../Engine'
+import { Engine } from '../models/Engine'
 
 export abstract class EventDriver {
   engine: Engine

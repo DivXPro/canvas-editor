@@ -1,6 +1,6 @@
 import { makeObservable, observable } from 'mobx'
 
-import { Engine } from '../Engine'
+import { Engine } from './Engine'
 import { DNode, DFrame, DRectangle, DText, IDFrameBase, IDRectangleBase, IDTextBase, DFrameBase } from '../elements'
 import { FrameBase, NodeBase } from '../elements/type'
 import { DGroup, IDGroupBase } from '../elements/DGroup'
@@ -59,17 +59,11 @@ export class Operation {
   }
 
   init(frame: IDFrameBase | DefaultFrameType = DefaultFrame) {
-    // const position = {
-    //   x: frame.position.x + (this.engine.canvasSize?.width ?? 0) / 2 - frame.size.width / 2,
-    //   y: frame.position.y + (this.engine.canvasSize?.height ?? 0) / 2 - frame.size.height / 2,
-    // }
-
     const position = {
       x: frame.position.x + (this.engine.canvasSize?.width ?? 0) / 2,
       y: frame.position.y + (this.engine.canvasSize?.height ?? 0) / 2,
     }
 
-    console.log('position', position)
     this.frame = new DFrame({
       engine: this.engine,
       id: frame.id,

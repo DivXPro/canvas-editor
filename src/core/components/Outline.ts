@@ -27,7 +27,7 @@ export class Outline extends Graphics implements IOutline {
         this.hide()
       }
     })
-    this.engine.events.on('drag:move', this.handleDragMoveEvent.bind(this))
+    this.engine.events.on('node:transform', this.handleDragMoveEvent.bind(this))
   }
 
   get engine() {
@@ -40,15 +40,6 @@ export class Outline extends Graphics implements IOutline {
 
   update(node: DNode) {
     if (node.displayWidth && node.displayHeight) {
-      console.debug(
-        'outline',
-        node.center,
-        node.globalCenter.x,
-        node.globalCenter.y,
-        node.displayWidth,
-        node.displayHeight
-      )
-
       this.clear()
       this.position.set(node.globalCenter.x, node.globalCenter.y)
       this.pivot.set(node.displayWidth / 2, node.displayHeight / 2)
