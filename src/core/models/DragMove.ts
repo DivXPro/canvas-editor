@@ -5,7 +5,8 @@ import { Engine } from '../Engine'
 import { DNode } from '../elements'
 import { Vector2 } from '../elements/type'
 import { DragMoveEvent, DragStartEvent, DragStopEvent } from '../events'
-import { DragElementEvent } from '../events/mutation/DragElementEvent'
+import { NodeTransformEvent } from '../events/mutation/DragElementEvent'
+import { calculateAngleABC } from '../utils/transform'
 
 import { Operation } from './Operation'
 
@@ -46,7 +47,7 @@ export class DragMove {
       dragStart: action.bound,
       dragMove: action.bound,
       dragStop: action.bound,
-      trigger: action.bound,
+      triggerMove: action.bound,
     })
   }
 
@@ -54,9 +55,11 @@ export class DragMove {
     if (this.operation.selection.selectedNodes.length > 0) {
       this.rotates = {}
       this.rotateStartPoint = {
-        x: event.clientX,
-        y: event.clientY,
+        x: event.global.x,
+        y: event.global.y,
       }
+      this.rotating = true
+
       this.operation.selection.selectedNodes.forEach(node => {
         this.rotates[node.id] = node.rotation
       })
@@ -78,6 +81,7 @@ export class DragMove {
 
   dragStart(event: FederatedPointerEvent) {
     if (this.operation.selection.selectedNodes.length > 0) {
+      this.dragging = true
       this.dragOffsets = {}
       this.dragStartPoint = { x: event.clientX, y: event.clientY }
       this.operation.selection.selectedNodes.forEach(node => {
@@ -102,11 +106,8 @@ export class DragMove {
     }
   }
 
-  dragRotate(event: FederatedPointerEvent) {
-    if (this.operation.selection.selectedNodes.length > 0) {
-      if (this.rotateStartPoint == null) {
-        return
-      }
+  rotateMove(event: FederatedPointerEvent) {
+    if (this.operation.selection.selectedNodes.length > 0 && this.rotateStartPoint != null) {
       const distance = Math.sqrt(
         Math.pow(event.clientX - this.rotateStartPoint.x, 2) + Math.pow(event.clientY - this.rotateStartPoint.y, 2)
       )
@@ -114,55 +115,53 @@ export class DragMove {
       if (distance < 5) {
         return
       }
-      this.rotating = true
-    }
 
-    const rotatePoint = {
-      x: event.clientX,
-      y: event.clientY,
-    }
-
-    this.operation.selection.selectedNodes.forEach(node => {
-      if (!node.locked) {
-        const rotate = this.rotates[node.id]
-
-        if (rotate == null) {
-          return
-        }
-        const angle = Math.atan2(rotatePoint.y - node.position.y, rotatePoint.x - node.position.x)
-        const newAngle = angle - rotate
-
-        node.rotation = newAngle
+      const rotatePoint = {
+        x: event.clientX,
+        y: event.clientY,
       }
-    })
 
-    const rotateMoveEvent = new DragMoveEvent({
-      clientX: event.clientX,
-      clientY: event.clientY,
-      pageX: event.pageX,
-      pageY: event.pageY,
-      target: event.target,
-      view: event.view,
-      canvasX: event.global.x,
-      canvasY: event.global.y,
-    })
+      this.operation.selection.selectedNodes.forEach(node => {
+        if (!node.locked) {
+          const rotate = this.rotates[node.id]
 
-    this.engine.events.emit(rotateMoveEvent.type, rotateMoveEvent)
+          if (rotate == null) {
+            return
+          }
+          const angle = calculateAngleABC(this.rotateStartPoint as Vector2, node.globalPosition, rotatePoint)
+
+          // 使用取模运算限制角度在 0-360 度范围内
+          const newRotation = (rotate + (Math.PI * angle) / 180) % (Math.PI * 2)
+
+          this.triggerRotation(node, newRotation)
+        }
+      })
+
+      const rotateMoveEvent = new DragMoveEvent({
+        clientX: event.clientX,
+        clientY: event.clientY,
+        pageX: event.pageX,
+        pageY: event.pageY,
+        target: event.target,
+        view: event.view,
+        canvasX: event.global.x,
+        canvasY: event.global.y,
+      })
+
+      this.engine.events.emit(rotateMoveEvent.type, rotateMoveEvent)
+    }
   }
 
   dragMove(event: FederatedPointerEvent) {
-    if (!this.dragging) {
-      if (this.dragStartPoint == null) {
-        return
-      }
-      const distance = Math.sqrt(
-        Math.pow(event.clientX - this.dragStartPoint.x, 2) + Math.pow(event.clientY - this.dragStartPoint.y, 2)
-      )
+    if (this.dragStartPoint == null) {
+      return
+    }
+    const distance = Math.sqrt(
+      Math.pow(event.clientX - this.dragStartPoint.x, 2) + Math.pow(event.clientY - this.dragStartPoint.y, 2)
+    )
 
-      if (distance < 5) {
-        return
-      }
-      this.dragging = true
+    if (distance < 5) {
+      return
     }
 
     // 移动选中的节点
@@ -175,7 +174,7 @@ export class DragMove {
           y: event.clientY + offset.y,
         }
 
-        this.trigger(node, vector)
+        this.triggerMove(node, vector)
       }
     })
     const dragMoveEvent = new DragMoveEvent({
@@ -192,10 +191,10 @@ export class DragMove {
     this.engine.events.emit(dragMoveEvent.type, dragMoveEvent)
   }
 
-  rotationStop(event: FederatedPointerEvent) {
-    this.dragging = false
-    this.dragOffsets = {}
-    this.dragStartPoint = undefined
+  rotateStop(event: FederatedPointerEvent) {
+    this.rotating = false
+    this.rotates = {}
+    this.rotateStartPoint = undefined
 
     const dragStopEvent = new DragStopEvent({
       clientX: event.clientX,
@@ -230,13 +229,28 @@ export class DragMove {
     this.engine.events.emit(dragStopEvent.type, dragStopEvent)
   }
 
-  trigger(node: DNode, position: Vector2) {
+  triggerMove(node: DNode, position: Vector2) {
     node.moveTo(position)
     this.engine.events.emit(
-      'element:drag',
-      new DragElementEvent({
+      'node:transform',
+      new NodeTransformEvent({
         source: node,
-        position,
+        transform: {
+          position,
+        },
+      })
+    )
+  }
+
+  triggerRotation(node: DNode, rotation: number) {
+    node.rotation = rotation
+    this.engine.events.emit(
+      'node:transform',
+      new NodeTransformEvent({
+        source: node,
+        transform: {
+          rotation,
+        },
       })
     )
   }

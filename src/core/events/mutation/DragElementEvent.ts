@@ -2,17 +2,13 @@ import { Vector2 } from '../../elements'
 
 import { AbstractMutationElementEvent, IMutationElementEventData } from './AbstractMutationElementEvent'
 
-export interface ElementDragData extends IMutationElementEventData {
-  position: Vector2
-}
-export class DragElementEvent extends AbstractMutationElementEvent<ElementDragData> {
-  type = 'element:drag'
-}
-
-export interface ElementRotateData extends IMutationElementEventData {
-  rotate: number
+export interface NodeTransformData extends IMutationElementEventData {
+  transform: {
+    position?: Vector2
+    rotation?: number
+  }
 }
 
-export class RotateElementEvent extends AbstractMutationElementEvent<ElementDragData> {
-  type = 'element:rotate'
+export class NodeTransformEvent extends AbstractMutationElementEvent<NodeTransformData> {
+  type = 'node:transform'
 }

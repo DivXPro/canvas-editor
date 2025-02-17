@@ -4,15 +4,27 @@ import { EventDriver } from './EventDriver'
 
 export class DragDropDriver extends EventDriver {
   private onPointerDown(event: FederatedPointerEvent) {
-    this.engine.operation?.dragMove.dragStart(event)
+    // if (this.engine.operation?.dragMove.dragging) {
+    //   this.engine.operation?.dragMove.dragStart(event)
+    // } else if (this.engine.operation?.dragMove.rotating) {
+    //   this.engine.operation?.dragMove.rotateStart(event)
+    // }
   }
 
   private onPointerMove(event: FederatedPointerEvent) {
-    this.engine.operation?.dragMove.dragMove(event)
+    if (this.engine.operation?.dragMove.dragging) {
+      this.engine.operation?.dragMove.dragMove(event)
+    } else if (this.engine.operation?.dragMove.rotating) {
+      this.engine.operation?.dragMove.rotateMove(event)
+    }
   }
 
   private onPointerUp(event: FederatedPointerEvent) {
-    this.engine.operation?.dragMove.dragStop(event)
+    if (this.engine.operation?.dragMove.dragging) {
+      this.engine.operation?.dragMove.dragStop(event)
+    } else if (this.engine.operation?.dragMove.rotating) {
+      this.engine.operation?.dragMove.rotateStop(event)
+    }
   }
 
   attach() {

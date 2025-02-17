@@ -2,7 +2,6 @@ import { Application, ApplicationOptions, Size, PointData, EventEmitter } from '
 
 import { IDFrameBase } from './elements/DFrame'
 import { OutlineLayer } from './components/OutlineLayer'
-import { BoundingLayer } from './components/BoundingLayer'
 import { DragDropDriver, EventDriver, SelectionAreaDriver } from './drivers'
 import { BackgroundLayer } from './components/BackgroundLayer'
 import { SelectionAreaLayer } from './components/SelectionAreaLayer'
@@ -34,7 +33,6 @@ export class Engine {
   isDragging = false
   lastPointerDown?: PointData
   outlineLayer?: OutlineLayer
-  boundingLayer?: BoundingLayer
   backgroundLayer?: BackgroundLayer
   selectionAreaLayer?: SelectionAreaLayer
   controlBox?: ControlBox
@@ -75,16 +73,9 @@ export class Engine {
   initGuideLayers(background?: number | string) {
     this.backgroundLayer = new BackgroundLayer({ app: this, color: background })
     this.outlineLayer = new OutlineLayer(this)
-    this.boundingLayer = new BoundingLayer(this)
     this.controlBox = new ControlBox(this)
     this.selectionAreaLayer = new SelectionAreaLayer(this)
-    this.app.stage.addChild(
-      this.backgroundLayer,
-      this.outlineLayer,
-      this.boundingLayer,
-      this.controlBox,
-      this.selectionAreaLayer
-    )
+    this.app.stage.addChild(this.backgroundLayer, this.outlineLayer, this.controlBox, this.selectionAreaLayer)
   }
 
   initEventEmitter() {
@@ -125,7 +116,6 @@ export class Engine {
 
     this.zoomRatio = zoomRatio
     this.operation?.frame?.setZoom(this.zoomRatio)
-    this.boundingLayer?.update()
     this.operation?.hover.clear()
     event.preventDefault()
     event.stopPropagation()

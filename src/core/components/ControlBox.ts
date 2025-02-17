@@ -1,4 +1,4 @@
-import { Container, FederatedPointerEvent, Graphics } from 'pixi.js'
+import { Container, FederatedPointerEvent, Graphics, Point } from 'pixi.js'
 
 import { Engine } from '../Engine'
 import * as UICfg from '../config'
@@ -22,7 +22,7 @@ export class ControlBox extends Container {
 
     this.engine.events.on('element:select', this.handleSelectChange.bind(this))
     this.engine.events.on('element:unselect', this.handleSelectChange.bind(this))
-    this.engine.events.on('element:drag', this.handleDragElement.bind(this))
+    this.engine.events.on('node:transform', this.handleTransformNode.bind(this))
   }
 
   private initBorder() {
@@ -74,8 +74,9 @@ export class ControlBox extends Container {
   }
 
   private handleRotateStart(event: FederatedPointerEvent) {
-    console.log('RotateElementEvent')
     this.engine.operation?.dragMove.rotateStart(event)
+    event.preventDefault()
+    event.stopPropagation()
     // this.lastRotatePoint = { x: event.globalX, y: event.globalY }
     // event.stopPropagation()
   }
@@ -120,7 +121,11 @@ export class ControlBox extends Container {
     this.rotateHandle.position.set(centerX, centerY)
   }
 
-  handleDragElement() {
+  get rotationHandlePos() {
+    return this.getGlobalPosition(new Point(this.rotateHandle.position.x, this.rotateHandle.position.y))
+  }
+
+  handleTransformNode() {
     this.update()
   }
 

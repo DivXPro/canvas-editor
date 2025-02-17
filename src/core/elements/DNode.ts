@@ -3,7 +3,6 @@ import { Container, EventMode, FederatedPointerEvent, Matrix, Point, Size } from
 import { action, computed, makeObservable, observable } from 'mobx'
 
 import { Engine } from '../Engine'
-import { BoundingBox } from '../components/BoundingBox'
 import { Outline } from '../components/Outline'
 
 import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Vector2 } from './type'
@@ -81,7 +80,6 @@ export abstract class DNode implements IDNode<any> {
   sharedPluginData?: any
 
   item?: Container
-  boundingBox?: BoundingBox
   outline?: Outline
 
   constructor(options: DNodeOptions) {
@@ -152,7 +150,6 @@ export abstract class DNode implements IDNode<any> {
       setRotation: action.bound,
     })
     this.outline = this.engine.outlineLayer?.addOutline(this)
-    this.boundingBox = this.engine.boundingLayer?.addBoundingBox(this)
   }
   visable?: boolean | undefined
 
@@ -454,7 +451,6 @@ export abstract class DNode implements IDNode<any> {
   destory() {
     this.item?.destroy()
     this.outline?.destroy()
-    this.boundingBox?.destroy()
   }
 }
 
