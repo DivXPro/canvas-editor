@@ -39,6 +39,24 @@ export class SelectionAreaLayer extends Container {
 
     // 更新选区大小
     this.selectionArea.update(event.data.canvasX, event.data.canvasY)
+
+    // 获取选区的边界
+    const bounds = this.selectionArea.getBounds()
+
+    // 获取 frame 的直接子节点
+    const candidateNodes = this.engine.operation?.frame?.children ?? []
+
+    // 遍历所有子节点，检查是否在选区范围内
+    const selectedNodes = candidateNodes.filter(node => {
+      const rectPoints = node.absRectPoints
+
+      return rectPoints.some(point => {
+        return point.x >= bounds.left && point.x <= bounds.right && point.y >= bounds.top && point.y <= bounds.bottom
+      })
+    })
+
+    // 更新选中的节点
+    this.engine.operation?.selection.select(selectedNodes.map(node => node.id))
   }
 
   private onSelectionEnd(event: SelectionAreaEndEvent) {

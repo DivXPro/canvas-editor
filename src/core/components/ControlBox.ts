@@ -94,6 +94,7 @@ export class ControlBox extends Container {
     if (rect.length === 0) {
       return
     }
+    console.log('selected rect', rect)
     const firstSelected = this.engine.operation?.findById(this.selection.selected[0])
     const handleRotation = this.selection.selected.length === 1 ? (firstSelected?.rotation ?? 0) : 0
 

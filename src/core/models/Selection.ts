@@ -4,6 +4,7 @@ import { DNode, Vector2 } from '../elements'
 import { SelectElementEvent, UnselectElementEvent } from '../events/mutation'
 import { Engine } from '../Engine'
 import { calculateBoundsFromPoints } from '../utils/transform'
+import { isArr } from '../utils/types'
 
 import { Operation } from './Operation'
 
@@ -51,25 +52,39 @@ export class Selection {
     return Array.isArray(ids) ? ids.map((node: any) => (typeof node === 'string' ? node : node?.id)) : []
   }
 
-  select(id: string | DNode) {
-    if (typeof id === 'string') {
-      if (this.selected.length === 1 && this.selected.includes(id)) {
-        this.trigger(SelectElementEvent)
-
-        return
-      }
-      this.selected.clear()
-      this.selected.push(id)
-      this.indexes = { [id]: true }
-      this.trigger(SelectElementEvent)
-    } else {
-      this.select(id?.id)
+  select(ids: string | DNode | Array<string | DNode>): void {
+    if (!isArr(ids)) {
+      return this.select([ids])
     }
+    if (isArr(ids) && ids.some(id => typeof id !== 'string')) {
+      return this.select(
+        ids.map(idOrNode => {
+          if (typeof idOrNode === 'string') {
+            return idOrNode
+          } else {
+            return idOrNode?.id
+          }
+        })
+      )
+    }
+
+    const nodeIds = isArr(ids) ? (ids as string[]) : ([ids] as string[])
+
+    if (this.selected.length === nodeIds.length && nodeIds.every(id => this.indexes[id])) {
+      return
+    }
+    this.selected.clear()
+    this.selected.push(...nodeIds)
+    this.indexes = {}
+    nodeIds.forEach(id => {
+      this.indexes[id] = true
+    })
+    this.trigger(SelectElementEvent)
   }
 
-  safeSelect(id: string | DNode) {
-    if (!id) return
-    this.select(id)
+  safeSelect(ids: string | DNode | Array<string | DNode>) {
+    if (!ids) return
+    this.select(ids)
   }
 
   get selectedNodes() {
@@ -109,7 +124,7 @@ export class Selection {
         { x: bounds.x, y: bounds.y },
         { x: bounds.x + bounds.width, y: bounds.y },
         { x: bounds.x + bounds.width, y: bounds.y + bounds.height },
-        { x: bounds.x + bounds.width, y: bounds.y + bounds.height },
+        { x: bounds.x, y: bounds.y + bounds.height },
       ]
     }
 

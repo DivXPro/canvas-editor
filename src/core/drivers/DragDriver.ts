@@ -2,7 +2,7 @@ import { FederatedPointerEvent } from 'pixi.js'
 
 import { EventDriver } from './EventDriver'
 
-export class DragDropDriver extends EventDriver {
+export class DragDriver extends EventDriver {
   private onPointerDown(event: FederatedPointerEvent) {
     // if (this.engine.operation?.dragMove.dragging) {
     //   this.engine.operation?.dragMove.dragStart(event)

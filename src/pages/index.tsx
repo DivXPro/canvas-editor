@@ -28,22 +28,22 @@ const data: any = {
     },
     type: 'FRAME',
     children: [
-      // {
-      //   id: 'rectangle-1',
-      //   name: 'Rectangle 1',
-      //   type: 'RECTANGLE',
-      //   position: {
-      //     x: 150,
-      //     y: 50,
-      //   },
-      //   size: {
-      //     width: 100,
-      //     height: 100,
-      //   },
-      //   // cornerRadius: 20,
-      //   // rotation: -Math.PI / 4,
-      //   fills: [{ type: 'SOLID', color: ColorUtils.hexToRGBA('#EB2424') }],
-      // },
+      {
+        id: 'rectangle-1',
+        name: 'Rectangle 1',
+        type: 'RECTANGLE',
+        position: {
+          x: 150,
+          y: 50,
+        },
+        size: {
+          width: 100,
+          height: 100,
+        },
+        // cornerRadius: 20,
+        // rotation: -Math.PI / 4,
+        fills: [{ type: 'SOLID', color: ColorUtils.hexToRGBA('#EB2424') }],
+      },
       // {
       //   id: 'text-1',
       //   name: 'Text 1',

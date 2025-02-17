@@ -2,7 +2,7 @@ import { Application, ApplicationOptions, Size, PointData, EventEmitter } from '
 
 import { IDFrameBase } from './elements/DFrame'
 import { OutlineLayer } from './components/OutlineLayer'
-import { DragDropDriver, EventDriver, SelectionAreaDriver } from './drivers'
+import { DragDriver, EventDriver, SelectionAreaDriver } from './drivers'
 import { BackgroundLayer } from './components/BackgroundLayer'
 import { SelectionAreaLayer } from './components/SelectionAreaLayer'
 import { Operation } from './models/Operation'
@@ -86,7 +86,7 @@ export class Engine {
 
   initDrivers() {
     this.drivers.push(new SelectionAreaDriver(this))
-    this.drivers.push(new DragDropDriver(this))
+    this.drivers.push(new DragDriver(this))
     this.drivers.forEach(driver => {
       driver.attach()
     })

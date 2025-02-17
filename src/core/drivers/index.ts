@@ -1,3 +1,3 @@
 export * from './EventDriver'
-export * from './DragDropDriver'
+export * from './DragDriver'
 export * from './SelectionAreaDriver'
