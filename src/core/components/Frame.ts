@@ -1,4 +1,5 @@
 import { Application, Container, Graphics } from 'pixi.js'
+import { Engine } from '../Engine'
 
 export interface FrameOptions {
   x: number
@@ -8,10 +9,12 @@ export interface FrameOptions {
   rotation?: number
   pivot?: { x: number; y: number }
   app: Application
+  engine: Engine
 }
 
 export class Frame extends Container {
   app: Application
+  engine: Engine
   background: Graphics
 
   constructor(options: FrameOptions) {
@@ -26,6 +29,9 @@ export class Frame extends Container {
     })
 
     this.app = options.app
+    this.engine = options.engine
+
+    this.pivot.set(width / 2, height / 2)
     this.background = new Graphics({ x: 0, y: 0 }).rect(0, 0, width, height).fill({ color: 0xffffff })
 
     this.addChild(this.background)
@@ -38,7 +44,7 @@ export class Frame extends Container {
 
   set zoomRatio(zoom: number) {
     this.scale.set(zoom)
-    this.updateMask()
+    // this.updateMask()
   }
 
   updateMask() {
@@ -46,10 +52,11 @@ export class Frame extends Container {
       x: 0,
       y: 0,
     })
-      .rect(0, 0, this.width * this.scale.x, this.height * this.scale.y)
+      .rect(0, 0, this.width, this.height)
       .fill({ color: 'green' })
 
     mask.rotation = this.rotation
+    this.addChild(mask)
     this.mask = mask
   }
 }

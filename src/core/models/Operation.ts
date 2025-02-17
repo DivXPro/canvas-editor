@@ -59,11 +59,22 @@ export class Operation {
   }
 
   init(frame: IDFrameBase | DefaultFrameType = DefaultFrame) {
+    // const position = {
+    //   x: frame.position.x + (this.engine.canvasSize?.width ?? 0) / 2 - frame.size.width / 2,
+    //   y: frame.position.y + (this.engine.canvasSize?.height ?? 0) / 2 - frame.size.height / 2,
+    // }
+
+    const position = {
+      x: frame.position.x + (this.engine.canvasSize?.width ?? 0) / 2,
+      y: frame.position.y + (this.engine.canvasSize?.height ?? 0) / 2,
+    }
+
+    console.log('position', position)
     this.frame = new DFrame({
       engine: this.engine,
       id: frame.id,
       name: frame.name,
-      position: frame.position,
+      position: position,
       size: frame.size,
       rotation: frame.rotation,
       children: frame.children,

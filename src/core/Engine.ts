@@ -11,7 +11,7 @@ import { ControlBox } from './components/ControlBox'
 
 export interface EngineOptions extends Partial<ApplicationOptions> {
   enableZoom?: boolean
-  canvasSize?: Size
+  canvasSize: Size
   data: IDApp
   background?: number
 }
@@ -28,6 +28,7 @@ export class Engine {
   maxZoom = 2
   minZoom = 0.5
   zoomRatio = 1
+  canvasSize?: Size
   enableZoom = false
   isZooming = false
   isDragging = false
@@ -48,18 +49,18 @@ export class Engine {
   }
 
   async init(options: EngineOptions) {
-    await this.app.init(options)
-    this.app.canvas.addEventListener('contextmenu', e => {
-      e.preventDefault()
-    })
-
-    const { enableZoom, data, background } = options
+    const { enableZoom, data, background, canvasSize } = options
 
     this.id = data.id
     this.name = data.name
     this.enableZoom = enableZoom ?? false
     this.data = data
+    this.canvasSize = canvasSize
 
+    await this.app.init(options)
+    this.app.canvas.addEventListener('contextmenu', e => {
+      e.preventDefault()
+    })
     this.initGuideLayers(background)
     this.initEventEmitter()
     this.operation = new Operation(this)

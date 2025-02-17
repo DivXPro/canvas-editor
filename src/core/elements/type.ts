@@ -28,7 +28,7 @@ export interface NodeBase extends Global {
    * element after scaling and rotation. Only present if geometry=paths
    * is passed
    */
-  position?: Vector2
+  position: Vector2
   rotation?: number
   /**
    * An array of fill paints applied to the node

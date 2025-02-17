@@ -26,12 +26,14 @@ export class DFrame extends DFrameBase {
 
     this.item = new Frame({
       app: this.engine.app,
+      engine: this.engine,
       x: this.position.x,
       y: this.position.y,
       rotation: this.rotation,
       width: this.size.width,
       height: this.size.height,
     })
+    // this.item.pivot.set(this.size.width / 2, this.size.height / 2)
     this.initChildren(options.children)
   }
 

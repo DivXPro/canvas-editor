@@ -19,12 +19,12 @@ const data: any = {
       a: 1,
     },
     position: {
-      x: 50,
-      y: 50,
+      x: 0,
+      y: 0,
     },
     size: {
       width: 1024,
-      height: 1024,
+      height: 512,
     },
     type: 'FRAME',
     children: [
@@ -153,6 +153,8 @@ export default function IndexPage() {
       const engine = new Engine()
 
       if (containerRef.current) {
+        const { width, height } = containerRef.current.getBoundingClientRect()
+        console.log('size', width, height)
         await engine.init({
           background: 0xdfdfdf,
           resizeTo: containerRef.current,
@@ -161,6 +163,7 @@ export default function IndexPage() {
           autoDensity: true,
           enableZoom: true,
           data,
+          canvasSize: { width, height },
         })
       }
 
