@@ -1,4 +1,4 @@
-import { action, makeObservable, observable } from 'mobx'
+import { action, computed, makeObservable, observable } from 'mobx'
 
 import { CompositeCommand } from './commands'
 
@@ -25,6 +25,8 @@ export class History {
     makeObservable(this, {
       current: observable.ref,
       history: observable.shallow,
+      allowUndo: computed,
+      allowRedo: computed,
       push: action.bound,
       undo: action.bound,
       redo: action.bound,
@@ -37,6 +39,7 @@ export class History {
   }
 
   push(command: CompositeCommand) {
+    console.log('history push', command)
     if (this.locking) return
     if (this.current < this.history.length - 1) {
       this.history = this.history.slice(0, this.current + 1)

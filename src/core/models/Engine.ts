@@ -7,9 +7,9 @@ import { BackgroundLayer } from '../components/BackgroundLayer'
 import { SelectionAreaLayer } from '../components/SelectionAreaLayer'
 import { DNode } from '../elements'
 import { ControlBox } from '../components/ControlBox'
+import { ZoomChangeEvent } from '../events/view/ZoomChangeEvent'
 
 import { Operation } from './Operation'
-import { ZoomChangeEvent } from '../events/view/ZoomChangeEvent'
 
 export interface EngineOptions extends Partial<ApplicationOptions> {
   enableZoom?: boolean
@@ -43,11 +43,11 @@ export class Engine {
   drivers: EventDriver[] = []
   data?: IDApp
   app: Application
-  operation?: Operation
-  focus?: DNode
+  operation: Operation
 
   constructor() {
     this.app = new Application()
+    this.operation = new Operation(this)
   }
 
   async init(options: EngineOptions) {
@@ -58,14 +58,9 @@ export class Engine {
     this.enableZoom = enableZoom ?? false
     this.data = data
     this.canvasSize = canvasSize
-
     await this.app.init(options)
-    this.app.canvas.addEventListener('contextmenu', e => {
-      e.preventDefault()
-    })
     this.initGuideLayers(background)
     this.initEventEmitter()
-    this.operation = new Operation(this)
     this.operation.init(data.frame)
     this.initDrivers()
     if (this.enableZoom) {
@@ -85,6 +80,9 @@ export class Engine {
     this.app.stage.eventMode = 'static'
     // wheel
     this.app.canvas.addEventListener('wheel', e => this.events.emit('wheel', e), { passive: false })
+    this.app.canvas.addEventListener('rightclick', () => console.debug('rightclick'), { passive: false })
+    this.app.canvas.addEventListener('touchstart', (e) => console.debug('touchstart', e), { passive: false })
+    // this.app.canvas.addEventListener('pointerdown', this.handlePointerdown.bind(this), { passive: false })
   }
 
   initDrivers() {
@@ -146,6 +144,15 @@ export class Engine {
       id: this.data?.id,
       name: this.data?.name,
       frame: this.operation?.frame?.jsonData,
+    }
+  }
+
+  handlePointerdown(e: PointerEvent) {
+    console.debug('handlePointerdown', e, e.buttons)
+
+    if (e.buttons === 2) {
+      console.debug('btn 2')
+      // this.workspaceProps?.openContextMenu?.(e)
     }
   }
 }

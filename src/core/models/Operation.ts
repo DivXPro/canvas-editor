@@ -59,6 +59,7 @@ export class Operation {
     this.history = new History()
     makeObservable(this, {
       frame: observable,
+      history: observable.shallow,
     })
   }
 
