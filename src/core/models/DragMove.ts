@@ -9,6 +9,7 @@ import { calculateAngleABC } from '../utils/transform'
 
 import { Engine } from './Engine'
 import { Operation } from './Operation'
+import { CompositeCommand, MoveCommand, RotationCommand } from './commands'
 
 export interface IMoveOptions {
   engine: Engine
@@ -30,7 +31,7 @@ export class DragMove {
   engine: Engine
   operation: Operation
 
-  dragOffsets: Record<string, Vector2> = {}
+  nodeInitialPositions: Record<string, Vector2> = {}
   dragStartPoint?: Vector2
   dragging = false
 
@@ -43,7 +44,7 @@ export class DragMove {
     this.operation = options.operation
     makeObservable(this, {
       dragging: observable,
-      dragOffsets: observable,
+      nodeInitialPositions: observable,
       dragStart: action.bound,
       dragMove: action.bound,
       dragStop: action.bound,
@@ -51,17 +52,17 @@ export class DragMove {
     })
   }
 
-  rotateStart(event: FederatedPointerEvent) {
+  // Drag related methods
+  dragStart(event: FederatedPointerEvent) {
     if (this.operation.selection.selectedNodes.length > 0) {
-      this.rotates = {}
-      this.rotateStartPoint = {
-        x: event.global.x,
-        y: event.global.y,
-      }
-      this.rotating = true
-
+      this.dragging = true
+      this.nodeInitialPositions = {}
+      this.dragStartPoint = { x: event.clientX, y: event.clientY }
       this.operation.selection.selectedNodes.forEach(node => {
-        this.rotates[node.id] = node.rotation
+        this.nodeInitialPositions[node.id] = {
+          x: node.position.x,
+          y: node.position.y
+        }
       })
 
       const dragStartEvent = new DragStartEvent({
@@ -79,16 +80,74 @@ export class DragMove {
     }
   }
 
-  dragStart(event: FederatedPointerEvent) {
-    if (this.operation.selection.selectedNodes.length > 0) {
-      this.dragging = true
-      this.dragOffsets = {}
-      this.dragStartPoint = { x: event.clientX, y: event.clientY }
-      this.operation.selection.selectedNodes.forEach(node => {
-        this.dragOffsets[node.id] = {
-          x: node.position.x - event.clientX,
-          y: node.position.y - event.clientY,
+  dragMove(event: FederatedPointerEvent) {
+    if (this.dragStartPoint == null) {
+      return
+    }
+    const distance = Math.sqrt(
+      Math.pow(event.clientX - this.dragStartPoint.x, 2) + Math.pow(event.clientY - this.dragStartPoint.y, 2)
+    )
+
+    if (distance < 5) {
+      return
+    }
+
+    // 移动选中的节点
+    this.operation.selection.selectedNodes.forEach(node => {
+      if (!node.locked) {
+        const initialPosition = this.nodeInitialPositions[node.id]
+        // 计算鼠标移动的距离
+        const deltaX = event.clientX - this.dragStartPoint!.x
+        const deltaY = event.clientY - this.dragStartPoint!.y
+        // 根据初始位置和鼠标移动距离计算新位置
+        const vector = {
+          x: initialPosition.x + deltaX,
+          y: initialPosition.y + deltaY,
         }
+
+        this.triggerMove(node, vector)
+      }
+    })
+  }
+
+  dragStop() {
+    if (this.dragging && Object.keys(this.nodeInitialPositions).length > 0) {
+      const compositeCommand = new CompositeCommand({
+        timestamp: Date.now(),
+      })
+
+      this.operation.selection.selectedNodes.forEach(node => {
+        if (!node.locked) {
+          const moveCommand = new MoveCommand(
+            node,
+            this.engine,
+            { position: node.position },
+            { position: this.nodeInitialPositions[node.id] }
+          )
+
+          compositeCommand.add(moveCommand)
+        }
+      })
+      this.operation.history.push(compositeCommand)
+    }
+
+    this.dragging = false
+    this.nodeInitialPositions = {}
+    this.dragStartPoint = undefined
+  }
+
+  // Rotate related methods
+  rotateStart(event: FederatedPointerEvent) {
+    if (this.operation.selection.selectedNodes.length > 0) {
+      this.rotates = {}
+      this.rotateStartPoint = {
+        x: event.global.x,
+        y: event.global.y,
+      }
+      this.rotating = true
+
+      this.operation.selection.selectedNodes.forEach(node => {
+        this.rotates[node.id] = node.rotation
       })
 
       const dragStartEvent = new DragStartEvent({
@@ -135,9 +194,7 @@ export class DragMove {
           if (rotate == null) {
             return
           }
-          // const angle = calculateAngleABC(this.rotateStartPoint as Vector2, node.globalPosition, rotatePoint)
 
-          // 使用取模运算限制角度在 0-360 度范围内
           const newRotation = (rotate + (Math.PI * angle) / 180) % (Math.PI * 2)
 
           this.triggerRotation(node, newRotation)
@@ -159,84 +216,33 @@ export class DragMove {
     }
   }
 
-  dragMove(event: FederatedPointerEvent) {
-    if (this.dragStartPoint == null) {
-      return
-    }
-    const distance = Math.sqrt(
-      Math.pow(event.clientX - this.dragStartPoint.x, 2) + Math.pow(event.clientY - this.dragStartPoint.y, 2)
-    )
+  rotateStop() {
+    if (this.rotating && Object.keys(this.rotates).length > 0) {
+      const compositeCommand = new CompositeCommand({
+        timestamp: Date.now(),
+      })
 
-    if (distance < 5) {
-      return
-    }
+      this.operation.selection.selectedNodes.forEach(node => {
+        if (!node.locked) {
+          const rotateCommand = new RotationCommand(
+            node,
+            this.engine,
+            { rotation: node.rotation },
+            { rotation: this.rotates[node.id] }
+          )
 
-    // 移动选中的节点
-    this.operation.selection.selectedNodes.forEach(node => {
-      if (!node.locked) {
-        const offset = this.dragOffsets[node.id]
-        // 检查节点是否被锁定
-        const vector = {
-          x: event.clientX + offset.x,
-          y: event.clientY + offset.y,
+          compositeCommand.add(rotateCommand)
         }
+      })
+      this.operation.history.push(compositeCommand)
+    }
 
-        this.triggerMove(node, vector)
-      }
-    })
-    // const dragMoveEvent = new DragMoveEvent({
-    //   clientX: event.clientX,
-    //   clientY: event.clientY,
-    //   pageX: event.pageX,
-    //   pageY: event.pageY,
-    //   target: event.target,
-    //   view: event.view,
-    //   canvasX: event.global.x,
-    //   canvasY: event.global.y,
-    // })
-
-    // this.engine.events.emit(dragMoveEvent.type, dragMoveEvent)
-  }
-
-  rotateStop(event: FederatedPointerEvent) {
-    console.log('rotateStop')
     this.rotating = false
     this.rotates = {}
     this.rotateStartPoint = undefined
-
-    // const dragStopEvent = new DragStopEvent({
-    //   clientX: event.clientX,
-    //   clientY: event.clientY,
-    //   pageX: event.pageX,
-    //   pageY: event.pageY,
-    //   target: event.target,
-    //   view: event.view,
-    //   canvasX: event.global.x,
-    //   canvasY: event.global.y,
-    // })
-
-    // this.engine.events.emit(dragStopEvent.type, dragStopEvent)
   }
 
-  dragStop(event: FederatedPointerEvent) {
-    this.dragging = false
-    this.dragOffsets = {}
-    this.dragStartPoint = undefined
-
-    // const dragStopEvent = new DragStopEvent({
-    //   clientX: event.clientX,
-    //   clientY: event.clientY,
-    //   pageX: event.pageX,
-    //   pageY: event.pageY,
-    //   target: event.target,
-    //   view: event.view,
-    //   canvasX: event.global.x,
-    //   canvasY: event.global.y,
-    // })
-
-    // this.engine.events.emit(dragStopEvent.type, dragStopEvent)
-  }
-
+  // Event trigger methods
   triggerMove(node: DNode, position: Vector2) {
     node.moveTo(position)
     this.engine.events.emit(

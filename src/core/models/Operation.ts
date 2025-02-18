@@ -1,13 +1,14 @@
 import { makeObservable, observable } from 'mobx'
 
-import { Engine } from './Engine'
 import { DNode, DFrame, DRectangle, DText, IDFrameBase, IDRectangleBase, IDTextBase, DFrameBase } from '../elements'
 import { FrameBase, NodeBase } from '../elements/type'
 import { DGroup, IDGroupBase } from '../elements/DGroup'
 
+import { Engine } from './Engine'
 import { Selection } from './Selection'
 import { Hover } from './Hover'
 import { DragMove } from './DragMove'
+import { History } from './History'
 
 declare type DefaultFrameType = Omit<IDFrameBase, 'engine' | 'parent'>
 
@@ -39,6 +40,8 @@ export class Operation {
 
   dragMove: DragMove
 
+  history: History
+
   constructor(engine: Engine) {
     this.engine = engine
     this.hover = new Hover({
@@ -53,6 +56,7 @@ export class Operation {
       engine: this.engine,
       operation: this,
     })
+    this.history = new History()
     makeObservable(this, {
       frame: observable,
     })

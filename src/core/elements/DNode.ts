@@ -57,7 +57,7 @@ export abstract class DNode implements IDNode<any> {
   protected _visible: boolean = true
   protected _rotation?: number
   protected _position: Vector2
-  protected _size?: Size
+  protected _size: Size
 
   engine: Engine
   parent?: DFrameBase
@@ -112,7 +112,7 @@ export abstract class DNode implements IDNode<any> {
     }
 
     this._position = options.position ?? { x: 0, y: 0 }
-    this._size = options.size ?? this._size
+    this._size = options.size ?? { width: 0, height: 0 }
     this._locked = options.locked ?? false
     this._visible = options.visible ?? true
     this._rotation = options.rotation
@@ -165,8 +165,12 @@ export abstract class DNode implements IDNode<any> {
     this.setPosition(value.x, value.y)
   }
 
-  get size() {
+  get size(): Size {
     return this._size
+  }
+
+  set size(value: Size) {
+    this.size = value
   }
 
   get r() {
@@ -380,16 +384,9 @@ export abstract class DNode implements IDNode<any> {
     }
   }
 
-  // protected handlePointerMove(event: FederatedPointerEvent) {
-  //   if (this.operation?.dragMove.dragging) {
-  //     this.operation?.dragMove.dragMove(event)
-  //   }
-  //   event.stopPropagation()
-  // }
-
   protected handlePointerUp(event: FederatedPointerEvent) {
     if (this.operation?.dragMove.dragging) {
-      this.operation?.dragMove.dragStop(event)
+      this.operation?.dragMove.dragStop()
     }
     event.stopPropagation()
   }
