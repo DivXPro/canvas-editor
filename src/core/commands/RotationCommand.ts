@@ -1,5 +1,5 @@
-import { DNode } from '../../elements'
-import { Engine } from '../Engine'
+import { DNode } from '../elements'
+import { Engine } from '../models/Engine'
 
 import { ICommand, CommandType } from './Command'
 

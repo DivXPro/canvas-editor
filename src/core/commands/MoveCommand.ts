@@ -1,5 +1,5 @@
-import { Vector2, DNode } from '../../elements'
-import { Engine } from '../Engine'
+import { Vector2, DNode } from '../elements'
+import { Engine } from '../models/Engine'
 
 import { ICommand, CommandType } from './Command'
 
@@ -33,6 +33,7 @@ export class MoveCommand implements ICommand {
   }
 
   undo() {
+    console.debug('undo', this.serialize())
     const node = this.engine.operation?.findById(this.target) as DNode
 
     try {

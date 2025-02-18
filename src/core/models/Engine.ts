@@ -80,9 +80,6 @@ export class Engine {
     this.app.stage.eventMode = 'static'
     // wheel
     this.app.canvas.addEventListener('wheel', e => this.events.emit('wheel', e), { passive: false })
-    this.app.canvas.addEventListener('rightclick', () => console.debug('rightclick'), { passive: false })
-    this.app.canvas.addEventListener('touchstart', (e) => console.debug('touchstart', e), { passive: false })
-    // this.app.canvas.addEventListener('pointerdown', this.handlePointerdown.bind(this), { passive: false })
   }
 
   initDrivers() {

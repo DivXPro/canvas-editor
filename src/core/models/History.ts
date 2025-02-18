@@ -1,6 +1,6 @@
 import { action, computed, makeObservable, observable } from 'mobx'
 
-import { CompositeCommand } from './commands'
+import { CompositeCommand } from '../commands'
 
 export interface IHistoryProps<T = CompositeCommand> {
   onPush?: (item: T) => void
@@ -15,7 +15,7 @@ export interface ISerializable {
 
 export class History {
   current = 0
-  history: CompositeCommand[] = []
+  history = observable.array<CompositeCommand>([])
   props?: IHistoryProps
   updateTimer = null
   maxSize = 100
@@ -39,21 +39,19 @@ export class History {
   }
 
   push(command: CompositeCommand) {
-    console.log('history push', command)
     if (this.locking) return
-    if (this.current < this.history.length - 1) {
-      this.history = this.history.slice(0, this.current + 1)
+    if (this.current < this.history.length) {
+      this.history.splice(this.current - 1)
     }
 
-    this.current = this.history.length
-
     this.history.push(command)
+
     const overSizeCount = this.history.length - this.maxSize
 
     if (overSizeCount > 0) {
       this.history.splice(0, overSizeCount)
-      this.current = this.history.length - 1
     }
+    this.current = this.history.length
     if (this.props?.onPush) {
       this.props.onPush(command)
     }
@@ -64,16 +62,17 @@ export class History {
   }
 
   get allowRedo() {
-    return this.history.length > this.current + 1
+    return this.history.length > this.current
   }
 
   redo() {
     if (this.allowRedo) {
-      const cmd = this.history[this.current + 1]
+      const cmd = this.history[this.current]
 
       this.locking = true
-      this.locking = false
       this.current++
+      cmd.execute()
+      this.locking = false
       if (this.props?.onRedo) {
         this.props.onRedo(cmd)
       }
@@ -85,8 +84,9 @@ export class History {
       const cmd = this.history[this.current - 1]
 
       this.locking = true
-      this.locking = false
+      cmd.undo()
       this.current--
+      this.locking = false
       if (this.props?.onUndo) {
         this.props.onUndo(cmd)
       }
@@ -94,7 +94,7 @@ export class History {
   }
 
   clear() {
-    this.history = []
+    this.history.splice(0, this.history.length)
     this.current = 0
   }
 }

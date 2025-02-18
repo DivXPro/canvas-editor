@@ -9,7 +9,7 @@ import { calculateAngleABC } from '../utils/transform'
 
 import { Engine } from './Engine'
 import { Operation } from './Operation'
-import { CompositeCommand, MoveCommand, RotationCommand } from './commands'
+import { CompositeCommand, MoveCommand, RotationCommand } from '../commands'
 
 export interface IMoveOptions {
   engine: Engine
@@ -33,11 +33,11 @@ export class DragMove {
 
   nodeInitialPositions: Record<string, Vector2> = {}
   dragStartPoint?: Vector2
-  dragging = false
+  dragging = 0
 
   rotates: Record<string, number> = {}
   rotateStartPoint?: Vector2
-  rotating = false
+  rotating = 0
 
   constructor(options: IMoveOptions) {
     this.engine = options.engine
@@ -55,13 +55,13 @@ export class DragMove {
   // Drag related methods
   dragStart(event: FederatedPointerEvent) {
     if (this.operation.selection.selectedNodes.length > 0) {
-      this.dragging = true
+      this.dragging = 1
       this.nodeInitialPositions = {}
       this.dragStartPoint = { x: event.clientX, y: event.clientY }
       this.operation.selection.selectedNodes.forEach(node => {
         this.nodeInitialPositions[node.id] = {
           x: node.position.x,
-          y: node.position.y
+          y: node.position.y,
         }
       })
 
@@ -91,6 +91,7 @@ export class DragMove {
     if (distance < 5) {
       return
     }
+    this.dragging = 2
 
     // 移动选中的节点
     this.operation.selection.selectedNodes.forEach(node => {
@@ -111,7 +112,7 @@ export class DragMove {
   }
 
   dragStop() {
-    if (this.dragging && Object.keys(this.nodeInitialPositions).length > 0) {
+    if (this.dragging === 2 && Object.keys(this.nodeInitialPositions).length > 0) {
       const compositeCommand = new CompositeCommand({
         timestamp: Date.now(),
       })
@@ -131,7 +132,7 @@ export class DragMove {
       this.operation.history.push(compositeCommand)
     }
 
-    this.dragging = false
+    this.dragging = 0
     this.nodeInitialPositions = {}
     this.dragStartPoint = undefined
   }
@@ -144,7 +145,7 @@ export class DragMove {
         x: event.global.x,
         y: event.global.y,
       }
-      this.rotating = true
+      this.rotating = 1
 
       this.operation.selection.selectedNodes.forEach(node => {
         this.rotates[node.id] = node.rotation
@@ -174,6 +175,8 @@ export class DragMove {
       if (distance < 5) {
         return
       }
+
+      this.rotating = 2
 
       const rotatePoint = {
         x: event.globalX,
@@ -217,7 +220,7 @@ export class DragMove {
   }
 
   rotateStop() {
-    if (this.rotating && Object.keys(this.rotates).length > 0) {
+    if (this.rotating == 2 && Object.keys(this.rotates).length > 0) {
       const compositeCommand = new CompositeCommand({
         timestamp: Date.now(),
       })
@@ -237,7 +240,7 @@ export class DragMove {
       this.operation.history.push(compositeCommand)
     }
 
-    this.rotating = false
+    this.rotating = 0
     this.rotates = {}
     this.rotateStartPoint = undefined
   }
