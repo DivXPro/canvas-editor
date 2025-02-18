@@ -6,8 +6,8 @@ export interface Position {
   clientY: number
   pageX: number
   pageY: number
-  canvasX: number
-  canvasY: number
+  offsetX: number
+  offsetY: number
 }
 
 export interface ICursorEventData extends Position {
@@ -26,8 +26,8 @@ export class AbstractCursorEvent {
       clientY: 0,
       pageX: 0,
       pageY: 0,
-      canvasX: 0,
-      canvasY: 0,
+      offsetX: 0,
+      offsetY: 0,
       target: null,
       view: globalThisPolyfill,
     }

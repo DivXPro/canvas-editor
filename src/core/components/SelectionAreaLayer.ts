@@ -24,8 +24,8 @@ export class SelectionAreaLayer extends Container {
   private onSelectionStart(event: SelectionAreaStartEvent) {
     this.isSelecting = true
     this.startPoint = {
-      x: event.data.canvasX,
-      y: event.data.canvasY,
+      x: event.data.offsetX,
+      y: event.data.offsetY,
     }
 
     // 创建新的选区
@@ -38,7 +38,7 @@ export class SelectionAreaLayer extends Container {
     if (!this.isSelecting || !this.startPoint || !this.selectionArea) return
 
     // 更新选区大小
-    this.selectionArea.update(event.data.canvasX, event.data.canvasY)
+    this.selectionArea.update(event.data.offsetX, event.data.offsetY)
   }
 
   private onSelectionEnd(event: SelectionAreaEndEvent) {

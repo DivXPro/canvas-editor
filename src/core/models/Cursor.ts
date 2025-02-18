@@ -41,8 +41,8 @@ const DEFAULT_POSITION: CursorPosition = {
   clientY: 0,
   pageX: 0,
   pageY: 0,
-  canvasX: 0,
-  canvasY: 0,
+  offsetX: 0,
+  offsetY: 0,
 }
 
 const calcPositionDelta = (end: CursorPosition, start: CursorPosition): CursorPosition => {
@@ -51,8 +51,8 @@ const calcPositionDelta = (end: CursorPosition, start: CursorPosition): CursorPo
     clientY: end.clientY - start.clientY,
     pageX: end.pageX - start.pageX,
     pageY: end.pageY - start.pageY,
-    canvasX: end.canvasX - start.canvasX,
-    canvasY: end.canvasY - start.canvasY,
+    offsetX: end.offsetX - start.offsetX,
+    offsetY: end.offsetY - start.offsetY,
   }
 }
 

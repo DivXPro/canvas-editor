@@ -1,6 +1,6 @@
 import { FederatedPointerEvent } from 'pixi.js'
 
-import { DragStartEvent, DragStopEvent } from '../events'
+import { DragMoveEvent, DragStopEvent } from '../events'
 
 import { EventDriver } from './EventDriver'
 
@@ -22,7 +22,6 @@ export class DragDriver extends EventDriver {
   mouseDownTimer = null
 
   private onPointerDown(event: PointerEvent) {
-    console.log('onPointerDown', event)
     if (event.button !== 0 || event.ctrlKey || event.metaKey) {
       return
     }
@@ -36,27 +35,23 @@ export class DragDriver extends EventDriver {
   }
 
   private onPointerMove(event: FederatedPointerEvent) {
-    if (this.engine.operation?.dragMove.dragging) {
-      this.engine.operation?.dragMove.dragMove(event)
-    } else if (this.engine.operation?.dragMove.rotating) {
-      this.engine.operation?.dragMove.rotateMove(event)
+    // if (this.engine.operation?.dragMove.dragging) {
+    //   this.engine.operation?.dragMove.dragMove(event)
+    // } else if (this.engine.operation?.dragMove.rotating) {
+    //   this.engine.operation?.dragMove.rotateMove(event)
+    // }
+    if (event.clientX === GlobalState.moveEvent?.clientX && event.clientY === GlobalState.moveEvent?.clientY) {
+      return
     }
+    const dragMoveEvent = new DragMoveEvent(event)
+
+    this.events.emit(dragMoveEvent.type, dragMoveEvent)
+    GlobalState.moveEvent = event
   }
 
   private onPointerUp(event: PointerEvent) {
     if (GlobalState.dragging) {
-      const canvasPosition = this.engine.stage.toLocal(event.global)
-
-      const dragStopEvent = new DragStopEvent({
-        clientX: event.clientX,
-        clientY: event.clientY,
-        pageX: event.pageX,
-        pageY: event.pageY,
-        canvasX: 1,
-        canvasY: 1,
-        target: event.target,
-        view: event.view,
-      })
+      const dragStopEvent = new DragStopEvent(event)
 
       this.events.emit(dragStopEvent.type, dragStopEvent)
     }

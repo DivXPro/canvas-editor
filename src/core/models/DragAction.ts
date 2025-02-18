@@ -72,8 +72,8 @@ export class DragMove {
         pageY: event.pageY,
         target: event.target,
         view: event.view,
-        canvasX: event.global.x,
-        canvasY: event.global.y,
+        offsetX: event.global.x,
+        offsetY: event.global.y,
       })
 
       this.engine.events.emit(dragStartEvent.type, dragStartEvent)
@@ -158,8 +158,8 @@ export class DragMove {
         pageY: event.pageY,
         target: event.target,
         view: event.view,
-        canvasX: event.global.x,
-        canvasY: event.global.y,
+        offsetX: event.global.x,
+        offsetY: event.global.y,
       })
 
       this.engine.events.emit(dragStartEvent.type, dragStartEvent)
@@ -211,8 +211,8 @@ export class DragMove {
         pageY: event.pageY,
         target: event.target,
         view: event.view,
-        canvasX: event.global.x,
-        canvasY: event.global.y,
+        offsetX: event.global.x,
+        offsetY: event.global.y,
       })
 
       this.engine.events.emit(rotateMoveEvent.type, rotateMoveEvent)
