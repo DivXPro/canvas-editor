@@ -357,7 +357,7 @@ export abstract class DNode implements IDNode<any> {
     }
   }
 
-  protected handlePointerLeave(event: FederatedPointerEvent) {
+  protected handlePointerLeave() {
     if (this.locked) {
       return
     }

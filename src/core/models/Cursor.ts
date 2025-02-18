@@ -1,6 +1,7 @@
-import { makeObservable, observable, action } from 'mobx'
+import { makeObservable, observable, action, computed } from 'mobx'
 
 import { Position } from '../events'
+
 import { Engine } from './Engine'
 
 export enum CursorStatus {
@@ -58,7 +59,7 @@ const calcPositionDelta = (end: CursorPosition, start: CursorPosition): CursorPo
 export class Cursor {
   engine: Engine
   position: CursorPosition = DEFAULT_POSITION
-  type: CursorType = CursorType.Default
+  _type: CursorType = CursorType.Default
   status: CursorStatus = CursorStatus.Normal
 
   dragType: CursorDragType = CursorDragType.None
@@ -76,7 +77,8 @@ export class Cursor {
       dragType: observable,
       dragStartPosition: observable,
       dragEndPosition: observable,
-      type: observable,
+      type: computed,
+      setType: action.bound,
       setPosition: action.bound,
       setStatus: action.bound,
       setDragType: action.bound,
@@ -86,6 +88,21 @@ export class Cursor {
       setDragStartToCurrentDelta: action.bound,
       setDragStartToEndDelta: action.bound,
     })
+  }
+
+  get type() {
+    return this._type
+  }
+
+  set type(type: CursorType) {
+    this.setType(type)
+  }
+
+  setType(type: CursorType) {
+    this._type = type
+    if (this.engine.app.canvas.style) {
+      this.engine.app.canvas.style.cursor = type
+    }
   }
 
   setPosition(position: CursorPosition) {

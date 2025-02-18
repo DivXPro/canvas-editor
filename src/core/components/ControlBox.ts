@@ -2,7 +2,6 @@ import { Container, FederatedPointerEvent, Graphics, Point } from 'pixi.js'
 
 import { Engine } from '../models/Engine'
 import * as UICfg from '../config'
-import { ZoomChangeEvent } from '../events/view/ZoomChangeEvent'
 
 export class ControlBox extends Container {
   private engine: Engine

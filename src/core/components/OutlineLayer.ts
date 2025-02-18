@@ -1,6 +1,6 @@
 import { Container } from 'pixi.js'
 
-import { Engine } from '../models/Engine'
+import { Engine } from '../models'
 import { DNode } from '../elements'
 
 import { Outline } from './Outline'

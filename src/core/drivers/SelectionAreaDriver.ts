@@ -20,7 +20,7 @@ export class SelectionAreaDriver extends EventDriver {
   private onPointerDown = (e: FederatedPointerEvent) => {
     this.engine.operation?.selection.clear()
     const canvasPosition = this.engine.stage.toLocal(e.global)
-
+    console.log('canvasPosition', canvasPosition, e.global)
     this.selecting = true
     const event = new SelectionAreaStartEvent({
       clientX: e.clientX,

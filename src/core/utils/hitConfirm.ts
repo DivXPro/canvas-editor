@@ -7,7 +7,7 @@ export type BoundsType = {
   height: number
 }
 
-function isPointInBounds(point: PointData, bounds: BoundsType) {
+export function isPointInBounds(point: PointData, bounds: BoundsType) {
   return (
     point.x >= bounds.x &&
     point.x <= bounds.x + bounds.width &&

@@ -5,7 +5,6 @@ import { OutlineLayer } from '../components/OutlineLayer'
 import { DragDriver, EventDriver, SelectionAreaDriver } from '../drivers'
 import { BackgroundLayer } from '../components/BackgroundLayer'
 import { SelectionAreaLayer } from '../components/SelectionAreaLayer'
-import { DNode } from '../elements'
 import { ControlBox } from '../components/ControlBox'
 import { ZoomChangeEvent } from '../events/view/ZoomChangeEvent'
 
@@ -79,6 +78,10 @@ export class Engine {
   initEventEmitter() {
     this.app.stage.eventMode = 'static'
     // wheel
+    this.app.canvas.addEventListener('pointerdown', e => this.events.emit('pointerdown', e), { passive: false })
+    this.app.canvas.addEventListener('pointerup', e => this.events.emit('pointerup', e), { passive: false })
+    this.app.canvas.addEventListener('pointermove', e => this.events.emit('pointermove', e), { passive: false })
+    this.app.canvas.addEventListener('pointertap', e => this.events.emit('pointertap', e), { passive: false })
     this.app.canvas.addEventListener('wheel', e => this.events.emit('wheel', e), { passive: false })
   }
 

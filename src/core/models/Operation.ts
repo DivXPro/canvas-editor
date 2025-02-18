@@ -7,7 +7,7 @@ import { DGroup, IDGroupBase } from '../elements/DGroup'
 import { Engine } from './Engine'
 import { Selection } from './Selection'
 import { Hover } from './Hover'
-import { DragMove } from './DragMove'
+import { DragMove } from './DragAction'
 import { History } from './History'
 
 declare type DefaultFrameType = Omit<IDFrameBase, 'engine' | 'parent'>

@@ -12,10 +12,10 @@ export interface Position {
 
 export interface ICursorEventData extends Position {
   target: DNode | any
-  view?: Window
+  view?: Window | null
 }
 
-export abstract class AbstractCursorEvent {
+export class AbstractCursorEvent {
   data: ICursorEventData
 
   context: any

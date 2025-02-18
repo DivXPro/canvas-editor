@@ -1,5 +1,5 @@
 export * from './Cursor'
-export * from './DragMove'
+export * from './DragAction'
 export * from './Engine'
 export * from './History'
 export * from './Hover'
