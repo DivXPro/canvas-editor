@@ -9,27 +9,16 @@ import { calculateAngleABC } from '../utils/transform'
 import { CompositeCommand, MoveCommand, RotationCommand } from '../commands'
 
 import { Engine } from './Engine'
-import { Operation } from './Operation'
+import { Workbench } from './Workbench'
 
-export interface IMoveOptions {
+export interface ITransformOptions {
   engine: Engine
-  operation: Operation
+  operation: Workbench
 }
 
-export interface IMoveDragStartPorps {
-  point: Vector2
-}
-export interface IMoveDragMovePorps {
-  point: Vector2
-}
-
-export interface IMoveDragDropPorps {
-  point: Vector2
-}
-
-export class DragMove {
+export class TransformHelper {
   engine: Engine
-  operation: Operation
+  operation: Workbench
 
   nodeInitialPositions: Record<string, Vector2> = {}
   dragStartPoint?: Vector2
@@ -39,7 +28,7 @@ export class DragMove {
   rotateStartPoint?: Vector2
   rotating = 0
 
-  constructor(options: IMoveOptions) {
+  constructor(options: ITransformOptions) {
     this.engine = options.engine
     this.operation = options.operation
     makeObservable(this, {

@@ -4,10 +4,10 @@ import { DNode, DFrame, DRectangle, DText, IDFrameBase, IDRectangleBase, IDTextB
 import { FrameBase, NodeBase } from '../elements/type'
 import { DGroup, IDGroupBase } from '../elements/DGroup'
 
-import { Engine } from './Engine'
+import { Engine, IDApp } from './Engine'
 import { Selection } from './Selection'
 import { Hover } from './Hover'
-import { DragMove } from './DragAction'
+import { TransformHelper } from './TransformHelper'
 import { History } from './History'
 
 declare type DefaultFrameType = Omit<IDFrameBase, 'engine' | 'parent'>
@@ -24,12 +24,17 @@ const DefaultFrame: DefaultFrameType = {
   backgroundColor: { r: 1, g: 1, b: 1, a: 1 },
 }
 
-export interface IOperation {
-  frame?: FrameBase
-  selected?: string[]
+export interface IWorkbench {
+  id?: string
+  title?: string
+  data?: FrameBase
 }
 
-export class Operation {
+export class Workbench {
+  id?: string
+
+  title?: string
+
   engine: Engine
 
   frame?: DFrame
@@ -38,7 +43,7 @@ export class Operation {
 
   hover: Hover
 
-  dragMove: DragMove
+  transformHelper: TransformHelper
 
   history: History
 
@@ -52,7 +57,7 @@ export class Operation {
       engine: this.engine,
       operation: this,
     })
-    this.dragMove = new DragMove({
+    this.transformHelper = new TransformHelper({
       engine: this.engine,
       operation: this,
     })
@@ -63,7 +68,11 @@ export class Operation {
     })
   }
 
-  init(frame: IDFrameBase | DefaultFrameType = DefaultFrame) {
+  init(props: IDApp) {
+    this.id = props.id
+    this.title = props.title
+
+    const frame = props.canvas[0]
     const position = {
       x: frame.position.x + (this.engine.canvasSize?.width ?? 0) / 2,
       y: frame.position.y + (this.engine.canvasSize?.height ?? 0) / 2,
@@ -87,9 +96,11 @@ export class Operation {
     return this.frame?.findById(id)
   }
 
-  serialize(): IOperation {
+  serialize(): IWorkbench {
     return {
-      frame: this.frame?.jsonData,
+      id: this.id,
+      title: this.title,
+      data: this.frame?.jsonData,
     }
   }
 

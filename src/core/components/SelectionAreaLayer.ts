@@ -16,12 +16,12 @@ export class SelectionAreaLayer extends Container {
     this.engine = engine
 
     // 监听选区事件
-    this.engine.events.on('selection:start', this.onSelectionStart.bind(this))
-    this.engine.events.on('selection:move', this.onSelectionMove.bind(this))
-    this.engine.events.on('selection:end', this.onSelectionEnd.bind(this))
+    this.engine.events.on('selection:start', this.onSelectionStart)
+    this.engine.events.on('selection:move', this.onSelectionMove)
+    this.engine.events.on('selection:end', this.onSelectionEnd)
   }
 
-  private onSelectionStart(event: SelectionAreaStartEvent) {
+  private onSelectionStart = (event: SelectionAreaStartEvent) => {
     this.isSelecting = true
     this.startPoint = {
       x: event.data.offsetX,
@@ -34,14 +34,14 @@ export class SelectionAreaLayer extends Container {
     this.addChild(this.selectionArea)
   }
 
-  private onSelectionMove(event: SelectionAreaMoveEvent) {
+  private onSelectionMove = (event: SelectionAreaMoveEvent) => {
     if (!this.isSelecting || !this.startPoint || !this.selectionArea) return
 
     // 更新选区大小
     this.selectionArea.update(event.data.offsetX, event.data.offsetY)
   }
 
-  private onSelectionEnd(event: SelectionAreaEndEvent) {
+  private onSelectionEnd = (event: SelectionAreaEndEvent) => {
     if (!this.isSelecting || !this.startPoint || !this.selectionArea) return
 
     this.isSelecting = false
@@ -53,9 +53,9 @@ export class SelectionAreaLayer extends Container {
   }
 
   destroy() {
-    this.engine.events.off('selectionStart', this.onSelectionStart.bind(this))
-    this.engine.events.off('selectionMove', this.onSelectionMove.bind(this))
-    this.engine.events.off('selectionEnd', this.onSelectionEnd.bind(this))
+    this.engine.events.off('selectionStart', this.onSelectionStart)
+    this.engine.events.off('selectionMove', this.onSelectionMove)
+    this.engine.events.off('selectionEnd', this.onSelectionEnd)
     super.destroy()
   }
 }

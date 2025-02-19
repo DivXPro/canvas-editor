@@ -309,7 +309,7 @@ export abstract class DNode implements IDNode<any> {
   }
 
   get operation() {
-    return this.engine.operation
+    return this.engine.workbench
   }
 
   get eventMode() {
@@ -373,20 +373,20 @@ export abstract class DNode implements IDNode<any> {
     }
     if (this.parent === this.root) {
       this.operation?.selection.safeSelect(this)
-      this.operation?.dragMove.dragStart(event)
+      this.operation?.transformHelper.dragStart(event)
       event.preventDefault()
       event.stopPropagation()
     } else if (this.topGroup) {
       this.operation?.selection.safeSelect(this.topGroup)
-      this.operation?.dragMove.dragStart(event)
+      this.operation?.transformHelper.dragStart(event)
       event.preventDefault()
       event.stopPropagation()
     }
   }
 
   protected handlePointerUp(event: FederatedPointerEvent) {
-    if (this.operation?.dragMove.dragging) {
-      this.operation?.dragMove.dragStop()
+    if (this.operation?.transformHelper.dragging) {
+      this.operation?.transformHelper.dragStop()
     }
     event.stopPropagation()
   }

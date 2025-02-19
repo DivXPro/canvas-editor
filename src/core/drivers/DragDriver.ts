@@ -1,6 +1,6 @@
 import { FederatedPointerEvent } from 'pixi.js'
 
-import { DragMoveEvent, DragStopEvent } from '../events'
+import { DragMoveEvent, DragStartEvent, DragStopEvent } from '../events'
 
 import { EventDriver } from './EventDriver'
 
@@ -21,25 +21,24 @@ const GlobalState: GlobalStateType = {
 export class DragDriver extends EventDriver {
   mouseDownTimer = null
 
-  private onPointerDown(event: PointerEvent) {
+  private onPointerDown = (event: PointerEvent) => {
     if (event.button !== 0 || event.ctrlKey || event.metaKey) {
       return
     }
     GlobalState.startEvent = event
     GlobalState.dragging = false
     GlobalState.onMouseDownAt = Date.now()
-    this.engine.events.on('pointerup', this.onPointerUp)
-    this.engine.events.on('dragend', this.onPointerUp)
-    this.engine.events.on('dragstart', this.onStartDrag)
-    this.engine.events.on('pointermove', this.onDistanceChange)
+    this.events.on('pointerup', this.onPointerUp)
+    this.events.on('pointermove', this.onDistanceChange)
   }
 
-  private onPointerMove(event: FederatedPointerEvent) {
+  private onPointerMove = (event: FederatedPointerEvent) => {
     // if (this.engine.operation?.dragMove.dragging) {
     //   this.engine.operation?.dragMove.dragMove(event)
     // } else if (this.engine.operation?.dragMove.rotating) {
     //   this.engine.operation?.dragMove.rotateMove(event)
     // }
+
     if (event.clientX === GlobalState.moveEvent?.clientX && event.clientY === GlobalState.moveEvent?.clientY) {
       return
     }
@@ -49,36 +48,27 @@ export class DragDriver extends EventDriver {
     GlobalState.moveEvent = event
   }
 
-  private onPointerUp(event: PointerEvent) {
+  private onPointerUp = (event: PointerEvent) => {
     if (GlobalState.dragging) {
       const dragStopEvent = new DragStopEvent(event)
 
       this.events.emit(dragStopEvent.type, dragStopEvent)
     }
     this.events.off('pointerup', this.onPointerUp)
-    this.events.off('pointerdown', this.onPointerDown)
     this.events.off('pointermove', this.onDistanceChange)
-    this.events.off('dragover', this.onPointerMove)
+    this.events.off('pointermove', this.onPointerMove)
+
     GlobalState.dragging = false
   }
 
   private onStartDrag = (e: PointerEvent | DragEvent) => {
     if (GlobalState.dragging) return
     GlobalState.startEvent = GlobalState.startEvent || e
-    this.engine.events.on('dragover', this.onPointerMove)
-    this.engine.events.on('pointermove', this.onPointerMove)
+    this.events.on('pointermove', this.onPointerMove)
 
-    // TODO:
-    // this.engine.events.emit(
-    //   new DragStartEvent({
-    //     clientX: GlobalState.startEvent.clientX,
-    //     clientY: GlobalState.startEvent.clientY,
-    //     pageX: GlobalState.startEvent.pageX,
-    //     pageY: GlobalState.startEvent.pageY,
-    //     target: GlobalState.startEvent.target,
-    //     view: GlobalState.startEvent.view,
-    //   })
-    // )
+    const event = new DragStartEvent(e)
+
+    this.engine.events.emit(event.type, event)
     GlobalState.dragging = true
   }
 
@@ -98,13 +88,14 @@ export class DragDriver extends EventDriver {
     }
   }
   attach() {
-    this.events.on('pointerdown', this.onPointerDown.bind(this))
+    this.events.on('pointerdown', this.onPointerDown)
   }
 
   detach() {
-    this.events.off('pointerdown', this.onPointerDown.bind(this))
-    this.events.off('pointermove', this.onPointerMove.bind(this))
-    this.events.off('pointerup', this.onPointerUp.bind(this))
-    this.events.off('pointerupoutside', this.onPointerUp.bind(this))
+    this.events.off('pointerdown', this.onPointerDown)
+    this.events.off('pointermove', this.onPointerMove)
+    this.events.off('pointerup', this.onPointerUp)
+    this.events.off('pointerupoutside', this.onPointerUp)
+    this.events.off('pointermove', this.onDistanceChange)
   }
 }

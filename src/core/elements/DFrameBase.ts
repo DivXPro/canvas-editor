@@ -66,7 +66,7 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
     nodes
       .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
       .forEach(item => {
-        const child = this.engine.operation?.generateElement(item, this)
+        const child = this.engine.workbench?.generateElement(item, this)
 
         child && children.push(child)
       })

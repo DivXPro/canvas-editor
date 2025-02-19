@@ -49,7 +49,7 @@ export class ControlBox extends Container {
     }
   }
   get selection() {
-    return this.engine.operation?.selection
+    return this.engine.workbench?.selection
   }
 
   private initRotateHandle() {
@@ -72,7 +72,7 @@ export class ControlBox extends Container {
   }
 
   private handleRotateStart(event: FederatedPointerEvent) {
-    this.engine.operation?.dragMove.rotateStart(event)
+    this.engine.workbench?.transformHelper.rotateStart(event)
     event.preventDefault()
     event.stopPropagation()
   }
@@ -100,7 +100,7 @@ export class ControlBox extends Container {
     if (rect.length === 0) {
       return
     }
-    const firstSelected = this.engine.operation?.findById(this.selection.selected[0])
+    const firstSelected = this.engine.workbench?.findById(this.selection.selected[0])
     const handleRotation = this.selection.selected.length === 1 ? (firstSelected?.rotation ?? 0) : 0
 
     this.border

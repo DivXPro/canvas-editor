@@ -8,7 +8,8 @@ import { SelectionAreaLayer } from '../components/SelectionAreaLayer'
 import { ControlBox } from '../components/ControlBox'
 import { ZoomChangeEvent } from '../events/view/ZoomChangeEvent'
 
-import { Operation } from './Operation'
+import { Workbench } from './Workbench'
+import { Cursor } from './Cursor'
 
 export interface EngineOptions extends Partial<ApplicationOptions> {
   enableZoom?: boolean
@@ -19,20 +20,16 @@ export interface EngineOptions extends Partial<ApplicationOptions> {
 
 export interface IDApp {
   id: string
-  name: string
-  frame: IDFrameBase
+  title: string
+  canvas: IDFrameBase[]
 }
 
 export class Engine {
-  id?: string
-  name?: string
   maxZoom = 2
   minZoom = 0.5
   zoomRatio = 1
   canvasSize?: Size
   enableZoom = false
-  isZooming = false
-  isDragging = false
   lastPointerDown?: PointData
   outlineLayer?: OutlineLayer
   backgroundLayer?: BackgroundLayer
@@ -40,27 +37,25 @@ export class Engine {
   controlBox?: ControlBox
   events = new EventEmitter()
   drivers: EventDriver[] = []
-  data?: IDApp
   app: Application
-  operation: Operation
+  workbench: Workbench
+  cursor: Cursor
 
   constructor() {
     this.app = new Application()
-    this.operation = new Operation(this)
+    this.workbench = new Workbench(this)
+    this.cursor = new Cursor(this)
   }
 
   async init(options: EngineOptions) {
     const { enableZoom, data, background, canvasSize } = options
 
-    this.id = data.id
-    this.name = data.name
     this.enableZoom = enableZoom ?? false
-    this.data = data
     this.canvasSize = canvasSize
     await this.app.init(options)
     this.initGuideLayers(background)
     this.initEventEmitter()
-    this.operation.init(data.frame)
+    this.workbench.init(data)
     this.initDrivers()
     if (this.enableZoom) {
       this.activeWheelZoom()
@@ -116,8 +111,8 @@ export class Engine {
     }
 
     this.zoomRatio = zoomRatio
-    this.operation?.frame?.setZoom(this.zoomRatio)
-    this.operation?.hover.clear()
+    this.workbench?.frame?.setZoom(this.zoomRatio)
+    this.workbench?.hover.clear()
     this.events.emit('zoom:change', new ZoomChangeEvent({ zoomRatio }))
     event.preventDefault()
     event.stopPropagation()
@@ -137,14 +132,6 @@ export class Engine {
 
   get canvas() {
     return this.app.canvas
-  }
-
-  get jsonData() {
-    return {
-      id: this.data?.id,
-      name: this.data?.name,
-      frame: this.operation?.frame?.jsonData,
-    }
   }
 
   handlePointerdown(e: PointerEvent) {

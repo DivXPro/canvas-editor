@@ -23,7 +23,7 @@ export class RotationCommand implements ICommand {
     }
   }
   execute() {
-    const node = this.engine.operation?.findById(this.target) as DNode
+    const node = this.engine.workbench?.findById(this.target) as DNode
 
     try {
       node.rotation = this.states.rotation
@@ -33,7 +33,7 @@ export class RotationCommand implements ICommand {
   }
 
   undo() {
-    const node = this.engine.operation?.findById(this.target) as DNode
+    const node = this.engine.workbench?.findById(this.target) as DNode
 
     try {
       node.rotation = this.prevStates.rotation

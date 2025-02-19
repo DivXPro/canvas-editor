@@ -23,7 +23,7 @@ export class ResizeCommand implements ICommand {
     }
   }
   execute() {
-    const node = this.engine.operation?.findById(this.target) as DNode
+    const node = this.engine.workbench?.findById(this.target) as DNode
 
     try {
       node.size = this.states.size
@@ -33,7 +33,7 @@ export class ResizeCommand implements ICommand {
   }
 
   undo() {
-    const node = this.engine.operation?.findById(this.target) as DNode
+    const node = this.engine.workbench?.findById(this.target) as DNode
 
     try {
       node.size = this.prevStates.size

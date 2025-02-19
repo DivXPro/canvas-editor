@@ -4,16 +4,16 @@ import { Engine } from './Engine'
 import { DNode } from '../elements'
 import { HoverElementEvent } from '../events'
 
-import { Operation } from './Operation'
+import { Workbench } from './Workbench'
 
 export interface IHoverOptions {
   engine: Engine
-  operation: Operation
+  operation: Workbench
 }
 
 export class Hover {
   engine: Engine
-  operation: Operation
+  operation: Workbench
   element?: DNode | null
 
   constructor(options: IHoverOptions) {

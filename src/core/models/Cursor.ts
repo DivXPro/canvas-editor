@@ -6,7 +6,9 @@ import { Engine } from './Engine'
 
 export enum CursorStatus {
   Normal = 'normal',
+  DragStart = 'dragStart',
   Dragging = 'dragging',
+  DragStop = 'dragStop',
   Resizing = 'resizing',
   Drawing = 'drawing',
 }

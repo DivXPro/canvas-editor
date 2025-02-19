@@ -1,92 +1,70 @@
 import { FederatedPointerEvent } from 'pixi.js'
 
-import { SelectionAreaStartEvent, SelectionAreaMoveEvent, SelectionAreaEndEvent } from '../events'
+import {
+  SelectionAreaStartEvent,
+  SelectionAreaMoveEvent,
+  SelectionAreaEndEvent,
+  DragStartEvent,
+  DragMoveEvent,
+  DragStopEvent,
+} from '../events'
 
 import { EventDriver } from './EventDriver'
 
 export class SelectionAreaDriver extends EventDriver {
-  private request?: number
-
   get selecting() {
-    return this.engine.operation?.selection.selecting ?? false
+    return this.engine.workbench?.selection.selecting ?? false
   }
 
   set selecting(value: boolean) {
-    if (this.engine.operation) {
-      this.engine.operation.selection.selecting = value
+    if (this.engine.workbench) {
+      this.engine.workbench.selection.selecting = value
     }
   }
 
-  private onPointerDown = (e: FederatedPointerEvent) => {
-    this.engine.operation?.selection.clear()
-    const canvasPosition = this.engine.stage.toLocal(e.global)
+  private onPointdown = (e: PointerEvent) => {
+    // TODO: 判断是否有 Node 在范围内
+  }
 
-    this.selecting = true
-    const event = new SelectionAreaStartEvent({
-      clientX: e.clientX,
-      clientY: e.clientY,
-      pageX: e.pageX,
-      pageY: e.pageY,
-      target: e.target,
-      view: e.view,
-      offsetX: canvasPosition.x,
-      offsetY: canvasPosition.y,
-    })
+  private onDragStart = (e: DragStartEvent) => {
+    if (this.engine.workbench.selection.selected.length === 0) {
+      this.selecting = true
+      const event = new SelectionAreaStartEvent(e.data)
+
+      this.events.on('drag:move', this.onDragMove)
+      this.events.on('drag:stop', this.onDragStop)
+      this.events.emit(event.type, event)
+    }
+  }
+
+  private onDragMove = (e: DragMoveEvent) => {
+    if (!this.selecting) return
+
+    const event = new SelectionAreaMoveEvent(e.data)
 
     this.events.emit(event.type, event)
   }
 
-  private onPointerMove = (e: FederatedPointerEvent) => {
-    if (!this.selecting) return
-
-    this.request = requestAnimationFrame(() => {
-      this.request != null && cancelAnimationFrame(this.request)
-      const canvasPosition = this.engine.stage.toLocal(e.global)
-      const event = new SelectionAreaMoveEvent({
-        clientX: e.clientX,
-        clientY: e.clientY,
-        pageX: e.pageX,
-        pageY: e.pageY,
-        target: e.target,
-        view: e.view,
-        offsetX: canvasPosition.x,
-        offsetY: canvasPosition.y,
-      })
-
-      this.events.emit(event.type, event)
-    })
-  }
-
-  private onPointerUp = (e: FederatedPointerEvent) => {
+  private onDragStop = (e: DragStopEvent) => {
     if (!this.selecting) return
 
     this.selecting = false
-    const canvasPosition = this.engine.stage.toLocal(e.global)
-    const event = new SelectionAreaEndEvent({
-      clientX: e.clientX,
-      clientY: e.clientY,
-      pageX: e.pageX,
-      pageY: e.pageY,
-      target: e.target,
-      view: e.view,
-      offsetX: canvasPosition.x,
-      offsetY: canvasPosition.y,
-    })
+    const event = new SelectionAreaEndEvent(e.data)
 
+    this.events.off('drag:move', this.onDragMove)
+    this.events.off('drag:stop', this.onDragStop)
     this.events.emit(event.type, event)
   }
 
   attach() {
-    this.engine.stage.on('pointerdown', this.onPointerDown.bind(this))
-    this.engine.stage.on('pointermove', this.onPointerMove.bind(this))
-    this.engine.stage.on('pointerup', this.onPointerUp.bind(this))
-    this.engine.stage.on('pointerupoutside', this.onPointerUp.bind(this))
+    this.events.on('pointerdown', this.onPointdown)
+
+    this.events.on('drag:start', this.onDragStart)
   }
 
   detach() {
-    this.engine.stage.off('pointerdown', this.onPointerDown.bind(this))
-    this.engine.stage.off('pointermove', this.onPointerMove.bind(this))
-    this.engine.stage.off('pointerup', this.onPointerUp.bind(this))
-    this.engine.stage.off('pointerupoutside', this.onPointerUp.bind(this))
+    this.events.off('drag:start', this.onDragStart)
+    this.events.off('drag:move', this.onDragMove)
+    this.events.off('drag:stop', this.onDragStop)
   }
 }

@@ -6,17 +6,17 @@ import { Engine } from './Engine'
 import { calculateBoundsFromPoints } from '../utils/transform'
 import { isArr } from '../utils/types'
 
-import { Operation } from './Operation'
+import { Workbench } from './Workbench'
 
 export interface SelectionOptions {
   engine: Engine
-  operation: Operation
+  operation: Workbench
   selected?: string[]
 }
 
 export class Selection {
   engine: Engine
-  operation: Operation
+  operation: Workbench
   selected = observable.array<string>([])
   indexes: Record<string, boolean> = {}
   selecting = false
@@ -41,7 +41,7 @@ export class Selection {
 
   trigger(type = SelectElementEvent) {
     const event = new type({
-      target: this.engine.operation?.frame,
+      target: this.engine.workbench?.frame,
       source: this.selectedNodes,
     })
 
@@ -88,7 +88,7 @@ export class Selection {
   }
 
   get selectedNodes() {
-    return this.selected.map(id => this.engine.operation?.frame?.findById(id)).filter(node => node != null)
+    return this.selected.map(id => this.engine.workbench?.frame?.findById(id)).filter(node => node != null)
   }
 
   get first() {

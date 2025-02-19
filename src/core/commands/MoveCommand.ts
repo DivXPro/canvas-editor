@@ -23,7 +23,7 @@ export class MoveCommand implements ICommand {
     }
   }
   execute() {
-    const node = this.engine.operation?.findById(this.target) as DNode
+    const node = this.engine.workbench?.findById(this.target) as DNode
 
     try {
       node.position = this.states.position
@@ -34,7 +34,7 @@ export class MoveCommand implements ICommand {
 
   undo() {
     console.debug('undo', this.serialize())
-    const node = this.engine.operation?.findById(this.target) as DNode
+    const node = this.engine.workbench?.findById(this.target) as DNode
 
     try {
       node.position = this.prevStates.position
