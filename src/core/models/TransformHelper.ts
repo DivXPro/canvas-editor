@@ -21,7 +21,6 @@ export class TransformHelper {
   operation: Workbench
 
   nodeInitialPositions: Record<string, Position> = {}
-  dragStartPoint?: Position
   dragging = 0
 
   rotates: Record<string, number> = {}
@@ -42,39 +41,28 @@ export class TransformHelper {
   }
 
   // Drag related methods
-  dragStart(event: FederatedPointerEvent) {
+  dragStart(event: DragStartEvent) {
     if (this.operation.selection.selectedNodes.length > 0) {
       this.dragging = 1
       this.nodeInitialPositions = {}
-      this.dragStartPoint = { x: event.clientX, y: event.clientY }
       this.operation.selection.selectedNodes.forEach(node => {
         this.nodeInitialPositions[node.id] = {
           x: node.position.x,
           y: node.position.y,
         }
       })
-
-      const dragStartEvent = new DragStartEvent({
-        clientX: event.clientX,
-        clientY: event.clientY,
-        pageX: event.pageX,
-        pageY: event.pageY,
-        target: event.target,
-        view: event.view,
-        offsetX: event.global.x,
-        offsetY: event.global.y,
-      })
-
-      this.engine.events.emit(dragStartEvent.type, dragStartEvent)
+      // this.engine.events.emit(dragStartEvent.type, dragStartEvent)
     }
   }
 
-  dragMove(event: FederatedPointerEvent) {
-    if (this.dragStartPoint == null) {
+  dragMove(event: DragMoveEvent) {
+    if (this.dragging !== 1) {
       return
     }
+    const dragStartPosition = this.engine.cursor.dragStartPosition
     const distance = Math.sqrt(
-      Math.pow(event.clientX - this.dragStartPoint.x, 2) + Math.pow(event.clientY - this.dragStartPoint.y, 2)
+      Math.pow(event.data.clientX - dragStartPosition.clientX, 2) +
+      Math.pow(event.data.clientY - dragStartPosition.clientY, 2)
     )
 
     if (distance < 5) {
@@ -87,8 +75,8 @@ export class TransformHelper {
       if (!node.locked) {
         const initialPosition = this.nodeInitialPositions[node.id]
         // 计算鼠标移动的距离
-        const deltaX = event.clientX - this.dragStartPoint!.x
-        const deltaY = event.clientY - this.dragStartPoint!.y
+        const deltaX = event.data.clientX - dragStartPosition.clientX
+        const deltaY = event.data.clientY - dragStartPosition.clientY
         // 根据初始位置和鼠标移动距离计算新位置
         const vector = {
           x: initialPosition.x + deltaX,
@@ -123,7 +111,6 @@ export class TransformHelper {
 
     this.dragging = 0
     this.nodeInitialPositions = {}
-    this.dragStartPoint = undefined
   }
 
   // Rotate related methods

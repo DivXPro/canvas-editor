@@ -29,6 +29,6 @@ export const enableCursorEffect = (engine: Engine) => {
 
   engine.events.on('drag:stop', event => {
     engine.cursor.setStatus(CursorStatus.DragStop)
-    engine.cursor.setPosition(event.data)
+    engine.cursor.setDragEnd(event.data)
   })
 }
