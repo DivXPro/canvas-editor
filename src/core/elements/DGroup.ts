@@ -24,7 +24,6 @@ export class DGroup extends DFrameBase {
       width: options.size.width,
       height: options.size.height,
     })
-    console.log('DGroup', this.position)
     this.initChildren(options.children)
 
     makeObservable(this, {
@@ -44,7 +43,7 @@ export class DGroup extends DFrameBase {
   }
 
   get childrenPoints() {
-    const childrenBounds = (this.children ?? []).map(child => child.absRectPoints)
+    const childrenBounds = (this.children ?? []).map(child => child.absVertices)
 
     const boundPoints: Position[] = []
 

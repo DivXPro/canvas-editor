@@ -124,6 +124,13 @@ export class Workbench {
     }
   }
 
+  getSelectableNodes() {
+    const topNodesOnCanvas = this.canvaNodes.filter(node => node.type !== 'FRAME')
+    const topNodesInFrame = this.canvaNodes.filter(node => node.type === 'FRAME').map(node => node.children ?? [])
+
+    return [...topNodesOnCanvas, ...topNodesInFrame.flat()]
+  }
+
   generateElement(node: NodeBase, parent?: DFrameBase, offset?: Position): DNode | undefined {
     const { position, ...nodeProps } = node
 

@@ -1,9 +1,9 @@
 import { action, makeObservable, observable } from 'mobx'
 
-import { Engine } from './Engine'
 import { DNode } from '../elements'
 import { HoverElementEvent } from '../events'
 
+import { Engine } from './Engine'
 import { Workbench } from './Workbench'
 
 export interface IHoverOptions {

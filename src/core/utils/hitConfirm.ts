@@ -19,14 +19,14 @@ export function isPointInBounds(point: PointData, bounds: BoundsType) {
 }
 
 // 判断点是否在多边形区域内
-export function isPointInPointsArea(point: Position, rectPoints: Position[]) {
+export function isPointInPointsArea(point: Position, vertices: Position[]) {
   let inside = false
 
-  for (let i = 0, j = rectPoints.length - 1; i < rectPoints.length; j = i++) {
-    const xi = rectPoints[i].x,
-      yi = rectPoints[i].y
-    const xj = rectPoints[j].x,
-      yj = rectPoints[j].y
+  for (let i = 0, j = vertices.length - 1; i < vertices.length; j = i++) {
+    const xi = vertices[i].x,
+      yi = vertices[i].y
+    const xj = vertices[j].x,
+      yj = vertices[j].y
 
     const intersect = yi > point.y !== yj > point.y && point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi
 

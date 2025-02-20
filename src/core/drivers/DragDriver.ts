@@ -33,12 +33,6 @@ export class DragDriver extends EventDriver {
   }
 
   private onPointerMove = (event: FederatedPointerEvent) => {
-    // if (this.engine.operation?.dragMove.dragging) {
-    //   this.engine.operation?.dragMove.dragMove(event)
-    // } else if (this.engine.operation?.dragMove.rotating) {
-    //   this.engine.operation?.dragMove.rotateMove(event)
-    // }
-
     if (event.clientX === GlobalState.moveEvent?.clientX && event.clientY === GlobalState.moveEvent?.clientY) {
       return
     }

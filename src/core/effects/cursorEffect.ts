@@ -52,4 +52,21 @@ export const enableCursorEffect = (engine: Engine) => {
       offsetY: e.data.offsetY,
     })
   })
+
+  engine.events.on('pointermove', (e: PointerEvent) => {
+    if (engine.cursor.status !== CursorStatus.Normal) {
+      engine.workbench.hover.clear()
+
+      return
+    }
+    const nodes = engine.workbench.getSelectableNodes()
+
+    const node = nodes.find(n => n.containsPoint({ x: e.offsetX, y: e.offsetY }))
+
+    if (node) {
+      engine.workbench.hover.setHover(node)
+    } else {
+      engine.workbench.hover.clear()
+    }
+  })
 }

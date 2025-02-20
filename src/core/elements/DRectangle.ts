@@ -55,8 +55,6 @@ export class DRectangle extends DVector<Graphics> {
 
   private update() {
     this.item.clear()
-    // const position =
-    //   (this.root === this.parent ? this.position : this.root?.tansformRoot2Local(this.position)) ?? this.position
     const position = this.position
 
     this.item.position.set(position.x, position.y)

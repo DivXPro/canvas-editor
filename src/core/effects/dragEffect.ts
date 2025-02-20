@@ -11,4 +11,8 @@ export const enableDragEffect = (engine: Engine) => {
   engine.events.on('drag:move', (event: DragMoveEvent) => {
     engine.workbench.transformHelper.dragMove(event)
   })
+
+  engine.events.on('drag:stop', () => {
+    engine.workbench.transformHelper.dragStop()
+  })
 }

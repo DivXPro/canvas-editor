@@ -21,7 +21,7 @@ export class TransformHelper {
   operation: Workbench
 
   nodeInitialPositions: Record<string, Position> = {}
-  dragging = 0
+  dragging = false
 
   rotates: Record<string, number> = {}
   rotateStartPoint?: Position
@@ -43,7 +43,7 @@ export class TransformHelper {
   // Drag related methods
   dragStart(event: DragStartEvent) {
     if (this.operation.selection.selectedNodes.length > 0) {
-      this.dragging = 1
+      this.dragging = true
       this.nodeInitialPositions = {}
       this.operation.selection.selectedNodes.forEach(node => {
         this.nodeInitialPositions[node.id] = {
@@ -56,7 +56,7 @@ export class TransformHelper {
   }
 
   dragMove(event: DragMoveEvent) {
-    if (this.dragging !== 1) {
+    if (!this.dragging) {
       return
     }
     const delta = this.engine.cursor.dragStartToCurrentDelta
@@ -71,13 +71,14 @@ export class TransformHelper {
           x: initialPosition.x + delta.offsetX,
           y: initialPosition.y + delta.offsetY,
         }
+
         this.triggerMove(node, newPosition)
       }
     })
   }
 
   dragStop() {
-    if (this.dragging === 1 && Object.keys(this.nodeInitialPositions).length > 0) {
+    if (this.dragging && Object.keys(this.nodeInitialPositions).length > 0) {
       const compositeCommand = new CompositeCommand({
         timestamp: Date.now(),
       })
@@ -97,7 +98,7 @@ export class TransformHelper {
       this.operation.history.push(compositeCommand)
     }
 
-    this.dragging = 0
+    this.dragging = false
     this.nodeInitialPositions = {}
   }
 

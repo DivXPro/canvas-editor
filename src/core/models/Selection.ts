@@ -47,7 +47,6 @@ export class Selection {
       source: this.selectedNodes,
     })
 
-    console.log('trigger', event)
     this.engine.events.emit('element:select', event)
   }
 
@@ -56,7 +55,6 @@ export class Selection {
   }
 
   select(ids: string | DNode | Array<string | DNode>): void {
-    console.log('select', ids)
     if (!isArr(ids)) {
       return this.select([ids])
     }
@@ -115,10 +113,10 @@ export class Selection {
 
   get selectedRectPoints(): Position[] {
     if (this.selectedNodes.length === 1) {
-      return this.selectedNodes[0].absRectPoints
+      return this.selectedNodes[0].absVertices
     }
     if (this.selectedNodes.length > 1) {
-      const nodeRects = this.selectedNodes.map(node => node.absRectPoints)
+      const nodeRects = this.selectedNodes.map(node => node.absVertices)
 
       const boundPoints: Position[] = []
 
@@ -198,6 +196,7 @@ export class Selection {
   }
 
   clear() {
+    console.debug('selection clear')
     this.selected.clear()
     this.indexes = {}
     this.trigger(UnselectElementEvent)

@@ -27,7 +27,7 @@ export interface IDNode<Item extends Container> extends INodeBase {
   globalPosition: Position
   globalCenter: Position
   absoluteBoundingBox: Rect
-  absRectPoints: Position[]
+  absVertices: Position[]
   serialize: () => NodeBase
   isSelected?: boolean
   isHovered?: boolean
@@ -139,7 +139,7 @@ export abstract class DNode implements IDNode<any> {
       globalCenter: computed,
       globalPosition: computed,
       globalRotation: computed,
-      absRectPoints: computed,
+      absVertices: computed,
       displayWidth: computed,
       displayHeight: computed,
       serialize: action.bound,
@@ -201,8 +201,8 @@ export abstract class DNode implements IDNode<any> {
     return this.rotation + (this.parent?.globalRotation ?? 0)
   }
 
-  get absRectPoints(): [Position, Position, Position, Position] {
-    const rect: [Position, Position, Position, Position] = [
+  get absVertices(): Position[] {
+    const rect: Position[] = [
       {
         x: this.globalPosition.x - ((this.size?.width ?? 0) / 2) * this.engine.zoomRatio,
         y: this.globalPosition.y - ((this.size?.height ?? 0) / 2) * this.engine.zoomRatio,
@@ -227,7 +227,7 @@ export abstract class DNode implements IDNode<any> {
     mt.rotate(this.globalRotation)
     mt.translate(this.globalPosition.x, this.globalPosition.y)
 
-    return rect.map(p => mt.apply({ x: p.x, y: p.y })) as [Position, Position, Position, Position]
+    return rect.map(p => mt.apply({ x: p.x, y: p.y }))
   }
 
   get locked() {
@@ -342,54 +342,54 @@ export abstract class DNode implements IDNode<any> {
   //   }
   // }
 
-  protected handlePointerEnter(event: FederatedPointerEvent) {
-    if (this.locked) {
-      return
-    }
-    if (this.parent === this.root) {
-      this.operation?.hover.setHover(this)
-      event.preventDefault()
-      event.stopPropagation()
-    } else {
-      this.operation?.hover.setHover(this.topGroup)
-      event.preventDefault()
-      event.stopPropagation()
-    }
-  }
+  // protected handlePointerEnter(event: FederatedPointerEvent) {
+  //   if (this.locked) {
+  //     return
+  //   }
+  //   if (this.parent === this.root) {
+  //     this.operation?.hover.setHover(this)
+  //     event.preventDefault()
+  //     event.stopPropagation()
+  //   } else {
+  //     this.operation?.hover.setHover(this.topGroup)
+  //     event.preventDefault()
+  //     event.stopPropagation()
+  //   }
+  // }
 
-  protected handlePointerLeave() {
-    if (this.locked) {
-      return
-    }
-    if (this.parent === this.root) {
-      this.operation?.hover.setHover()
-    }
-    this.operation?.hover.setHover()
-  }
+  // protected handlePointerLeave() {
+  //   if (this.locked) {
+  //     return
+  //   }
+  //   if (this.parent === this.root) {
+  //     this.operation?.hover.setHover()
+  //   }
+  //   this.operation?.hover.setHover()
+  // }
 
-  protected handlePointerDown(event: FederatedPointerEvent) {
-    if (this.locked) {
-      return
-    }
-    if (this.parent === this.root) {
-      this.operation?.selection.safeSelect(this)
-      this.operation?.transformHelper.dragStart(event)
-      event.preventDefault()
-      event.stopPropagation()
-    } else if (this.topGroup) {
-      this.operation?.selection.safeSelect(this.topGroup)
-      this.operation?.transformHelper.dragStart(event)
-      event.preventDefault()
-      event.stopPropagation()
-    }
-  }
+  // protected handlePointerDown(event: FederatedPointerEvent) {
+  //   if (this.locked) {
+  //     return
+  //   }
+  //   if (this.parent === this.root) {
+  //     this.operation?.selection.safeSelect(this)
+  //     this.operation?.transformHelper.dragStart(event)
+  //     event.preventDefault()
+  //     event.stopPropagation()
+  //   } else if (this.topGroup) {
+  //     this.operation?.selection.safeSelect(this.topGroup)
+  //     this.operation?.transformHelper.dragStart(event)
+  //     event.preventDefault()
+  //     event.stopPropagation()
+  //   }
+  // }
 
-  protected handlePointerUp(event: FederatedPointerEvent) {
-    if (this.operation?.transformHelper.dragging) {
-      this.operation?.transformHelper.dragStop()
-    }
-    event.stopPropagation()
-  }
+  // protected handlePointerUp(event: FederatedPointerEvent) {
+  //   if (this.operation?.transformHelper.dragging) {
+  //     this.operation?.transformHelper.dragStop()
+  //   }
+  //   event.stopPropagation()
+  // }
 
   setScale(scaleX: number, scaleY?: number) {
     if (this.item) {
