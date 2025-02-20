@@ -1,12 +1,14 @@
 import { Application, ApplicationOptions, Size, PointData, EventEmitter } from 'pixi.js'
 
-import { IDFrameBase } from '../elements/DFrame'
 import { OutlineLayer } from '../components/OutlineLayer'
 import { DragDriver, EventDriver, SelectionAreaDriver } from '../drivers'
 import { BackgroundLayer } from '../components/BackgroundLayer'
 import { SelectionAreaLayer } from '../components/SelectionAreaLayer'
 import { ControlBox } from '../components/ControlBox'
 import { ZoomChangeEvent } from '../events/view/ZoomChangeEvent'
+import { NodeBase } from '../elements'
+import { enableCursorEffect } from '../effects/cursorEffect'
+import { enableSelectionEffect } from '../effects'
 
 import { Workbench } from './Workbench'
 import { Cursor } from './Cursor'
@@ -14,14 +16,15 @@ import { Cursor } from './Cursor'
 export interface EngineOptions extends Partial<ApplicationOptions> {
   enableZoom?: boolean
   canvasSize: Size
-  data: IDApp
+  data: ICanva
   background?: number
 }
 
-export interface IDApp {
-  id: string
-  title: string
-  canvas: IDFrameBase[]
+export interface ICanva {
+  id?: string
+  title?: string
+  description?: string
+  nodes?: NodeBase[]
 }
 
 export class Engine {
@@ -57,6 +60,7 @@ export class Engine {
     this.initEventEmitter()
     this.workbench.init(data)
     this.initDrivers()
+    this.initEffects()
     if (this.enableZoom) {
       this.activeWheelZoom()
     }
@@ -81,11 +85,16 @@ export class Engine {
   }
 
   initDrivers() {
-    this.drivers.push(new SelectionAreaDriver(this))
     this.drivers.push(new DragDriver(this))
+    this.drivers.push(new SelectionAreaDriver(this))
     this.drivers.forEach(driver => {
       driver.attach()
     })
+  }
+
+  initEffects() {
+    enableCursorEffect(this)
+    enableSelectionEffect(this)
   }
 
   activeWheelZoom() {
@@ -111,7 +120,7 @@ export class Engine {
     }
 
     this.zoomRatio = zoomRatio
-    this.workbench?.frame?.setZoom(this.zoomRatio)
+    this.workbench.setZoom(this.zoomRatio)
     this.workbench?.hover.clear()
     this.events.emit('zoom:change', new ZoomChangeEvent({ zoomRatio }))
     event.preventDefault()
@@ -135,8 +144,6 @@ export class Engine {
   }
 
   handlePointerdown(e: PointerEvent) {
-    console.debug('handlePointerdown', e, e.buttons)
-
     if (e.buttons === 2) {
       console.debug('btn 2')
       // this.workspaceProps?.openContextMenu?.(e)

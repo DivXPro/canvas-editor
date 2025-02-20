@@ -18,7 +18,7 @@ export type TDVector = IDNode<Container> & IDVectorBase
 export interface DVectorOptions extends Omit<IDVectorBase, 'type'> {
   engine: Engine
   parent?: DFrameBase
-  size?: Size
+  size: Size
   type: NodeType
 }
 
@@ -44,13 +44,13 @@ export abstract class DVector<Item extends Container> extends DNode implements T
   constructor(options: DVectorOptions) {
     super(options)
     makeObservable(this, {
-      jsonData: override,
+      serialize: override,
     })
   }
 
-  get jsonData() {
+  serialize() {
     return {
-      ...super.jsonData,
+      ...super.serialize(),
       constraints: this.constraints,
       preserveRatio: this.preserveRatio,
       transitionNodeID: this.transitionNodeID,

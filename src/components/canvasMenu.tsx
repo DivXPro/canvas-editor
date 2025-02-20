@@ -25,8 +25,6 @@ export type CanvasMenuProps = {
 export const CanvasMenu: React.FC<PropsWithChildren<CanvasMenuProps>> = observer(({ children }) => {
   const history = useHistory()
 
-  console.log('history', history)
-
   return (
     <ContextMenu>
       <ContextMenuTrigger>{children}</ContextMenuTrigger>

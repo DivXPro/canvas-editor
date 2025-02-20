@@ -5,8 +5,9 @@ import { action, computed, makeObservable, observable } from 'mobx'
 import { Engine } from '../models/Engine'
 import { Outline } from '../components/Outline'
 
-import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Vector2 } from './type'
+import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Position } from './type'
 import { DFrameBase } from './DFrameBase'
+import { isPointInPointsArea } from '../utils/hitConfirm'
 
 export interface ScaleData {
   x: number
@@ -19,15 +20,15 @@ export interface INodeBase extends NodeBase {
 }
 
 export interface IDNode<Item extends Container> extends INodeBase {
-  position: Vector2
+  position: Position
   displayWidth: number
   displayHeight: number
   item?: Item
-  globalPosition: Vector2
-  globalCenter: Vector2
+  globalPosition: Position
+  globalCenter: Position
   absoluteBoundingBox: Rect
-  absRectPoints: Vector2[]
-  jsonData: NodeBase
+  absRectPoints: Position[]
+  serialize: () => NodeBase
   isSelected?: boolean
   isHovered?: boolean
   isDragging?: boolean
@@ -40,7 +41,7 @@ export interface DNodeOptions extends INodeBase {
 }
 
 export abstract class DNode implements IDNode<any> {
-  static GetNodeCenter(position: Vector2, r: number, rotation: number) {
+  static GetNodeCenter(position: Position, r: number, rotation: number) {
     return {
       x: position.x + Math.cos(Math.PI / 4 + rotation) * r,
       y: position.y + Math.sin(Math.PI / 4 + rotation) * r,
@@ -51,12 +52,10 @@ export abstract class DNode implements IDNode<any> {
     return Math.sqrt(Math.pow(size?.width ?? 0, 2) + Math.pow(size?.height ?? 0, 2)) / 2
   }
 
-  protected dragStartPosition?: { x: number; y: number }
-  protected elementStartPosition?: { x: number; y: number }
   protected _locked?: boolean
   protected _visible: boolean = true
   protected _rotation?: number
-  protected _position: Vector2
+  protected _position: Position
   protected _size: Size
 
   engine: Engine
@@ -143,11 +142,12 @@ export abstract class DNode implements IDNode<any> {
       absRectPoints: computed,
       displayWidth: computed,
       displayHeight: computed,
-      jsonData: computed,
+      serialize: action.bound,
       setHidden: action.bound,
       setLocked: action.bound,
       setPosition: action.bound,
       setRotation: action.bound,
+      setScale: action.bound,
     })
     this.outline = this.engine.outlineLayer?.addOutline(this)
   }
@@ -161,7 +161,7 @@ export abstract class DNode implements IDNode<any> {
     return this._position
   }
 
-  set position(value: Vector2) {
+  set position(value: Position) {
     this.setPosition(value.x, value.y)
   }
 
@@ -201,8 +201,8 @@ export abstract class DNode implements IDNode<any> {
     return this.rotation + (this.parent?.globalRotation ?? 0)
   }
 
-  get absRectPoints() {
-    const rect = [
+  get absRectPoints(): [Position, Position, Position, Position] {
+    const rect: [Position, Position, Position, Position] = [
       {
         x: this.globalPosition.x - ((this.size?.width ?? 0) / 2) * this.engine.zoomRatio,
         y: this.globalPosition.y - ((this.size?.height ?? 0) / 2) * this.engine.zoomRatio,
@@ -227,7 +227,7 @@ export abstract class DNode implements IDNode<any> {
     mt.rotate(this.globalRotation)
     mt.translate(this.globalPosition.x, this.globalPosition.y)
 
-    return rect.map(p => mt.apply({ x: p.x, y: p.y }))
+    return rect.map(p => mt.apply({ x: p.x, y: p.y })) as [Position, Position, Position, Position]
   }
 
   get locked() {
@@ -333,14 +333,14 @@ export abstract class DNode implements IDNode<any> {
     return this.parent.topGroup
   }
 
-  protected initInteractive() {
-    if (this.item) {
-      this.item.on('pointerenter', this.handlePointerEnter.bind(this))
-      this.item.on('pointerleave', this.handlePointerLeave.bind(this))
-      this.item.on('pointerdown', this.handlePointerDown.bind(this))
-      this.eventMode = this.locked ? 'none' : 'dynamic'
-    }
-  }
+  // protected initInteractive() {
+  //   if (this.item) {
+  //     this.item.on('pointerenter', this.handlePointerEnter.bind(this))
+  //     this.item.on('pointerleave', this.handlePointerLeave.bind(this))
+  //     this.item.on('pointerdown', this.handlePointerDown.bind(this))
+  //     this.eventMode = this.locked ? 'none' : 'dynamic'
+  //   }
+  // }
 
   protected handlePointerEnter(event: FederatedPointerEvent) {
     if (this.locked) {
@@ -391,6 +391,12 @@ export abstract class DNode implements IDNode<any> {
     event.stopPropagation()
   }
 
+  setScale(scaleX: number, scaleY?: number) {
+    if (this.item) {
+      this.item.scale.set(scaleX, scaleY)
+    }
+  }
+
   findById(id: string): DNode | undefined {
     if (this.id === id) {
       return this
@@ -406,7 +412,11 @@ export abstract class DNode implements IDNode<any> {
     }
   }
 
-  get jsonData(): NodeBase {
+  containsPoint(point: Position) {
+    return false
+  }
+
+  serialize(): NodeBase {
     return {
       id: this.id,
       name: this.name,
@@ -435,7 +445,7 @@ export abstract class DNode implements IDNode<any> {
     }
   }
 
-  moveTo(point: Vector2) {
+  moveTo(point: Position) {
     this.setPosition(point.x, point.y)
   }
 

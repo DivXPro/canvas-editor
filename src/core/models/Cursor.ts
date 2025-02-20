@@ -124,6 +124,7 @@ export class Cursor {
   }
 
   setDragStart(position: CursorPosition) {
+    console.log('setDragStart', position.offsetX, position.offsetY)
     this.dragStartPosition = position
   }
 

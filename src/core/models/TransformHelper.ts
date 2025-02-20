@@ -2,7 +2,7 @@ import { action, makeObservable, observable } from 'mobx'
 import { FederatedPointerEvent } from 'pixi.js'
 
 import { DNode } from '../elements'
-import { Vector2 } from '../elements/type'
+import { Position } from '../elements/type'
 import { DragMoveEvent, DragStartEvent } from '../events'
 import { NodeTransformEvent } from '../events/mutation/DragElementEvent'
 import { calculateAngleABC } from '../utils/transform'
@@ -20,12 +20,12 @@ export class TransformHelper {
   engine: Engine
   operation: Workbench
 
-  nodeInitialPositions: Record<string, Vector2> = {}
-  dragStartPoint?: Vector2
+  nodeInitialPositions: Record<string, Position> = {}
+  dragStartPoint?: Position
   dragging = 0
 
   rotates: Record<string, number> = {}
-  rotateStartPoint?: Vector2
+  rotateStartPoint?: Position
   rotating = 0
 
   constructor(options: ITransformOptions) {
@@ -177,7 +177,7 @@ export class TransformHelper {
         x: (rect[0].x + rect[2].x) / 2,
         y: (rect[0].y + rect[2].y) / 2,
       }
-      const angle = calculateAngleABC(this.rotateStartPoint as Vector2, center, rotatePoint)
+      const angle = calculateAngleABC(this.rotateStartPoint as Position, center, rotatePoint)
 
       this.operation.selection.selectedNodes.forEach(node => {
         if (!node.locked) {
@@ -235,7 +235,7 @@ export class TransformHelper {
   }
 
   // Event trigger methods
-  triggerMove(node: DNode, position: Vector2) {
+  triggerMove(node: DNode, position: Position) {
     node.moveTo(position)
     this.engine.events.emit(
       'node:transform',

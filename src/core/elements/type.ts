@@ -21,14 +21,14 @@ export interface NodeBase extends Global {
    * element after scaling and rotation. Only present if geometry=paths
    * is passed
    */
-  size?: Size
+  size: Size
   /**
    * x and y of element. This is different from the x and y
    * of the bounding box in that the absolute bounding box represents the
    * element after scaling and rotation. Only present if geometry=paths
    * is passed
    */
-  position: Vector2
+  position: Position
   rotation?: number
   /**
    * An array of fill paints applied to the node
@@ -643,7 +643,7 @@ export interface Effect {
   // The following properties are for shadows only:
   color?: Color
   blendMode?: BlendMode
-  offset?: Vector2
+  offset?: Position
 }
 
 /** A solid color, gradient, or image texture that can be applied as fills or strokes */
@@ -681,7 +681,7 @@ export interface Paint {
    * relevant for non-linear gradients).
    *
    */
-  gradientHandlePositions?: Array<Vector2>
+  gradientHandlePositions?: Array<Position>
   /**
    * Positions of key points along the gradient axis with the colors
    * anchored there. Colors along the gradient are interpolated smoothly
@@ -724,7 +724,7 @@ export interface Path {
 export type Transform = ReadonlyArray<ReadonlyArray<number>>
 
 /** A 2d vector */
-export interface Vector2 {
+export interface Position {
   /** X coordinate of the vector */
   x: number
   /** Y coordinate of the vector */
@@ -877,7 +877,7 @@ export interface Comment {
    * The content of the comment
    */
   message: string
-  client_meta: Vector2 | FrameOffset
+  client_meta: Position | FrameOffset
   /**
    * Only set for top level comments. The number displayed with the
    * comment in the UI
@@ -900,7 +900,7 @@ export interface FrameOffset {
   /** Unique id specifying the frame */
   node_id: string
   /** 2d vector offset within the frame */
-  node_offset: Vector2
+  node_offset: Position
 }
 
 export interface ProjectSummary {

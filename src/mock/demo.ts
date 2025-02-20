@@ -3,7 +3,8 @@ import { ColorUtils } from '../core/utils/styles'
 export const demoData: any = {
   id: 'app-1',
   name: 'app-1',
-  canvas: [
+  description: 'app-1',
+  nodes: [
     {
       id: 'frame-1',
       name: 'Frame 1',
@@ -28,8 +29,8 @@ export const demoData: any = {
           name: 'Rectangle 1',
           type: 'RECTANGLE',
           position: {
-            x: 150,
-            y: 50,
+            x: 200,
+            y: 100,
           },
           size: {
             width: 100,
@@ -38,6 +39,50 @@ export const demoData: any = {
           // cornerRadius: 20,
           // rotation: -Math.PI / 4,
           fills: [{ type: 'SOLID', color: ColorUtils.hexToRGBA('#EB2424') }],
+        },
+        {
+          id: 'group-1',
+          name: 'Group 1',
+          type: 'GROUP',
+          position: {
+            x: 300,
+            y: 300,
+          },
+          size: {
+            width: 100,
+            height: 100,
+          },
+          rotation: Math.PI / 6,
+          children: [
+            {
+              id: 'rectangle-2',
+              name: 'Rectangle 2',
+              type: 'RECTANGLE',
+              position: {
+                x: -25,
+                y: -25,
+              },
+              size: {
+                width: 50,
+                height: 50,
+              },
+              fills: [{ type: 'SOLID', color: ColorUtils.hexToRGBA('#c1d6d9') }],
+            },
+            {
+              id: 'rectangle-3',
+              name: 'Rectangle 3',
+              type: 'RECTANGLE',
+              position: {
+                x: 25,
+                y: 25,
+              },
+              size: {
+                width: 50,
+                height: 50,
+              },
+              fills: [{ type: 'SOLID', color: ColorUtils.hexToRGBA('#d9d9d9') }],
+            },
+          ],
         },
         // {
         //   id: 'text-1',
@@ -92,50 +137,6 @@ export const demoData: any = {
         //     fontWeight: 400,
         //   },
         // },
-        {
-          id: 'group-1',
-          name: 'Group 1',
-          type: 'GROUP',
-          position: {
-            x: 300,
-            y: 300,
-          },
-          size: {
-            width: 100,
-            height: 100,
-          },
-          rotation: Math.PI / 6,
-          children: [
-            {
-              id: 'rectangle-2',
-              name: 'Rectangle 2',
-              type: 'RECTANGLE',
-              position: {
-                x: -25,
-                y: -25,
-              },
-              size: {
-                width: 50,
-                height: 50,
-              },
-              fills: [{ type: 'SOLID', color: ColorUtils.hexToRGBA('#c1d6d9') }],
-            },
-            {
-              id: 'rectangle-3',
-              name: 'Rectangle 3',
-              type: 'RECTANGLE',
-              position: {
-                x: 25,
-                y: 25,
-              },
-              size: {
-                width: 50,
-                height: 50,
-              },
-              fills: [{ type: 'SOLID', color: ColorUtils.hexToRGBA('#d9d9d9') }],
-            },
-          ],
-        },
       ],
     },
   ]

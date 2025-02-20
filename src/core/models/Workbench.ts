@@ -1,10 +1,11 @@
 import { makeObservable, observable } from 'mobx'
 
 import { DNode, DFrame, DRectangle, DText, IDFrameBase, IDRectangleBase, IDTextBase, DFrameBase } from '../elements'
-import { FrameBase, NodeBase } from '../elements/type'
+import { NodeBase, Position } from '../elements/type'
 import { DGroup, IDGroupBase } from '../elements/DGroup'
+import { isArr } from '../utils/types'
 
-import { Engine, IDApp } from './Engine'
+import { Engine, ICanva } from './Engine'
 import { Selection } from './Selection'
 import { Hover } from './Hover'
 import { TransformHelper } from './TransformHelper'
@@ -25,9 +26,7 @@ const DefaultFrame: DefaultFrameType = {
 }
 
 export interface IWorkbench {
-  id?: string
-  title?: string
-  data?: FrameBase
+  canva?: ICanva
 }
 
 export class Workbench {
@@ -35,9 +34,11 @@ export class Workbench {
 
   title?: string
 
+  description?: string
+
   engine: Engine
 
-  frame?: DFrame
+  canvaNodes = observable.array<DNode>([])
 
   selection: Selection
 
@@ -46,6 +47,8 @@ export class Workbench {
   transformHelper: TransformHelper
 
   history: History
+
+  zoomRatio: number = 1
 
   constructor(engine: Engine) {
     this.engine = engine
@@ -63,61 +66,89 @@ export class Workbench {
     })
     this.history = new History()
     makeObservable(this, {
-      frame: observable,
+      canvaNodes: observable,
+      zoomRatio: observable,
       history: observable.shallow,
     })
   }
 
-  init(props: IDApp) {
+  init(props: ICanva) {
     this.id = props.id
     this.title = props.title
+    this.description = props.description
 
-    const frame = props.canvas[0]
-    const position = {
-      x: frame.position.x + (this.engine.canvasSize?.width ?? 0) / 2,
-      y: frame.position.y + (this.engine.canvasSize?.height ?? 0) / 2,
+    if (isArr(props.nodes)) {
+      props.nodes.forEach((node, index) => {
+        if (node.type === 'FRAME') {
+          const offset = {
+            x: (this.engine.canvasSize?.width ?? 0) / 2,
+            y: (this.engine.canvasSize?.height ?? 0) / 2,
+          }
+
+          const dNode = this.generateElement(node, undefined, offset)
+
+          if (dNode != null) {
+            this.canvaNodes.push(dNode)
+            if (dNode.item != null) {
+              this.engine.app.stage.addChildAt(dNode.item, index + 1)
+            }
+          }
+        }
+      })
     }
-
-    this.frame = new DFrame({
-      engine: this.engine,
-      id: frame.id,
-      name: frame.name,
-      position: position,
-      size: frame.size,
-      rotation: frame.rotation,
-      children: frame.children,
-      type: 'FRAME',
-      backgroundColor: frame.backgroundColor,
-    })
-    this.engine.app.stage.addChildAt(this.frame.item, 1)
   }
 
   findById(id: string) {
-    return this.frame?.findById(id)
+    for (const node of this.canvaNodes) {
+      const found = node.findById(id)
+
+      if (found) {
+        return found
+      }
+    }
+  }
+
+  setZoom(zoomRatio: number) {
+    this.zoomRatio = zoomRatio
+    this.canvaNodes.forEach(node => node.setScale(this.zoomRatio))
   }
 
   serialize(): IWorkbench {
     return {
-      id: this.id,
-      title: this.title,
-      data: this.frame?.jsonData,
+      canva: {
+        id: this.id,
+        title: this.title,
+        description: this.description,
+        nodes: this.canvaNodes.map(node => node.serialize()),
+      },
     }
   }
 
-  generateElement(item: NodeBase, parent?: DFrameBase): DNode | undefined {
-    switch (item.type) {
+  generateElement(node: NodeBase, parent?: DFrameBase, offset?: Position): DNode | undefined {
+    const { position, ...nodeProps } = node
+
+    position.x += offset?.x ?? 0
+    position.y += offset?.y ?? 0
+
+    switch (nodeProps.type) {
       case 'FRAME':
-        return new DFrame({ engine: this.engine, ...(item as IDFrameBase) })
+        return new DFrame({ engine: this.engine, position, ...(nodeProps as Omit<IDFrameBase, 'position'>) })
       case 'GROUP':
         return new DGroup({
           engine: this.engine,
           parent,
-          ...(item as IDGroupBase),
+          position,
+          ...(nodeProps as Omit<IDGroupBase, 'position'>),
         })
       case 'RECTANGLE':
-        return new DRectangle({ engine: this.engine, parent, ...(item as IDRectangleBase) })
+        return new DRectangle({
+          engine: this.engine,
+          parent,
+          position,
+          ...(nodeProps as Omit<IDRectangleBase, 'position'>),
+        })
       case 'TEXT':
-        return new DText({ engine: this.engine, parent, ...(item as IDTextBase) })
+        return new DText({ engine: this.engine, parent, position, ...(nodeProps as Omit<IDTextBase, 'position'>) })
       default:
         break
     }

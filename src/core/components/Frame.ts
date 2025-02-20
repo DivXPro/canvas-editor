@@ -1,4 +1,5 @@
 import { Application, Container, Graphics } from 'pixi.js'
+
 import { Engine } from '../models/Engine'
 
 export interface FrameOptions {

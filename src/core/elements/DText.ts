@@ -4,7 +4,7 @@ import { Engine } from '../models'
 import { TextBox } from '../components/TextBox'
 
 import { IDNode } from './DNode'
-import { Text } from './type'
+import { Position, Text } from './type'
 import { DVector } from './DVector'
 import { DFrameBase } from './DFrameBase'
 
@@ -37,7 +37,7 @@ export class DText extends DVector<TextBox> implements TDText {
     })
     makeObservable(this, {
       size: override,
-      jsonData: override,
+      serialize: override,
       globalCenter: override,
       absoluteBoundingBox: override,
       characters: computed,
@@ -47,7 +47,6 @@ export class DText extends DVector<TextBox> implements TDText {
       setWidth: action.bound,
       setHeight: action.bound,
     })
-    this.initInteractive()
   }
 
   get displayWidth() {
@@ -131,11 +130,15 @@ export class DText extends DVector<TextBox> implements TDText {
     }
   }
 
-  get jsonData() {
+  serialize() {
     return {
-      ...super.jsonData,
+      ...super.serialize(),
       contr: this.item.text,
       style: this.item.style,
     }
+  }
+
+  containsPoint(point: Position) {
+    return this.item.containsPoint(this.item.toLocal(point))
   }
 }

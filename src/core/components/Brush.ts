@@ -1,12 +1,13 @@
 import { Graphics } from 'pixi.js'
 
 import { Engine } from '../models/Engine'
+import { Position } from '../elements'
 
 export class Brush {
   private engine: Engine
   private graphics: Graphics
   private isDrawing: boolean = false
-  private lastPosition: { x: number, y: number } | null = null
+  private lastPosition: Position | null = null
   private brushSize: number = 5
   private brushColor: number = 0x000000 // 黑色
 

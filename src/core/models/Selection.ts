@@ -1,11 +1,12 @@
 import { action, computed, makeObservable, observable } from 'mobx'
 
-import { DNode, Vector2 } from '../elements'
+import { DNode, Position } from '../elements'
 import { SelectElementEvent, UnselectElementEvent } from '../events/mutation'
-import { Engine } from './Engine'
 import { calculateBoundsFromPoints } from '../utils/transform'
 import { isArr } from '../utils/types'
+import { isPointInPointsArea } from '../utils/hitConfirm'
 
+import { Engine } from './Engine'
 import { Workbench } from './Workbench'
 
 export interface SelectionOptions {
@@ -28,6 +29,7 @@ export class Selection {
       selected: observable,
       indexes: observable,
       selectedNodes: computed,
+      startPoint: computed,
       select: action.bound,
       trigger: action.bound,
       add: action.bound,
@@ -41,10 +43,11 @@ export class Selection {
 
   trigger(type = SelectElementEvent) {
     const event = new type({
-      target: this.engine.workbench?.frame,
+      target: this.selectedNodes,
       source: this.selectedNodes,
     })
 
+    console.log('trigger', event)
     this.engine.events.emit('element:select', event)
   }
 
@@ -53,6 +56,7 @@ export class Selection {
   }
 
   select(ids: string | DNode | Array<string | DNode>): void {
+    console.log('select', ids)
     if (!isArr(ids)) {
       return this.select([ids])
     }
@@ -87,8 +91,12 @@ export class Selection {
     this.select(ids)
   }
 
+  get startPoint() {
+    return this.engine.cursor.dragStartPosition
+  }
+
   get selectedNodes() {
-    return this.selected.map(id => this.engine.workbench?.frame?.findById(id)).filter(node => node != null)
+    return this.selected.map(id => this.engine.workbench.findById(id)).filter(node => node != null)
   }
 
   get first() {
@@ -105,14 +113,14 @@ export class Selection {
     return this.selected.length
   }
 
-  get selectedRectPoints(): Vector2[] {
+  get selectedRectPoints(): Position[] {
     if (this.selectedNodes.length === 1) {
       return this.selectedNodes[0].absRectPoints
     }
     if (this.selectedNodes.length > 1) {
       const nodeRects = this.selectedNodes.map(node => node.absRectPoints)
 
-      const boundPoints: Vector2[] = []
+      const boundPoints: Position[] = []
 
       nodeRects.map(rectPoint => {
         boundPoints.push(...rectPoint)
@@ -129,6 +137,25 @@ export class Selection {
     }
 
     return []
+  }
+
+  rectContainsPoint(point: Position) {
+    return isPointInPointsArea(point, this.selectedRectPoints)
+  }
+
+  containsPoint(point: Position) {
+    if (this.selected.length === 0) {
+      return false
+    }
+    for (let i = 0; i < this.selectedNodes.length; i++) {
+      const node = this.selectedNodes[i]
+
+      if (node.containsPoint(point)) {
+        return true
+      }
+    }
+
+    return false
   }
 
   add(...ids: string[] | DNode[]) {

@@ -20,10 +20,10 @@ export class ControlBox extends Container {
     this.initHandles()
     this.initRotateHandle()
 
-    this.engine.events.on('element:select', this.handleSelectChange.bind(this))
-    this.engine.events.on('element:unselect', this.handleSelectChange.bind(this))
-    this.engine.events.on('node:transform', this.handleTransformNode.bind(this))
-    this.engine.events.on('zoom:change', this.handleZoomChange.bind(this))
+    this.engine.events.on('element:select', this.handleSelectChange)
+    this.engine.events.on('element:unselect', this.handleSelectChange)
+    this.engine.events.on('node:transform', this.handleTransformNode)
+    this.engine.events.on('zoom:change', this.handleZoomChange)
   }
 
   private initBorder() {
@@ -67,7 +67,7 @@ export class ControlBox extends Container {
 
     this.rotateHandle.eventMode = 'static'
     this.rotateHandle.cursor = 'pointer'
-    this.rotateHandle.on('pointerdown', this.handleRotateStart.bind(this))
+    this.rotateHandle.on('pointerdown', this.handleRotateStart)
     this.addChild(this.rotateHandle)
   }
 
@@ -77,17 +77,17 @@ export class ControlBox extends Container {
     event.stopPropagation()
   }
 
-  private handleRotateMove(event: FederatedPointerEvent) {
+  private handleRotateMove = (event: FederatedPointerEvent) => {
     // TODO:
   }
 
-  private handleRotateEnd() {
+  private handleRotateEnd = () => {
     // this.isRotating = false
     // this.last
     // RotatePoint = null
   }
 
-  private handleZoomChange() {
+  private handleZoomChange = () => {
     this.update()
   }
 
@@ -129,11 +129,12 @@ export class ControlBox extends Container {
     return this.getGlobalPosition(new Point(this.rotateHandle.position.x, this.rotateHandle.position.y))
   }
 
-  handleTransformNode() {
+  private handleTransformNode = () => {
     this.update()
   }
 
-  handleSelectChange() {
+  private handleSelectChange = () => {
+    console.log('handleSelectChange')
     if (this.selection == null || this.selection.length === 0) {
       this.hide()
     } else {
@@ -142,17 +143,19 @@ export class ControlBox extends Container {
   }
 
   show() {
+    console.log('controlbox show')
     this.update()
     this.visible = true
   }
 
   hide() {
+    console.log('controlbox hide')
     this.visible = false
   }
 
   destroy() {
-    this.engine.events.off('element:select', this.handleSelectChange.bind(this))
-    this.engine.events.off('element:unselect', this.handleSelectChange.bind(this))
+    this.engine.events.off('element:select', this.handleSelectChange)
+    this.engine.events.off('element:unselect', this.handleSelectChange)
     this.parent.removeChild(this)
     super.destroy()
   }

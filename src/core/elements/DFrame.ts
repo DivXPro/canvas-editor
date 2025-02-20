@@ -18,7 +18,7 @@ export class DFrame extends DFrameBase {
     this._clipsContent = options.clipsContent ?? true
     makeObservable(this, {
       type: override,
-      jsonData: override,
+      serialize: override,
       clipsContent: computed,
       zoomRatio: computed,
       setZoom: action.bound,
@@ -53,9 +53,9 @@ export class DFrame extends DFrameBase {
     return this._clipsContent
   }
 
-  get jsonData() {
+  serialize() {
     return {
-      ...super.jsonData,
+      ...super.serialize(),
       clipsContent: this.clipsContent,
     }
   }

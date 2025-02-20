@@ -1,13 +1,13 @@
 import { Text, TextOptions } from 'pixi.js'
 
-import { Size, Vector2 } from '../elements/type'
+import { Size, Position } from '../elements/type'
 
 export interface TextBoxOptions extends TextOptions {
   size?: Size
 }
 
 export class TextBox extends Text {
-  _boxPosition: Vector2
+  _boxPosition: Position
   fixWidth?: number
   fixHeight?: number
 
@@ -29,7 +29,7 @@ export class TextBox extends Text {
     return this._boxPosition
   }
 
-  set boxPosition(value: Vector2) {
+  set boxPosition(value: Position) {
     this._boxPosition = value
     this.position.set(value.x, value.y)
     this.update()

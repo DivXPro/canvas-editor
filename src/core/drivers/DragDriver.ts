@@ -64,12 +64,11 @@ export class DragDriver extends EventDriver {
   private onStartDrag = (e: PointerEvent | DragEvent) => {
     if (GlobalState.dragging) return
     GlobalState.startEvent = GlobalState.startEvent || e
-    this.events.on('pointermove', this.onPointerMove)
-
     const event = new DragStartEvent(e)
 
     this.engine.events.emit(event.type, event)
     GlobalState.dragging = true
+    this.events.on('pointermove', this.onPointerMove)
   }
 
   private onDistanceChange = (event: PointerEvent) => {

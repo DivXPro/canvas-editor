@@ -1,5 +1,3 @@
-import { FederatedPointerEvent } from 'pixi.js'
-
 import {
   SelectionAreaStartEvent,
   SelectionAreaMoveEvent,
@@ -22,18 +20,14 @@ export class SelectionAreaDriver extends EventDriver {
     }
   }
 
-  private onPointdown = (e: PointerEvent) => {
-    // TODO: 判断是否有 Node 在范围内
-  }
-
   private onDragStart = (e: DragStartEvent) => {
     if (this.engine.workbench.selection.selected.length === 0) {
       this.selecting = true
       const event = new SelectionAreaStartEvent(e.data)
 
+      this.events.emit(event.type, event)
       this.events.on('drag:move', this.onDragMove)
       this.events.on('drag:stop', this.onDragStop)
-      this.events.emit(event.type, event)
     }
   }
 
@@ -57,8 +51,6 @@ export class SelectionAreaDriver extends EventDriver {
   }
 
   attach() {
-    this.events.on('pointerdown', this.onPointdown)
-
     this.events.on('drag:start', this.onDragStart)
   }
 

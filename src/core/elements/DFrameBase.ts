@@ -3,7 +3,7 @@ import { makeObservable, observable, action, observe, IObservableArray, override
 import { Engine } from '../models/Engine'
 
 import { DNode, INodeBase } from './DNode'
-import { Size, Color, LayoutConstraint, Vector2 } from './type'
+import { Size, Color, LayoutConstraint, Position } from './type'
 
 export interface IDFrameBaseBase extends INodeBase {
   children?: INodeBase[]
@@ -38,7 +38,7 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
 
     makeObservable(this, {
       type: override,
-      jsonData: override,
+      serialize: override,
       size: override,
       children: observable,
       renderNodes: action.bound,
@@ -52,7 +52,7 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
     children.forEach(child => this.children.push(child))
   }
 
-  tansformRoot2Local(point: Vector2) {
+  tansformRoot2Local(point: Position) {
     if (this.root == null) {
       return point
     }
@@ -113,10 +113,10 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
     return this._size
   }
 
-  get jsonData() {
+  serialize() {
     return {
-      ...super.jsonData,
-      children: this.children.map(child => child.jsonData),
+      ...super.serialize(),
+      children: this.children.map(child => child.serialize()),
       backgroundColor: this.backgroundColor,
       constraints: this.constraints,
     }

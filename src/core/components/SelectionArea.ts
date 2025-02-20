@@ -1,5 +1,7 @@
 import { Graphics } from 'pixi.js'
 
+import { Position } from '../elements'
+
 export interface SelectionAreaOptions {
   x?: number
   y?: number
@@ -24,9 +26,10 @@ export class SelectionArea extends Graphics {
       .stroke({ color: 0x0066ff, width: 1, alpha: 0.8 })
   }
 
-  update(x: number, y: number) {
-    let width = x - this.position.x
-    let height = y - this.position.y
+  update(start: Position, end: Position) {
+    this.position.set(start.x, start.y)
+    let width = end.x - start.x
+    let height = end.y - start.y
     let drawX = 0
     let drawY = 0
 

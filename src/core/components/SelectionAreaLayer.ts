@@ -1,6 +1,6 @@
-import { Container, PointData } from 'pixi.js'
+import { Container } from 'pixi.js'
 
-import { SelectionAreaEndEvent, SelectionAreaMoveEvent, SelectionAreaStartEvent } from '../events'
+import { SelectionAreaMoveEvent } from '../events'
 import { Engine } from '../models'
 
 import { SelectionArea } from './SelectionArea'
@@ -8,8 +8,6 @@ import { SelectionArea } from './SelectionArea'
 export class SelectionAreaLayer extends Container {
   private engine: Engine
   private selectionArea: SelectionArea | null = null
-  private isSelecting: boolean = false
-  private startPoint: PointData | null = null
 
   constructor(engine: Engine) {
     super()
@@ -21,31 +19,27 @@ export class SelectionAreaLayer extends Container {
     this.engine.events.on('selection:end', this.onSelectionEnd)
   }
 
-  private onSelectionStart = (event: SelectionAreaStartEvent) => {
-    this.isSelecting = true
-    this.startPoint = {
-      x: event.data.offsetX,
-      y: event.data.offsetY,
-    }
+  private onSelectionStart = () => {
+    const startPoint = this.engine.workbench.selection.startPoint
 
     // 创建新的选区
-    this.selectionArea = new SelectionArea(this.startPoint)
-
+    this.selectionArea = new SelectionArea({ x: startPoint.offsetX, y: startPoint.offsetY })
     this.addChild(this.selectionArea)
   }
 
   private onSelectionMove = (event: SelectionAreaMoveEvent) => {
-    if (!this.isSelecting || !this.startPoint || !this.selectionArea) return
+    if (!this.selectionArea) return
+    const startPoint = this.engine.workbench.selection.startPoint
 
     // 更新选区大小
-    this.selectionArea.update(event.data.offsetX, event.data.offsetY)
+    this.selectionArea.update(
+      { x: startPoint.offsetX, y: startPoint.offsetY },
+      { x: event.data.offsetX, y: event.data.offsetY }
+    )
   }
 
-  private onSelectionEnd = (event: SelectionAreaEndEvent) => {
-    if (!this.isSelecting || !this.startPoint || !this.selectionArea) return
-
-    this.isSelecting = false
-    this.startPoint = null
+  private onSelectionEnd = () => {
+    if (!this.selectionArea) return
 
     // 清理选区
     this.selectionArea.destroy()

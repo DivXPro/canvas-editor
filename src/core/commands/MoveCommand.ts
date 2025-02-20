@@ -1,10 +1,10 @@
-import { Vector2, DNode } from '../elements'
+import { Position, DNode } from '../elements'
 import { Engine } from '../models/Engine'
 
 import { ICommand, CommandType } from './Command'
 
 export interface MoveCommandStates {
-  position: Vector2
+  position: Position
 }
 
 export class MoveCommand implements ICommand {

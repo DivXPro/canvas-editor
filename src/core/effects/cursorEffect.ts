@@ -1,6 +1,7 @@
+import { DragStartEvent } from '../events'
 import { Engine, CursorStatus } from '../models'
 
-export const useCursorEffect = (engine: Engine) => {
+export const enableCursorEffect = (engine: Engine) => {
   engine.events.on('pointermove', e => {
     engine.cursor.setStatus(
       engine.cursor.status === CursorStatus.Dragging || engine.cursor.status === CursorStatus.DragStart
@@ -17,11 +18,10 @@ export const useCursorEffect = (engine: Engine) => {
       offsetY: e.offsetY,
     })
   })
-  engine.events.on('drag:start', event => {
+  engine.events.on('drag:start', (event: DragStartEvent) => {
     engine.cursor.setStatus(CursorStatus.DragStart)
     engine.cursor.setDragStart(event.data)
   })
-
   engine.events.on('drag:move', event => {
     engine.cursor.setStatus(CursorStatus.Dragging)
     engine.cursor.setPosition(event.data)

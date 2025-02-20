@@ -5,7 +5,7 @@ import { Engine } from '../models/Engine'
 import { ColorUtils } from '../utils/styles'
 
 import { DVector, IDVectorBase } from './DVector'
-import { Color, Size } from './type'
+import { Color, Position, Size } from './type'
 import { DFrameBase } from './DFrameBase'
 
 export interface IDRectangleBase extends IDVectorBase {
@@ -34,7 +34,6 @@ export class DRectangle extends DVector<Graphics> {
     })
     this.item = new Graphics()
     this.update()
-    this.initInteractive()
   }
 
   get cornerRadius() {
@@ -43,6 +42,10 @@ export class DRectangle extends DVector<Graphics> {
 
   set cornerRadius(value: number) {
     this.setCornerRadius(value)
+  }
+
+  containsPoint(point: Position) {
+    return this.item.containsPoint(this.item.toLocal(point))
   }
 
   setCornerRadius(value: number) {
@@ -69,11 +72,5 @@ export class DRectangle extends DVector<Graphics> {
 
   get size() {
     return this._size
-  }
-
-  get jsonData() {
-    return {
-      ...super.jsonData,
-    }
   }
 }

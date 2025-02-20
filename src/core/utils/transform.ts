@@ -1,6 +1,6 @@
-import { Vector2 } from '../elements'
+import { Position } from '../elements'
 
-export function calculateBoundsFromPoints(points: Vector2[]) {
+export function calculateBoundsFromPoints(points: Position[]) {
   const x = Math.min(...points.map(p => p.x))
   const y = Math.min(...points.map(p => p.y))
   const maxX = Math.max(...points.map(p => p.x))
@@ -14,7 +14,7 @@ export function calculateBoundsFromPoints(points: Vector2[]) {
   }
 }
 
-export function calculateAngleABC(A: Vector2, B: Vector2, C: Vector2): number {
+export function calculateAngleABC(A: Position, B: Position, C: Position): number {
   // 计算向量 BA 和 BC
   const BAx = A.x - B.x
   const BAy = A.y - B.y
