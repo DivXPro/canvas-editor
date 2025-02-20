@@ -1,4 +1,4 @@
-import { DragStartEvent } from '../events'
+import { DragMoveEvent, DragStartEvent, DragStopEvent } from '../events'
 import { Engine, CursorStatus } from '../models'
 
 export const enableCursorEffect = (engine: Engine) => {
@@ -18,17 +18,38 @@ export const enableCursorEffect = (engine: Engine) => {
       offsetY: e.offsetY,
     })
   })
-  engine.events.on('drag:start', (event: DragStartEvent) => {
+  engine.events.on('drag:start', (e: DragStartEvent) => {
     engine.cursor.setStatus(CursorStatus.DragStart)
-    engine.cursor.setDragStart(event.data)
+    engine.cursor.setDragStart({
+      clientX: e.data.clientX,
+      clientY: e.data.clientY,
+      pageX: e.data.pageX,
+      pageY: e.data.pageY,
+      offsetX: e.data.offsetX,
+      offsetY: e.data.offsetY,
+    })
   })
-  engine.events.on('drag:move', event => {
+  engine.events.on('drag:move', (e: DragMoveEvent) => {
     engine.cursor.setStatus(CursorStatus.Dragging)
-    engine.cursor.setPosition(event.data)
+    engine.cursor.setPosition({
+      clientX: e.data.clientX,
+      clientY: e.data.clientY,
+      pageX: e.data.pageX,
+      pageY: e.data.pageY,
+      offsetX: e.data.offsetX,
+      offsetY: e.data.offsetY,
+    })
   })
 
-  engine.events.on('drag:stop', event => {
+  engine.events.on('drag:stop', (e: DragStopEvent) => {
     engine.cursor.setStatus(CursorStatus.DragStop)
-    engine.cursor.setDragEnd(event.data)
+    engine.cursor.setDragEnd({
+      clientX: e.data.clientX,
+      clientY: e.data.clientY,
+      pageX: e.data.pageX,
+      pageY: e.data.pageY,
+      offsetX: e.data.offsetX,
+      offsetY: e.data.offsetY,
+    })
   })
 }

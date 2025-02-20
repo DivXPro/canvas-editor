@@ -59,37 +59,25 @@ export class TransformHelper {
     if (this.dragging !== 1) {
       return
     }
-    const dragStartPosition = this.engine.cursor.dragStartPosition
-    const distance = Math.sqrt(
-      Math.pow(event.data.clientX - dragStartPosition.clientX, 2) +
-      Math.pow(event.data.clientY - dragStartPosition.clientY, 2)
-    )
-
-    if (distance < 5) {
-      return
-    }
-    this.dragging = 2
+    const delta = this.engine.cursor.dragStartToCurrentDelta
 
     // 移动选中的节点
     this.operation.selection.selectedNodes.forEach(node => {
       if (!node.locked) {
         const initialPosition = this.nodeInitialPositions[node.id]
         // 计算鼠标移动的距离
-        const deltaX = event.data.clientX - dragStartPosition.clientX
-        const deltaY = event.data.clientY - dragStartPosition.clientY
         // 根据初始位置和鼠标移动距离计算新位置
-        const vector = {
-          x: initialPosition.x + deltaX,
-          y: initialPosition.y + deltaY,
+        const newPosition = {
+          x: initialPosition.x + delta.offsetX,
+          y: initialPosition.y + delta.offsetY,
         }
-
-        this.triggerMove(node, vector)
+        this.triggerMove(node, newPosition)
       }
     })
   }
 
   dragStop() {
-    if (this.dragging === 2 && Object.keys(this.nodeInitialPositions).length > 0) {
+    if (this.dragging === 1 && Object.keys(this.nodeInitialPositions).length > 0) {
       const compositeCommand = new CompositeCommand({
         timestamp: Date.now(),
       })

@@ -12,6 +12,7 @@ import { enableSelectionEffect } from '../effects'
 
 import { Workbench } from './Workbench'
 import { Cursor } from './Cursor'
+import { enableDragEffect } from '../effects/dragEffect'
 
 export interface EngineOptions extends Partial<ApplicationOptions> {
   enableZoom?: boolean
@@ -95,6 +96,7 @@ export class Engine {
   initEffects() {
     enableCursorEffect(this)
     enableSelectionEffect(this)
+    enableDragEffect(this)
   }
 
   activeWheelZoom() {

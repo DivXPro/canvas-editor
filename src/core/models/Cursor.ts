@@ -78,6 +78,8 @@ export class Cursor {
       status: observable,
       dragType: observable,
       dragStartPosition: observable,
+      dragStartToCurrentDelta: observable,
+      dragAtomDelta: observable,
       dragEndPosition: observable,
       type: computed,
       setType: action.bound,
