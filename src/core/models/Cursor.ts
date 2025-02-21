@@ -51,7 +51,7 @@ export const DragAbleTypes: CursorType[] = [
   CursorType.BrRotate,
 ]
 
-export const HandleResizeStyles: [CursorType, CursorType, CursorType, CursorType] = [
+export const CornerResizeStyles: [CursorType, CursorType, CursorType, CursorType] = [
   CursorType.NwseResize,
   CursorType.NeswResize,
   CursorType.NwseResize,

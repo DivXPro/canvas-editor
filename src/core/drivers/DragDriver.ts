@@ -75,7 +75,7 @@ export class DragDriver extends EventDriver {
         : 0
     const timeDelta = Date.now() - GlobalState.onMouseDownAt
 
-    if (timeDelta > 10 && event !== GlobalState.startEvent && distance > 5) {
+    if (timeDelta > 10 && event !== GlobalState.startEvent && distance > 4) {
       this.events.off('pointermove', this.onDistanceChange)
       this.onStartDrag(event)
     }

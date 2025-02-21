@@ -1,5 +1,4 @@
 import { action, makeObservable, observable } from 'mobx'
-import { FederatedPointerEvent } from 'pixi.js'
 
 import { DNode } from '../elements'
 import { Position, Size } from '../elements/type'
@@ -10,7 +9,7 @@ import { CompositeCommand, MoveCommand, RotationCommand } from '../commands'
 
 import { Engine } from './Engine'
 import { Workbench } from './Workbench'
-import { CursorDragType } from './Cursor'
+import { CornerResizeStyles, CursorDragType, EdgeResizeStyles, RotateStyles } from './Cursor'
 
 export interface ITransformOptions {
   engine: Engine
@@ -43,25 +42,10 @@ export class TransformHelper {
 
   // Drag related methods
   dragStart(event: DragStartEvent) {
-    console.log('dragStart')
     if (this.operation.selection.selectedNodes.length > 0) {
-      if (this.engine.controlBox?.isPointOnHandler({ x: event.data.offsetX, y: event.data.offsetY })) {
-        this.engine.cursor.dragType = CursorDragType.Scale
-        this.operation.selection.selectedNodes.forEach(node => {
-          this.nodeInitialSizes[node.id] = { ...node.size }
-        })
+      this.dragging = true
 
-        return
-      }
-      if (this.engine.controlBox?.isPointOnRotateHandler({ x: event.data.offsetX, y: event.data.offsetY })) {
-        this.engine.cursor.dragType = CursorDragType.Rotate
-        this.operation.selection.selectedNodes.forEach(node => {
-          this.rotates[node.id] = node.rotation
-        })
-
-        return
-      }
-      if (this.engine.controlBox?.isPointOnBorder({ x: event.data.offsetX, y: event.data.offsetY })) {
+      if (CornerResizeStyles.includes(this.engine.cursor.type) || EdgeResizeStyles.includes(this.engine.cursor.type)) {
         this.engine.cursor.dragType = CursorDragType.Resize
         this.operation.selection.selectedNodes.forEach(node => {
           this.nodeInitialSizes[node.id] = { ...node.size }
@@ -69,8 +53,15 @@ export class TransformHelper {
 
         return
       }
+      if (RotateStyles.includes(this.engine.cursor.type)) {
+        this.engine.cursor.dragType = CursorDragType.Rotate
+        this.operation.selection.selectedNodes.forEach(node => {
+          this.rotates[node.id] = node.rotation
+        })
+
+        return
+      }
       this.engine.cursor.dragType = CursorDragType.Move
-      this.dragging = true
       this.nodeInitialPositions = {}
       this.operation.selection.selectedNodes.forEach(node => {
         this.nodeInitialPositions[node.id] = { ...node.position }
@@ -79,8 +70,6 @@ export class TransformHelper {
   }
 
   dragMove(event: DragMoveEvent) {
-    console.log('dragMove')
-
     if (!this.dragging) {
       return
     }

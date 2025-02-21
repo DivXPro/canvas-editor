@@ -127,10 +127,10 @@ export class ControlBox extends Container {
       const handle = this.handles[i]
       const point = handle.toLocal({ x: checkPoint.x + CursorViewOffset, y: checkPoint.y + CursorViewOffset })
 
-      if (this.isPointOnHandler(point, i)) {
+      if (this.isLocalPointOnHandler(point, i)) {
         return true
       }
-      if (this.isPointOnRotateHandler(point, i)) {
+      if (this.isLocalPointOnRotateHandler(point, i)) {
         return true
       }
     }
@@ -156,11 +156,79 @@ export class ControlBox extends Container {
     return false
   }
 
-  isPointOnHandler(point: Position, handleIndex: number = 0) {
+  isPointOnHandler(point: Position, handleIndex?: number) {
+    if (handleIndex == null) {
+      return this.handles.some(handle => handle.containsPoint(handle.toLocal(point)))
+    }
+
+    return this.handles[handleIndex].containsPoint(this.handles[handleIndex].toLocal(point))
+  }
+
+  isLocalPointOnHandler(point: Position, handleIndex?: number) {
+    if (handleIndex == null) {
+      return this.handles.some(handle => handle.containsPoint(point))
+    }
+
     return this.handles[handleIndex].containsPoint(point)
   }
 
-  isPointOnRotateHandler(point: Position, handleIndex: number = 0) {
+  isPointOnRotateHandler(point: Position, handleIndex?: number) {
+    if (handleIndex == null) {
+      return this.handles.some(handle => {
+        const bounds = handle.getLocalBounds().clone()
+
+        if (handleIndex === 0 || handleIndex === 3) {
+          bounds.minX -= 10
+        } else {
+          bounds.maxX += 10
+        }
+
+        if (handleIndex === 0 || handleIndex === 1) {
+          bounds.minY -= 10
+        } else {
+          bounds.maxY += 10
+        }
+
+        return isPointInPointsArea(handle.toLocal(point), calculatePointsFromBounds(bounds))
+      })
+    }
+    const bounds = this.handles[handleIndex].getLocalBounds().clone()
+
+    if (handleIndex === 0 || handleIndex === 3) {
+      bounds.minX -= 10
+    } else {
+      bounds.maxX += 10
+    }
+
+    if (handleIndex === 0 || handleIndex === 1) {
+      bounds.minY -= 10
+    } else {
+      bounds.maxY += 10
+    }
+
+    return isPointInPointsArea(this.handles[handleIndex].toLocal(point), calculatePointsFromBounds(bounds))
+  }
+
+  isLocalPointOnRotateHandler(point: Position, handleIndex?: number) {
+    if (handleIndex == null) {
+      return this.handles.some(handle => {
+        const bounds = handle.getLocalBounds().clone()
+
+        if (handleIndex === 0 || handleIndex === 3) {
+          bounds.minX -= 10
+        } else {
+          bounds.maxX += 10
+        }
+
+        if (handleIndex === 0 || handleIndex === 1) {
+          bounds.minY -= 10
+        } else {
+          bounds.maxY += 10
+        }
+
+        return isPointInPointsArea(point, calculatePointsFromBounds(bounds))
+      })
+    }
     const bounds = this.handles[handleIndex].getLocalBounds().clone()
 
     if (handleIndex === 0 || handleIndex === 3) {

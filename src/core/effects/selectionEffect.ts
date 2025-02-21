@@ -33,20 +33,6 @@ export const enableSelectionEffect = (engine: Engine) => {
     }
   })
 
-  engine.events.on('node:drag', () => {
-    if (engine.controlBox) {
-      engine.controlBox.visible = false
-    }
-    engine.workbench.selection.selectedNodes.forEach(node => node.outline?.hide())
-  })
-
-  engine.events.on('node:dragEnd', () => {
-    if (engine.controlBox) {
-      engine.controlBox.visible = true
-    }
-    engine.workbench.selection.selectedNodes.forEach(node => node.outline?.update())
-  })
-
   engine.events.on('selection:move', (e: SelectionAreaMoveEvent) => {
     const nodes = engine.workbench.selectableNodes.filter(node => {
       const startPoint = engine.workbench.selection.startPoint

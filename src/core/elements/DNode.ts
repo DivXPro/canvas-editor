@@ -148,6 +148,7 @@ export abstract class DNode implements IDNode<any> {
       setPosition: action.bound,
       setRotation: action.bound,
       setScale: action.bound,
+      setSize: action.bound,
     })
     this.outline = this.engine.outlineLayer?.addOutline(this)
   }
@@ -169,8 +170,12 @@ export abstract class DNode implements IDNode<any> {
     return this._size
   }
 
-  set size(value: Size) {
-    this.size = value
+  set size(size: Size) {
+    this.setSize(size)
+  }
+
+  setSize(size: Size) {
+    this._size = size
   }
 
   get r() {
@@ -452,6 +457,36 @@ export abstract class DNode implements IDNode<any> {
   destory() {
     this.item?.destroy()
     this.outline?.destroy()
+  }
+
+  resize(globalBottomRight: Position) {
+    const bottomRight = this.parent?.item
+      ? this.parent.item.toLocal(globalBottomRight)
+      : { x: globalBottomRight.x, y: globalBottomRight.y }
+    // 创建矩阵进行旋转变换
+    const mt = new Matrix()
+
+    mt.translate(-this.position.x, -this.position.y)
+    mt.rotate(-this.rotation)
+    mt.translate(this.position.x, this.position.y)
+
+    // 将旋转后的点转换为未旋转状态的点
+    const topLeft = mt.apply({ x: this.position.x - this.size.width / 2, y: this.position.y - this.size.height / 2 })
+
+    // 计算新的尺寸
+    const newWidth = Math.abs(bottomRight.x - topLeft.x)
+    const newHeight = Math.abs(bottomRight.y - topLeft.y)
+
+    this.size = {
+      width: Math.max(0, newWidth),
+      height: Math.max(0, newHeight),
+    }
+
+    // 更新元素位置到新的中心点
+    const centerX = topLeft.x + newWidth / 2
+    const centerY = topLeft.y + newHeight / 2
+
+    this.setPosition(centerX, centerY)
   }
 }
 

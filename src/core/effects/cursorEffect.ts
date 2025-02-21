@@ -1,5 +1,5 @@
 import { DragMoveEvent, DragStartEvent, DragStopEvent } from '../events'
-import { Engine, CursorStatus, HandleResizeStyles, CursorType, RotateStyles, CursorViewOffset } from '../models'
+import { Engine, CursorStatus, CornerResizeStyles, CursorType, RotateStyles, CursorViewOffset } from '../models'
 
 export const enableCursorEffect = (engine: Engine) => {
   engine.events.on('pointermove', e => {
@@ -73,19 +73,24 @@ export const enableCursorEffect = (engine: Engine) => {
 
   // 通过移动判断 ControlBox 的控制区域
   engine.events.on('pointermove', (e: PointerEvent) => {
-    if (engine.workbench.selection.selected.length === 0 || engine.controlBox == null) {
+    if (
+      engine.workbench.selection.selected.length === 0 ||
+      engine.controlBox == null ||
+      engine.cursor.status === CursorStatus.DragStart ||
+      engine.cursor.status === CursorStatus.Dragging
+    ) {
       return
     }
     for (let i = 0; i < engine.controlBox.handles.length; i++) {
       const handle = engine.controlBox.handles[i]
       const point = handle.toLocal({ x: e.offsetX + CursorViewOffset, y: e.offsetY + CursorViewOffset })
 
-      if (engine.controlBox.isPointOnHandler(point, i)) {
-        engine.cursor.type = HandleResizeStyles[i]
+      if (engine.controlBox.isLocalPointOnHandler(point, i)) {
+        engine.cursor.type = CornerResizeStyles[i]
 
         return
       }
-      if (engine.controlBox.isPointOnRotateHandler(point, i)) {
+      if (engine.controlBox.isLocalPointOnRotateHandler(point, i)) {
         engine.cursor.type = RotateStyles[i]
 
         return
