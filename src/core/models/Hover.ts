@@ -14,41 +14,43 @@ export interface IHoverOptions {
 export class Hover {
   engine: Engine
   operation: Workbench
-  element?: DNode | null
+  node?: DNode | null
 
   constructor(options: IHoverOptions) {
     this.engine = options.engine
     this.operation = options.operation
 
     makeObservable(this, {
-      element: observable.ref,
+      node: observable.ref,
       setHover: action.bound,
       clear: action.bound,
     })
   }
 
-  setHover(element?: DNode) {
+  setHover(node?: DNode) {
     if (this.operation.selection.selecting) {
       return
     }
-    if (element) {
-      this.element = element
+    if (node) {
+      this.node = node
     } else {
-      this.element = null
+      this.node = null
     }
     this.trigger()
   }
 
   clear() {
-    this.element = null
-    this.trigger()
+    if (this.node != null && this.node.isSelected === false) {
+      this.node?.outline?.hide()
+    }
+    this.node = null
   }
 
   trigger() {
     if (this.engine) {
       const event = new HoverElementEvent({
-        target: this.element,
-        source: this.element,
+        target: this.node,
+        source: this.node,
       })
 
       return this.engine.events.emit(event.type, event)

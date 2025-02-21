@@ -4,7 +4,7 @@ import { FederatedPointerEvent } from 'pixi.js'
 import { DNode } from '../elements'
 import { Position } from '../elements/type'
 import { DragMoveEvent, DragStartEvent } from '../events'
-import { NodeTransformEvent } from '../events/mutation/DragElementEvent'
+import { DragNodeEndEvent, DragNodeEvent, RotateNodeEvent } from '../events/mutation/TransformNodeEvent'
 import { calculateAngleABC } from '../utils/transform'
 import { CompositeCommand, MoveCommand, RotationCommand } from '../commands'
 
@@ -36,7 +36,7 @@ export class TransformHelper {
       dragStart: action.bound,
       dragMove: action.bound,
       dragStop: action.bound,
-      triggerMove: action.bound,
+      triggerDrag: action.bound,
     })
   }
 
@@ -51,7 +51,6 @@ export class TransformHelper {
           y: node.position.y,
         }
       })
-      // this.engine.events.emit(dragStartEvent.type, dragStartEvent)
     }
   }
 
@@ -72,7 +71,7 @@ export class TransformHelper {
           y: initialPosition.y + delta.offsetY,
         }
 
-        this.triggerMove(node, newPosition)
+        this.triggerDrag(node, newPosition)
       }
     })
   }
@@ -100,6 +99,7 @@ export class TransformHelper {
 
     this.dragging = false
     this.nodeInitialPositions = {}
+    this.triggerDragEnd(this.operation.selection.selectedNodes)
   }
 
   // Rotate related methods
@@ -211,15 +211,22 @@ export class TransformHelper {
   }
 
   // Event trigger methods
-  triggerMove(node: DNode, position: Position) {
+  triggerDrag(node: DNode, position: Position) {
     node.moveTo(position)
     this.engine.events.emit(
-      'node:transform',
-      new NodeTransformEvent({
+      'node:drag',
+      new DragNodeEvent({
         source: node,
-        transform: {
-          position,
-        },
+        position,
+      })
+    )
+  }
+
+  triggerDragEnd(nodes: DNode[]) {
+    this.engine.events.emit(
+      'node:dragEnd',
+      new DragNodeEndEvent({
+        source: nodes,
       })
     )
   }
@@ -228,11 +235,9 @@ export class TransformHelper {
     node.rotation = rotation
     this.engine.events.emit(
       'node:transform',
-      new NodeTransformEvent({
+      new RotateNodeEvent({
         source: node,
-        transform: {
-          rotation,
-        },
+        rotation,
       })
     )
   }

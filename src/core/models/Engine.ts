@@ -7,12 +7,10 @@ import { SelectionAreaLayer } from '../components/SelectionAreaLayer'
 import { ControlBox } from '../components/ControlBox'
 import { ZoomChangeEvent } from '../events/view/ZoomChangeEvent'
 import { NodeBase } from '../elements'
-import { enableCursorEffect } from '../effects/cursorEffect'
-import { enableSelectionEffect } from '../effects'
+import { enableSelectionEffect, enableCursorEffect, enableDragEffect } from '../effects'
 
 import { Workbench } from './Workbench'
 import { Cursor } from './Cursor'
-import { enableDragEffect } from '../effects/dragEffect'
 
 export interface EngineOptions extends Partial<ApplicationOptions> {
   enableZoom?: boolean
@@ -82,6 +80,8 @@ export class Engine {
     this.app.canvas.addEventListener('pointerup', e => this.events.emit('pointerup', e), { passive: false })
     this.app.canvas.addEventListener('pointermove', e => this.events.emit('pointermove', e), { passive: false })
     this.app.canvas.addEventListener('pointertap', e => this.events.emit('pointertap', e), { passive: false })
+    this.app.canvas.addEventListener('click', e => this.events.emit('click', e), { passive: false })
+
     this.app.canvas.addEventListener('wheel', e => this.events.emit('wheel', e), { passive: false })
   }
 

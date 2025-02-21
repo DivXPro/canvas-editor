@@ -1,5 +1,7 @@
 import { Position } from '../elements'
 
+import { isPointInPointsArea } from './hitConfirm'
+
 /**
  * 计算向量的点积
  */
@@ -114,7 +116,7 @@ export function isRectanglePolygonIntersect(rectPoints: Position[], polygonPoint
   // 获取矩形的两个投影轴（水平和垂直）
   const rectAxes: Position[] = [
     { x: 1, y: 0 }, // 水平轴
-    { x: 0, y: 1 }  // 垂直轴
+    { x: 0, y: 1 }, // 垂直轴
   ]
 
   // 获取多边形的所有投影轴
@@ -134,4 +136,121 @@ export function isRectanglePolygonIntersect(rectPoints: Position[], polygonPoint
 
   // 所有轴上都有重叠，说明相交
   return true
+}
+
+/**
+ * 将椭圆离散化为多边形
+ * @param center 椭圆中心点
+ * @param radiusX 椭圆X轴半径
+ * @param radiusY 椭圆Y轴半径
+ * @param rotation 椭圆旋转角度（弧度）
+ * @param segments 离散化后的线段数量
+ * @returns 近似椭圆的多边形顶点数组
+ */
+function discretizeEllipse(
+  center: Position,
+  radiusX: number,
+  radiusY: number,
+  rotation: number,
+  segments: number = 32
+): Position[] {
+  const points: Position[] = []
+  const step = (Math.PI * 2) / segments
+
+  for (let i = 0; i < segments; i++) {
+    const angle = i * step
+    // 参数方程
+    const x = radiusX * Math.cos(angle)
+    const y = radiusY * Math.sin(angle)
+
+    // 旋转变换
+    const rotatedX = x * Math.cos(rotation) - y * Math.sin(rotation)
+    const rotatedY = x * Math.sin(rotation) + y * Math.cos(rotation)
+
+    // 平移到椭圆中心
+    points.push({
+      x: center.x + rotatedX,
+      y: center.y + rotatedY,
+    })
+  }
+
+  return points
+}
+
+/**
+ * 判断圆形和多边形是否相交
+ * 相比椭圆，圆形的相交检测可以更加高效
+ * @param center 圆心坐标
+ * @param radius 圆的半径
+ * @param polygonPoints 多边形的顶点数组
+ * @returns 如果圆形和多边形相交返回 true，否则返回 false
+ */
+export function isCirclePolygonIntersect(center: Position, radius: number, polygonPoints: Position[]): boolean {
+  // 1. 首先检查圆心是否在多边形内部
+  if (isPointInPointsArea(center, polygonPoints)) {
+    return true
+  }
+
+  // 2. 检查多边形的每条边是否与圆相交
+  const len = polygonPoints.length
+
+  for (let i = 0; i < len; i++) {
+    const p1 = polygonPoints[i]
+    const p2 = polygonPoints[(i + 1) % len]
+
+    // 计算点到线段的最短距离
+    const dx = p2.x - p1.x
+    const dy = p2.y - p1.y
+    const length = Math.sqrt(dx * dx + dy * dy)
+
+    // 如果线段长度为0，则检查端点到圆心的距离
+    if (length === 0) {
+      const distance = Math.sqrt((p1.x - center.x) * (p1.x - center.x) + (p1.y - center.y) * (p1.y - center.y))
+
+      if (distance <= radius) {
+        return true
+      }
+      continue
+    }
+
+    // 计算圆心到线段的投影点
+    const t = Math.max(0, Math.min(1, ((center.x - p1.x) * dx + (center.y - p1.y) * dy) / (length * length)))
+
+    const projectionX = p1.x + t * dx
+    const projectionY = p1.y + t * dy
+
+    // 计算圆心到投影点的距离
+    const distance = Math.sqrt(
+      (center.x - projectionX) * (center.x - projectionX) + (center.y - projectionY) * (center.y - projectionY)
+    )
+
+    if (distance <= radius) {
+      return true
+    }
+  }
+
+  return false
+}
+
+/**
+ * 判断椭圆和多边形是否相交
+ * @param center 椭圆中心点
+ * @param radiusX 椭圆X轴半径
+ * @param radiusY 椭圆Y轴半径
+ * @param rotation 椭圆旋转角度（弧度）
+ * @param polygonPoints 多边形的顶点数组
+ * @returns 如果椭圆和多边形相交返回 true，否则返回 false
+ */
+export function isEllipsePolygonIntersect(
+  center: Position,
+  radiusX: number,
+  radiusY: number,
+  rotation: number,
+  polygonPoints: Position[]
+): boolean {
+  // 将椭圆离散化为多边形
+  const ellipsePoints = discretizeEllipse(center, radiusX, radiusY, rotation)
+
+  // 使用多边形相交检测算法
+  return isPolygonsIntersect(ellipsePoints, polygonPoints)
 }

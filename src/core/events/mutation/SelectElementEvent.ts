@@ -1,13 +1,13 @@
-import { AbstractMutationElementEvent } from './AbstractMutationElementEvent'
+import { AbstractMutationNodeEvent } from './AbstractMutationElementEvent'
 
-export class SelectElementEvent extends AbstractMutationElementEvent {
-  type = 'element:select:'
+export class SelectElementEvent extends AbstractMutationNodeEvent {
+  type = 'element:select'
 }
 
-export class UnselectElementEvent extends AbstractMutationElementEvent {
+export class UnselectElementEvent extends AbstractMutationNodeEvent {
   type = 'element:unselect'
 }
 
-export class HoverElementEvent extends AbstractMutationElementEvent {
+export class HoverElementEvent extends AbstractMutationNodeEvent {
   type = 'element:hover'
 }

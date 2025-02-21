@@ -1,11 +1,10 @@
 import { Graphics } from 'pixi.js'
 
 import { DNode } from '../elements/DNode'
-import { HoverElementEvent } from '../events'
-import { outlineWidth, primaryColor } from '../config'
+import { outlineWidth, outlineWidth2, primaryColor } from '../config'
 
 export interface IOutline {
-  update: (node: DNode) => void
+  update: () => void
   show: () => void
   hide: () => void
 }
@@ -19,42 +18,29 @@ export class Outline extends Graphics implements IOutline {
     })
     this.node = node
     this.visible = false
-
-    this.engine.events.on('element:hover', (event: HoverElementEvent) => {
-      if (event.data.source instanceof DNode && event.data.source === this.node) {
-        this.update(event.data.source)
-      } else {
-        this.hide()
-      }
-    })
-    this.engine.events.on('node:transform', this.handleDragMoveEvent.bind(this))
   }
 
   get engine() {
     return this.node.engine
   }
 
-  handleDragMoveEvent() {
-    this.hide()
-  }
+  update() {
+    const mode = this.node.isSelected ? 'selected' : 'hover'
 
-  update(node: DNode) {
-    if (node.displayWidth && node.displayHeight) {
-      this.clear()
-      this.position.set(node.globalCenter.x, node.globalCenter.y)
-      this.pivot.set(node.displayWidth / 2, node.displayHeight / 2)
+    this.clear()
+    this.position.set(this.node.globalCenter.x, this.node.globalCenter.y)
+    this.pivot.set(this.node.displayWidth / 2, this.node.displayHeight / 2)
 
-      this.rect(0, 0, node.displayWidth, node.displayHeight).stroke({ color: primaryColor, width: outlineWidth })
+    this.rect(0, 0, this.node.displayWidth, this.node.displayHeight).stroke({
+      color: primaryColor,
+      width: mode === 'selected' ? outlineWidth : outlineWidth2,
+    })
 
-      this.rotation = node.globalRotation
-      if (this.parent == null) {
-        node.engine.outlineLayer?.addChild(this)
-      }
-      this.show()
-    } else {
-      this.hide()
-      this.clear()
+    this.rotation = this.node.globalRotation
+    if (this.parent == null) {
+      this.node.engine.outlineLayer?.addChild(this)
     }
+    this.show()
   }
 
   show() {

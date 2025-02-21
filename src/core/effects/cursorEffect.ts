@@ -59,7 +59,7 @@ export const enableCursorEffect = (engine: Engine) => {
 
       return
     }
-    const nodes = engine.workbench.getSelectableNodes()
+    const nodes = engine.workbench.selectableNodes
 
     const node = nodes.find(n => n.containsPoint({ x: e.offsetX, y: e.offsetY }))
 

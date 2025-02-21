@@ -10,6 +10,7 @@ export enum CursorStatus {
   Dragging = 'dragging',
   DragStop = 'dragStop',
   Resizing = 'resizing',
+  Rotating = 'rotating',
   Drawing = 'drawing',
 }
 

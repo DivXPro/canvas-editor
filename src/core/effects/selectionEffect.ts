@@ -1,7 +1,8 @@
-import { Position } from '../elements'
-import { SelectionAreaMoveEvent } from '../events'
-import { Engine } from '../models'
+import { DNode, Position } from '../elements'
+import { HoverElementEvent, SelectElementEvent, SelectionAreaMoveEvent, UnselectElementEvent } from '../events'
+import { CursorStatus, Engine } from '../models'
 import { isRectanglePolygonIntersect } from '../utils/polygonIntersect'
+import { isArr } from '../utils/types'
 
 export const enableSelectionEffect = (engine: Engine) => {
   engine.events.on('pointerdown', e => {
@@ -16,7 +17,11 @@ export const enableSelectionEffect = (engine: Engine) => {
     }
   })
   engine.events.on('pointerup', e => {
-    if (engine.workbench.selection.selected.length > 0 && !engine.workbench.selection.selecting) {
+    if (
+      engine.workbench.selection.selected.length > 0 &&
+      !engine.workbench.selection.selecting &&
+      engine.cursor.status === CursorStatus.Normal
+    ) {
       if (!engine.workbench.selection.containsPoint({ x: e.offsetX, y: e.offsetY })) {
         engine.workbench.selection.clear()
 
@@ -25,8 +30,22 @@ export const enableSelectionEffect = (engine: Engine) => {
     }
   })
 
+  engine.events.on('node:drag', () => {
+    if (engine.controlBox) {
+      engine.controlBox.visible = false
+    }
+    engine.workbench.selection.selectedNodes.forEach(node => node.outline?.hide())
+  })
+
+  engine.events.on('node:dragEnd', () => {
+    if (engine.controlBox) {
+      engine.controlBox.visible = true
+    }
+    engine.workbench.selection.selectedNodes.forEach(node => node.outline?.update())
+  })
+
   engine.events.on('selection:move', (e: SelectionAreaMoveEvent) => {
-    const nodes = engine.workbench.getSelectableNodes().filter(node => {
+    const nodes = engine.workbench.selectableNodes.filter(node => {
       const startPoint = engine.workbench.selection.startPoint
       const rectVertices = [
         { x: startPoint.offsetX, y: startPoint.offsetY },
@@ -40,10 +59,36 @@ export const enableSelectionEffect = (engine: Engine) => {
 
     engine.workbench.selection.select(nodes.map(node => node.id))
   })
+
+  engine.events.on('element:hover', (event: HoverElementEvent) => {
+    if (event.data.source instanceof DNode) {
+      event.data.source.outline?.update()
+    }
+  })
+
+  engine.events.on('element:select', (event: SelectElementEvent) => {
+    engine.controlBox?.update()
+    engine.workbench.selectableNodes.forEach(node => {
+      if (!node.isSelected) {
+        node.outline?.hide()
+      } else {
+        node.outline?.show()
+      }
+    })
+  })
+
+  engine.events.on('element:unselect', (event: UnselectElementEvent) => {
+    engine.controlBox?.update()
+    engine.workbench.selectableNodes.forEach(node => {
+      if (!node.isSelected) {
+        node.outline?.hide()
+      }
+    })
+  })
 }
 
 const checkSelectNode = (engine: Engine, point: Position) => {
-  const nodes = engine.workbench.getSelectableNodes()
+  const nodes = engine.workbench.selectableNodes
 
   for (let i = 0; i < nodes.length; i++) {
     if (nodes[i].containsPoint(point)) {

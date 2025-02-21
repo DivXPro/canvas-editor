@@ -15,4 +15,16 @@ export const enableDragEffect = (engine: Engine) => {
   engine.events.on('drag:stop', () => {
     engine.workbench.transformHelper.dragStop()
   })
+
+  engine.events.on('node:transform', () => {
+    engine.controlBox?.update()
+  })
+
+  engine.events.on('node:drag', () => {
+    engine.controlBox?.hide()
+  })
+
+  engine.events.on('node:dragEnd', () => {
+    engine.controlBox?.update()
+  })
 }

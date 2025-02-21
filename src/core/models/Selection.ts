@@ -47,11 +47,11 @@ export class Selection {
       source: this.selectedNodes,
     })
 
-    this.engine.events.emit('element:select', event)
+    this.engine.events.emit(event.type, event)
   }
 
   mapIds(ids: string | DNode | string[] | DNode[]) {
-    return Array.isArray(ids) ? ids.map((node: any) => (typeof node === 'string' ? node : node?.id)) : []
+    return Array.isArray(ids) ? ids.map((node: string | DNode) => (typeof node === 'string' ? node : node?.id)) : []
   }
 
   select(ids: string | DNode | Array<string | DNode>): void {
@@ -158,13 +158,9 @@ export class Selection {
 
   add(...ids: string[] | DNode[]) {
     this.mapIds(ids).forEach(id => {
-      if (typeof ids === 'string') {
-        if (!this.selected.includes(id)) {
-          this.selected.push(id)
-          this.indexes[id] = true
-        }
-      } else {
-        this.add(id?.id)
+      if (!this.selected.includes(id)) {
+        this.selected.push(id)
+        this.indexes[id] = true
       }
     })
     this.trigger()
@@ -172,31 +168,19 @@ export class Selection {
 
   remove(...ids: string[] | DNode[]) {
     this.mapIds(ids).forEach(id => {
-      if (typeof ids === 'string') {
-        this.selected.clear()
-        this.selected.push(...this.selected.filter(item => item !== id))
-        delete this.indexes[id]
-      } else {
-        this.remove(id?.id)
-      }
+      this.selected.push(...this.selected.filter(item => item !== id))
+      delete this.indexes[id]
     })
     this.trigger(UnselectElementEvent)
   }
 
   has(...ids: string[] | DNode[]): boolean {
     return this.mapIds(ids).some(id => {
-      if (typeof ids === 'string') {
-        return this.indexes[id]
-      } else {
-        if (!id?.id) return false
-
-        return this.has(id?.id)
-      }
+      return this.indexes[id]
     })
   }
 
   clear() {
-    console.debug('selection clear')
     this.selected.clear()
     this.indexes = {}
     this.trigger(UnselectElementEvent)

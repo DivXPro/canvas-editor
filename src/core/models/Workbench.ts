@@ -1,4 +1,4 @@
-import { makeObservable, observable } from 'mobx'
+import { computed, makeObservable, observable } from 'mobx'
 
 import { DNode, DFrame, DRectangle, DText, IDFrameBase, IDRectangleBase, IDTextBase, DFrameBase } from '../elements'
 import { NodeBase, Position } from '../elements/type'
@@ -68,6 +68,7 @@ export class Workbench {
     makeObservable(this, {
       canvaNodes: observable,
       zoomRatio: observable,
+      selectableNodes: computed,
       history: observable.shallow,
     })
   }
@@ -124,7 +125,7 @@ export class Workbench {
     }
   }
 
-  getSelectableNodes() {
+  get selectableNodes() {
     const topNodesOnCanvas = this.canvaNodes.filter(node => node.type !== 'FRAME')
     const topNodesInFrame = this.canvaNodes.filter(node => node.type === 'FRAME').map(node => node.children ?? [])
 

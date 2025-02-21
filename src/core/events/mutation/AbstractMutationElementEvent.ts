@@ -1,6 +1,6 @@
 import { DNode } from '../../elements/DNode'
 
-export interface IMutationElementEventData {
+export interface IMutatioNodeEventData {
   //事件发生的数据源
   source?: DNode | DNode[] | null
   //事件发生的目标对象
@@ -9,7 +9,7 @@ export interface IMutationElementEventData {
   originSourceParents?: DNode | DNode[] | null
 }
 
-export class AbstractMutationElementEvent<Data extends IMutationElementEventData = IMutationElementEventData> {
+export class AbstractMutationNodeEvent<Data extends IMutatioNodeEventData = IMutatioNodeEventData> {
   data: Data
   context: any
   constructor(data: Data) {

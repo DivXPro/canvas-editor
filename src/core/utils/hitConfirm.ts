@@ -35,3 +35,26 @@ export function isPointInPointsArea(point: Position, vertices: Position[]) {
 
   return inside
 }
+
+export function isPointInCurvedPolygon(point: Position, curvePoints: Position[], segmentCount: number = 32): boolean {
+  // 1. 将曲线离散化为更多的直线段
+  const discretizedPoints: Position[] = []
+
+  for (let i = 0; i < curvePoints.length; i++) {
+    const p1 = curvePoints[i]
+    const p2 = curvePoints[(i + 1) % curvePoints.length]
+
+    // 在两点之间插入更多的点
+    for (let j = 0; j < segmentCount; j++) {
+      const t = j / segmentCount
+
+      discretizedPoints.push({
+        x: p1.x + (p2.x - p1.x) * t,
+        y: p1.y + (p2.y - p1.y) * t,
+      })
+    }
+  }
+
+  // 2. 使用常规的点在多边形内判断方法
+  return isPointInPointsArea(point, discretizedPoints)
+}

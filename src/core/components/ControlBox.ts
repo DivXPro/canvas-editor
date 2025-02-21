@@ -20,9 +20,10 @@ export class ControlBox extends Container {
     this.initHandles()
     this.initRotateHandle()
 
-    this.engine.events.on('element:select', this.handleSelectChange)
-    this.engine.events.on('element:unselect', this.handleSelectChange)
-    this.engine.events.on('node:transform', this.handleTransformNode)
+    // this.engine.events.on('element:select', this.handleSelectChange)
+    // this.engine.events.on('element:unselect', this.handleSelectChange)
+    // this.engine.events.on('node:transform', this.handleTransformNode)
+    // this.engine.events.on('node:drag', this.handleTransformNode)
     this.engine.events.on('zoom:change', this.handleZoomChange)
   }
 
@@ -93,7 +94,7 @@ export class ControlBox extends Container {
 
   update() {
     if (this.selection == null || this.selection.selected.length === 0) {
-      return
+      return this.hide()
     }
     const rect = this.selection?.selectedRectPoints
 
@@ -123,6 +124,7 @@ export class ControlBox extends Container {
     const centerY = rect[0].y - 30 // 将旋转控制点放在选区上方
 
     this.rotateHandle.position.set(centerX, centerY)
+    this.show()
   }
 
   get rotationHandlePos() {
@@ -133,29 +135,17 @@ export class ControlBox extends Container {
     this.update()
   }
 
-  private handleSelectChange = () => {
-    console.log('handleSelectChange')
-    if (this.selection == null || this.selection.length === 0) {
-      this.hide()
-    } else {
-      this.show()
-    }
-  }
-
   show() {
-    console.log('controlbox show')
-    this.update()
     this.visible = true
   }
 
   hide() {
-    console.log('controlbox hide')
     this.visible = false
   }
 
   destroy() {
-    this.engine.events.off('element:select', this.handleSelectChange)
-    this.engine.events.off('element:unselect', this.handleSelectChange)
+    // this.engine.events.off('element:select', this.handleSelectChange)
+    // this.engine.events.off('element:unselect', this.handleSelectChange)
     this.parent.removeChild(this)
     super.destroy()
   }
