@@ -43,8 +43,6 @@ export class TransformHelper {
   // Drag related methods
   dragStart(event: DragStartEvent) {
     if (this.operation.selection.selectedNodes.length > 0) {
-      this.dragging = true
-
       if (CornerResizeStyles.includes(this.engine.cursor.type) || EdgeResizeStyles.includes(this.engine.cursor.type)) {
         this.engine.cursor.dragType = CursorDragType.Resize
         this.operation.selection.selectedNodes.forEach(node => {
@@ -70,9 +68,7 @@ export class TransformHelper {
   }
 
   dragMove(event: DragMoveEvent) {
-    if (!this.dragging) {
-      return
-    }
+    console.log('dragMove', this.engine.cursor.dragType)
     switch (this.engine.cursor.dragType) {
       case CursorDragType.Move:
         this.handleMove()

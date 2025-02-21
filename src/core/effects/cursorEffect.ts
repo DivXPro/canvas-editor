@@ -77,7 +77,8 @@ export const enableCursorEffect = (engine: Engine) => {
       engine.workbench.selection.selected.length === 0 ||
       engine.controlBox == null ||
       engine.cursor.status === CursorStatus.DragStart ||
-      engine.cursor.status === CursorStatus.Dragging
+      engine.cursor.status === CursorStatus.Dragging ||
+      e.buttons === 1
     ) {
       return
     }

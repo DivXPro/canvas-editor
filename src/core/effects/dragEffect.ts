@@ -31,7 +31,7 @@ export const enableDragEffect = (engine: Engine) => {
   })
 
   engine.events.on('node:drag', () => {
-    engine.controlBox?.update()
+    engine.controlBox?.hide()
     engine.workbench.selection.selectedNodes.forEach(node => node.outline?.hide())
   })
 
