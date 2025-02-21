@@ -1,13 +1,17 @@
-import { Container, FederatedPointerEvent, Graphics, Point } from 'pixi.js'
+import { Container, Graphics, Point } from 'pixi.js'
 
 import { Engine } from '../models/Engine'
 import * as UICfg from '../config'
+import { Position } from '../elements'
+import { calculatePointsFromBounds } from '../utils/transform'
+import { isPointInPointsArea } from '../utils/hitConfirm'
+import { CursorViewOffset } from '../models'
 
 export class ControlBox extends Container {
-  private engine: Engine
-  private border: Graphics
-  private handles: Graphics[]
-  private rotateHandle: Graphics
+  engine: Engine
+  border: Graphics
+  handles: Graphics[]
+  rotateHandle: Graphics
 
   constructor(engine: Engine) {
     super()
@@ -18,13 +22,7 @@ export class ControlBox extends Container {
     this.visible = false
     this.initBorder()
     this.initHandles()
-    this.initRotateHandle()
-
-    // this.engine.events.on('element:select', this.handleSelectChange)
-    // this.engine.events.on('element:unselect', this.handleSelectChange)
-    // this.engine.events.on('node:transform', this.handleTransformNode)
-    // this.engine.events.on('node:drag', this.handleTransformNode)
-    this.engine.events.on('zoom:change', this.handleZoomChange)
+    // this.initRotateHandle()
   }
 
   private initBorder() {
@@ -53,40 +51,23 @@ export class ControlBox extends Container {
     return this.engine.workbench?.selection
   }
 
-  private initRotateHandle() {
-    const radius = UICfg.boundingHandingSize
+  // private initRotateHandle() {
+  //   const radius = UICfg.boundingHandingSize
 
-    this.rotateHandle
-      .circle(0, 0, radius)
-      .fill({
-        color: UICfg.white,
-      })
-      .stroke({
-        width: UICfg.boundingHandingStrokeWidth,
-        color: UICfg.boundingHandingStrokeColor,
-      })
+  //   this.rotateHandle
+  //     .circle(0, 0, radius)
+  //     .fill({
+  //       color: UICfg.white,
+  //     })
+  //     .stroke({
+  //       width: UICfg.boundingHandingStrokeWidth,
+  //       color: UICfg.boundingHandingStrokeColor,
+  //     })
 
-    this.rotateHandle.eventMode = 'static'
-    this.rotateHandle.cursor = 'pointer'
-    this.rotateHandle.on('pointerdown', this.handleRotateStart)
-    this.addChild(this.rotateHandle)
-  }
-
-  private handleRotateStart(event: FederatedPointerEvent) {
-    this.engine.workbench?.transformHelper.rotateStart(event)
-    event.preventDefault()
-    event.stopPropagation()
-  }
-
-  private handleRotateMove = (event: FederatedPointerEvent) => {
-    // TODO:
-  }
-
-  private handleRotateEnd = () => {
-    // this.isRotating = false
-    // this.last
-    // RotatePoint = null
-  }
+  //   this.rotateHandle.eventMode = 'static'
+  //   this.rotateHandle.cursor = 'pointer'
+  //   this.addChild(this.rotateHandle)
+  // }
 
   private handleZoomChange = () => {
     this.update()
@@ -131,21 +112,158 @@ export class ControlBox extends Container {
     return this.getGlobalPosition(new Point(this.rotateHandle.position.x, this.rotateHandle.position.y))
   }
 
-  private handleTransformNode = () => {
-    this.update()
-  }
-
   show() {
+    this.engine.events.on('zoom:change', this.handleZoomChange)
     this.visible = true
   }
 
   hide() {
+    this.engine.events.off('zoom:change', this.handleZoomChange)
     this.visible = false
   }
 
+  isOnTransformArea(checkPoint: Position) {
+    for (let i = 0; i < this.handles.length; i++) {
+      const handle = this.handles[i]
+      const point = handle.toLocal({ x: checkPoint.x + CursorViewOffset, y: checkPoint.y + CursorViewOffset })
+
+      if (this.isPointOnHandler(point, i)) {
+        return true
+      }
+      if (this.isPointOnRotateHandler(point, i)) {
+        return true
+      }
+    }
+
+    if (
+      this.isPointOnHorizontalBorder({
+        x: checkPoint.x + CursorViewOffset * 1.5,
+        y: checkPoint.y + CursorViewOffset * 1.5,
+      })
+    ) {
+      return true
+    }
+
+    if (
+      this.isPointOnVerticalBorder({
+        x: checkPoint.x + CursorViewOffset * 1.5,
+        y: checkPoint.y + CursorViewOffset * 1.5,
+      })
+    ) {
+      return true
+    }
+
+    return false
+  }
+
+  isPointOnHandler(point: Position, handleIndex: number = 0) {
+    return this.handles[handleIndex].containsPoint(point)
+  }
+
+  isPointOnRotateHandler(point: Position, handleIndex: number = 0) {
+    const bounds = this.handles[handleIndex].getLocalBounds().clone()
+
+    if (handleIndex === 0 || handleIndex === 3) {
+      bounds.minX -= 10
+    } else {
+      bounds.maxX += 10
+    }
+
+    if (handleIndex === 0 || handleIndex === 1) {
+      bounds.minY -= 10
+    } else {
+      bounds.maxY += 10
+    }
+
+    return isPointInPointsArea(point, calculatePointsFromBounds(bounds))
+  }
+
+  isPointOnBorder(point: Position, borderWidth: number = 8): boolean {
+    if (!this.selection || this.selection.selected.length === 0) {
+      return false
+    }
+
+    // 检查水平线
+    if (this.isPointOnHorizontalBorder(point, borderWidth)) {
+      return true
+    }
+
+    // 检查垂直线
+    if (this.isPointOnVerticalBorder(point, borderWidth)) {
+      return true
+    }
+
+    return false
+  }
+
+  isPointOnHorizontalBorder(point: Position, borderWidth: number = 8): boolean {
+    const rect = this.selection.selectedRectPoints
+
+    // 检查上边框
+    if (this.isPointOnLine(point, rect[0], rect[1], borderWidth)) {
+      return true
+    }
+
+    // 检查下边框
+    if (this.isPointOnLine(point, rect[3], rect[2], borderWidth)) {
+      return true
+    }
+
+    return false
+  }
+
+  isPointOnVerticalBorder(point: Position, borderWidth: number = 8): boolean {
+    const rect = this.selection.selectedRectPoints
+
+    // 检查左边框
+    if (this.isPointOnLine(point, rect[0], rect[3], borderWidth)) {
+      return true
+    }
+
+    // 检查右边框
+    if (this.isPointOnLine(point, rect[1], rect[2], borderWidth)) {
+      return true
+    }
+
+    return false
+  }
+
+  private isPointOnLine(p: Position, start: Position, end: Position, halfWidth: number): boolean {
+    const A = p.x - start.x
+    const B = p.y - start.y
+    const C = end.x - start.x
+    const D = end.y - start.y
+
+    const dot = A * C + B * D
+    const lenSq = C * C + D * D
+
+    let param = -1
+
+    if (lenSq !== 0) {
+      param = dot / lenSq
+    }
+
+    let xx, yy
+
+    if (param < 0) {
+      xx = start.x
+      yy = start.y
+    } else if (param > 1) {
+      xx = end.x
+      yy = end.y
+    } else {
+      xx = start.x + param * C
+      yy = start.y + param * D
+    }
+
+    const dx = p.x - xx
+    const dy = p.y - yy
+    const distance = Math.sqrt(dx * dx + dy * dy)
+
+    return distance <= halfWidth
+  }
+
   destroy() {
-    // this.engine.events.off('element:select', this.handleSelectChange)
-    // this.engine.events.off('element:unselect', this.handleSelectChange)
     this.parent.removeChild(this)
     super.destroy()
   }

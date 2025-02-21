@@ -5,6 +5,7 @@ import { HoverElementEvent } from '../events'
 
 import { Engine } from './Engine'
 import { Workbench } from './Workbench'
+import { CursorType } from './Cursor'
 
 export interface IHoverOptions {
   engine: Engine
@@ -43,6 +44,7 @@ export class Hover {
     if (this.node != null && this.node.isSelected === false) {
       this.node?.outline?.hide()
     }
+
     this.node = null
   }
 

@@ -9,8 +9,6 @@ export enum CursorStatus {
   DragStart = 'dragStart',
   Dragging = 'dragging',
   DragStop = 'dragStop',
-  Resizing = 'resizing',
-  Rotating = 'rotating',
   Drawing = 'drawing',
 }
 
@@ -28,16 +26,55 @@ export enum CursorType {
   Default = 'default',
   Pointer = 'pointer',
   Move = 'move',
-  Crosshair = 'crosshair',
   Text = 'text',
   NotAllowed = 'not-allowed',
   EwResize = 'ew-resize',
   NsResize = 'ns-resize',
   NeswResize = 'nesw-resize',
   NwseResize = 'nwse-resize',
+  TlRotate = 'tl-rotate',
+  TrRotate = 'tr-rotate',
+  BlRotate = 'bl-rotate',
+  BrRotate = 'br-rotate',
 }
 
+export const DragAbleTypes: CursorType[] = [
+  CursorType.Default,
+  CursorType.Pointer,
+  CursorType.EwResize,
+  CursorType.NsResize,
+  CursorType.NeswResize,
+  CursorType.NwseResize,
+  CursorType.TlRotate,
+  CursorType.TrRotate,
+  CursorType.BlRotate,
+  CursorType.BrRotate,
+]
+
+export const HandleResizeStyles: [CursorType, CursorType, CursorType, CursorType] = [
+  CursorType.NwseResize,
+  CursorType.NeswResize,
+  CursorType.NwseResize,
+  CursorType.NeswResize,
+]
+
+export const EdgeResizeStyles: [CursorType, CursorType, CursorType, CursorType] = [
+  CursorType.NsResize,
+  CursorType.EwResize,
+  CursorType.NsResize,
+  CursorType.EwResize,
+]
+
+export const RotateStyles: [CursorType, CursorType, CursorType, CursorType] = [
+  CursorType.TlRotate,
+  CursorType.TrRotate,
+  CursorType.BrRotate,
+  CursorType.BlRotate,
+]
+
 export type CursorPosition = Position
+
+export const CursorViewOffset = 5
 
 const DEFAULT_POSITION: CursorPosition = {
   clientX: 0,
@@ -106,7 +143,7 @@ export class Cursor {
   setType(type: CursorType) {
     this._type = type
     if (this.engine.app.canvas.style) {
-      this.engine.app.canvas.style.cursor = type
+      this.engine.app.canvas.style.cursor = this.engine.app.getCursorStyle(type) ?? type
     }
   }
 

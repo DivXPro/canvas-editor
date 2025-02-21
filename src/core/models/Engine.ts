@@ -1,4 +1,4 @@
-import { Application, ApplicationOptions, Size, PointData, EventEmitter } from 'pixi.js'
+import { ApplicationOptions, Size, PointData, EventEmitter } from 'pixi.js'
 
 import { OutlineLayer } from '../components/OutlineLayer'
 import { DragDriver, EventDriver, SelectionAreaDriver } from '../drivers'
@@ -8,9 +8,10 @@ import { ControlBox } from '../components/ControlBox'
 import { ZoomChangeEvent } from '../events/view/ZoomChangeEvent'
 import { NodeBase } from '../elements'
 import { enableSelectionEffect, enableCursorEffect, enableDragEffect } from '../effects'
+import { CanvasApp } from '../components/Canvas'
 
 import { Workbench } from './Workbench'
-import { Cursor } from './Cursor'
+import { Cursor, CursorType } from './Cursor'
 
 export interface EngineOptions extends Partial<ApplicationOptions> {
   enableZoom?: boolean
@@ -39,12 +40,12 @@ export class Engine {
   controlBox?: ControlBox
   events = new EventEmitter()
   drivers: EventDriver[] = []
-  app: Application
+  app: CanvasApp
   workbench: Workbench
   cursor: Cursor
 
   constructor() {
-    this.app = new Application()
+    this.app = new CanvasApp()
     this.workbench = new Workbench(this)
     this.cursor = new Cursor(this)
   }
@@ -55,6 +56,7 @@ export class Engine {
     this.enableZoom = enableZoom ?? false
     this.canvasSize = canvasSize
     await this.app.init(options)
+    this.cursor.type = CursorType.Default
     this.initGuideLayers(background)
     this.initEventEmitter()
     this.workbench.init(data)

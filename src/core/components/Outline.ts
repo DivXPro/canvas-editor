@@ -44,15 +44,23 @@ export class Outline extends Graphics implements IOutline {
   }
 
   show() {
+    this.engine.events.on('zoom:change', this.handleZoomChange)
     this.visible = true
   }
 
   hide() {
+    this.engine.events.off('zoom:change', this.handleZoomChange)
     this.visible = false
   }
 
   destroy() {
     this.parent.removeChild(this)
     super.destroy()
+  }
+
+  handleZoomChange = () => {
+    if (this.visible) {
+      this.update()
+    }
   }
 }

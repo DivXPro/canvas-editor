@@ -2,7 +2,6 @@ import { DNode, Position } from '../elements'
 import { HoverElementEvent, SelectElementEvent, SelectionAreaMoveEvent, UnselectElementEvent } from '../events'
 import { CursorStatus, Engine } from '../models'
 import { isRectanglePolygonIntersect } from '../utils/polygonIntersect'
-import { isArr } from '../utils/types'
 
 export const enableSelectionEffect = (engine: Engine) => {
   engine.events.on('pointerdown', e => {
@@ -10,9 +9,11 @@ export const enableSelectionEffect = (engine: Engine) => {
       checkSelectNode(engine, { x: e.offsetX, y: e.offsetY })
     } else if (engine.workbench.selection.selected.length > 0) {
       if (!engine.workbench.selection.rectContainsPoint({ x: e.offsetX, y: e.offsetY })) {
-        engine.workbench.selection.clear()
+        if (!engine.controlBox?.isOnTransformArea({ x: e.offsetX, y: e.offsetY })) {
+          engine.workbench.selection.clear()
 
-        checkSelectNode(engine, { x: e.offsetX, y: e.offsetY })
+          checkSelectNode(engine, { x: e.offsetX, y: e.offsetY })
+        }
       }
     }
   })
@@ -23,9 +24,11 @@ export const enableSelectionEffect = (engine: Engine) => {
       engine.cursor.status === CursorStatus.Normal
     ) {
       if (!engine.workbench.selection.containsPoint({ x: e.offsetX, y: e.offsetY })) {
-        engine.workbench.selection.clear()
+        if (!engine.controlBox?.isOnTransformArea({ x: e.offsetX, y: e.offsetY })) {
+          engine.workbench.selection.clear()
 
-        checkSelectNode(engine, { x: e.offsetX, y: e.offsetY })
+          checkSelectNode(engine, { x: e.offsetX, y: e.offsetY })
+        }
       }
     }
   })
@@ -72,7 +75,7 @@ export const enableSelectionEffect = (engine: Engine) => {
       if (!node.isSelected) {
         node.outline?.hide()
       } else {
-        node.outline?.show()
+        node.outline?.update()
       }
     })
   })

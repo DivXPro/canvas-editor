@@ -1,9 +1,9 @@
 import { DragMoveEvent, DragStartEvent } from '../events'
-import { CursorType, Engine } from '../models'
+import { DragAbleTypes, Engine } from '../models'
 
 export const enableDragEffect = (engine: Engine) => {
   engine.events.on('drag:start', (event: DragStartEvent) => {
-    if (engine.cursor.type !== CursorType.Default) return
+    if (!DragAbleTypes.includes(engine.cursor.type)) return
     if (engine.workbench.selection.selected.length === 0) return
     engine.workbench.transformHelper.dragStart(event)
   })

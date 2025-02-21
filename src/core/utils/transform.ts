@@ -1,3 +1,5 @@
+import { Bounds } from 'pixi.js'
+
 import { Position } from '../elements'
 
 export function calculateBoundsFromPoints(points: Position[]) {
@@ -50,4 +52,13 @@ export function calculateAngleABC(A: Position, B: Position, C: Position): number
   }
 
   return angleDeg
+}
+
+export function calculatePointsFromBounds(bounds: Bounds): Position[] {
+  return [
+    { x: bounds.x, y: bounds.y },
+    { x: bounds.x + bounds.width, y: bounds.y },
+    { x: bounds.x + bounds.width, y: bounds.y + bounds.height },
+    { x: bounds.x, y: bounds.y + bounds.height },
+  ]
 }

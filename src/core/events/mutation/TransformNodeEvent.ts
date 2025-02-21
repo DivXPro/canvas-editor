@@ -38,6 +38,14 @@ export class RotateNodeEvent extends AbstractMutationNodeEvent<RotateNodeData> i
   type = 'node:rotate'
 }
 
+export class RotateNodeEndEvent extends AbstractMutationNodeEvent<RotateNodeData> implements ICustomEvent {
+  type = 'node:rotate'
+}
+
 export class ResizeNodeEvent extends AbstractMutationNodeEvent<ResizeNodeData> implements ICustomEvent {
+  type = 'node:resize'
+}
+
+export class ResizeNodeEndEvent extends AbstractMutationNodeEvent<ResizeNodeData> implements ICustomEvent {
   type = 'node:resize'
 }
