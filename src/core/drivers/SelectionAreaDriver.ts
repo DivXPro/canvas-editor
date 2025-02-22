@@ -6,6 +6,7 @@ import {
   DragMoveEvent,
   DragStopEvent,
 } from '../events'
+import { CursorDragType } from '../models'
 
 import { EventDriver } from './EventDriver'
 
@@ -22,7 +23,8 @@ export class SelectionAreaDriver extends EventDriver {
 
   private onDragStart = (e: DragStartEvent) => {
     if (this.engine.workbench.selection.selected.length === 0) {
-      this.selecting = true
+      this.engine.cursor.dragType = CursorDragType.Selection
+
       const event = new SelectionAreaStartEvent(e.data)
 
       this.events.emit(event.type, event)
@@ -32,7 +34,7 @@ export class SelectionAreaDriver extends EventDriver {
   }
 
   private onDragMove = (e: DragMoveEvent) => {
-    if (!this.selecting) return
+    if (this.engine.cursor.dragType !== CursorDragType.Selection) return
 
     const event = new SelectionAreaMoveEvent(e.data)
 
@@ -40,9 +42,8 @@ export class SelectionAreaDriver extends EventDriver {
   }
 
   private onDragStop = (e: DragStopEvent) => {
-    if (!this.selecting) return
+    if (this.engine.cursor.dragType !== CursorDragType.Selection) return
 
-    this.selecting = false
     const event = new SelectionAreaEndEvent(e.data)
 
     this.events.off('drag:move', this.onDragMove)

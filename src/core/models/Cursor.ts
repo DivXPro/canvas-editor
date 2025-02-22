@@ -13,6 +13,7 @@ export enum CursorStatus {
 }
 
 export enum CursorDragType {
+  Selection = 'selection',
   Move = 'move',
   Resize = 'resize',
   Rotate = 'rotate',

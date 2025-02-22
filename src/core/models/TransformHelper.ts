@@ -68,29 +68,33 @@ export class TransformHelper {
   }
 
   dragMove(event: DragMoveEvent) {
-    console.log('dragMove', this.engine.cursor.dragType)
-    switch (this.engine.cursor.dragType) {
-      case CursorDragType.Move:
-        this.handleMove()
-        break
-      case CursorDragType.Rotate:
-        this.handleRotate()
-        break
-      default:
-        break
+    if (this.operation.selection.selectedNodes.length > 0 && this.engine.cursor.dragType !== CursorDragType.Selection) {
+      switch (this.engine.cursor.dragType) {
+        case CursorDragType.Move:
+          this.handleMove()
+          break
+        case CursorDragType.Rotate:
+          this.handleRotate()
+          break
+        default:
+          break
+      }
     }
   }
 
   dragStop() {
-    switch (this.engine.cursor.dragType) {
-      case CursorDragType.Move:
-        this.handleMoveEnd()
-        break
-      case CursorDragType.Rotate:
-        this.handleRotateEnd()
-        break
-      default:
-        break
+    if (this.operation.selection.selectedNodes.length > 0 && this.engine.cursor.dragType !== CursorDragType.Selection) {
+      switch (this.engine.cursor.dragType) {
+        case CursorDragType.Move:
+          this.handleMoveEnd()
+          break
+        case CursorDragType.Rotate:
+          this.handleRotateEnd()
+          break
+        default:
+          break
+      }
+      this.engine.cursor.dragType = CursorDragType.None
     }
   }
 
