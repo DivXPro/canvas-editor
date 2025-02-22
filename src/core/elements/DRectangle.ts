@@ -53,6 +53,11 @@ export class DRectangle extends DVector<Graphics> {
     this.update()
   }
 
+  setSize(size: Size) {
+    super.setSize(size)
+    this.update()
+  }
+
   private update() {
     this.item.clear()
     const position = this.position

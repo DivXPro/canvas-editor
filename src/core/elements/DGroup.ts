@@ -6,7 +6,7 @@ import { calculateBoundsFromPoints } from '../utils/transform'
 
 import { DFrameBase, DFrameBaseOptions, IDFrameBaseBase } from './DFrameBase'
 
-import { INodeBase, Position } from '.'
+import { INodeBase, Position, ResizeHandle, Size } from '.'
 
 export interface DGroupOptions extends DFrameBaseOptions { }
 
@@ -91,5 +91,31 @@ export class DGroup extends DFrameBase {
     }
 
     return false
+  }
+
+  resize(handle: ResizeHandle, size: Size) {
+    const oldSize = this.size
+
+    const scaleX = size.width / oldSize.width
+    const scaleY = size.height / oldSize.height
+
+    this.resizeChildren(scaleX, scaleY)
+    super.resize(handle, size)
+  }
+
+  resizeChildren(scaleX: number, scaleY: number) {
+    this.children.forEach(child => {
+      const size = {
+        width: child.size.width * scaleX,
+        height: child.size.height * scaleY,
+      }
+      const position = {
+        x: child.position.x * scaleX,
+        y: child.position.y * scaleY,
+      }
+
+      child.setSize(size)
+      child.setPosition(position.x, position.y)
+    })
   }
 }

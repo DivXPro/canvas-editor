@@ -138,6 +138,17 @@ export type EasingType =
 
 export type RoleType = 'viewer' | 'editor' | 'owner'
 
+export enum ResizeHandle {
+  TopLeft = 'topLeft',
+  Top = 'top',
+  TopRight = 'topRight',
+  Right = 'right',
+  BottomRight = 'bottomRight',
+  Bottom = 'bottom',
+  BottomLeft = 'bottomLeft',
+  Left = 'left',
+}
+
 export type NodeType =
   | 'DOCUMENT'
   | 'CANVAS'

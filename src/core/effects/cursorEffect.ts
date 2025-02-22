@@ -18,40 +18,6 @@ export const enableCursorEffect = (engine: Engine) => {
       offsetY: e.offsetY,
     })
   })
-  engine.events.on('drag:start', (e: DragStartEvent) => {
-    engine.cursor.setStatus(CursorStatus.DragStart)
-    engine.cursor.setDragStart({
-      clientX: e.data.clientX,
-      clientY: e.data.clientY,
-      pageX: e.data.pageX,
-      pageY: e.data.pageY,
-      offsetX: e.data.offsetX,
-      offsetY: e.data.offsetY,
-    })
-  })
-  engine.events.on('drag:move', (e: DragMoveEvent) => {
-    engine.cursor.setStatus(CursorStatus.Dragging)
-    engine.cursor.setPosition({
-      clientX: e.data.clientX,
-      clientY: e.data.clientY,
-      pageX: e.data.pageX,
-      pageY: e.data.pageY,
-      offsetX: e.data.offsetX,
-      offsetY: e.data.offsetY,
-    })
-  })
-
-  engine.events.on('drag:stop', (e: DragStopEvent) => {
-    engine.cursor.setStatus(CursorStatus.DragStop)
-    engine.cursor.setDragEnd({
-      clientX: e.data.clientX,
-      clientY: e.data.clientY,
-      pageX: e.data.pageX,
-      pageY: e.data.pageY,
-      offsetX: e.data.offsetX,
-      offsetY: e.data.offsetY,
-    })
-  })
 
   // 通过移动判断 hover
   engine.events.on('pointermove', (e: PointerEvent) => {
@@ -121,5 +87,40 @@ export const enableCursorEffect = (engine: Engine) => {
     }
 
     engine.cursor.type = CursorType.Pointer
+  })
+
+  engine.events.on('drag:start', (e: DragStartEvent) => {
+    engine.cursor.setStatus(CursorStatus.DragStart)
+    engine.cursor.setDragStart({
+      clientX: e.data.clientX,
+      clientY: e.data.clientY,
+      pageX: e.data.pageX,
+      pageY: e.data.pageY,
+      offsetX: e.data.offsetX,
+      offsetY: e.data.offsetY,
+    })
+  })
+  engine.events.on('drag:move', (e: DragMoveEvent) => {
+    engine.cursor.setStatus(CursorStatus.Dragging)
+    engine.cursor.setPosition({
+      clientX: e.data.clientX,
+      clientY: e.data.clientY,
+      pageX: e.data.pageX,
+      pageY: e.data.pageY,
+      offsetX: e.data.offsetX,
+      offsetY: e.data.offsetY,
+    })
+  })
+
+  engine.events.on('drag:stop', (e: DragStopEvent) => {
+    engine.cursor.setStatus(CursorStatus.DragStop)
+    engine.cursor.setDragEnd({
+      clientX: e.data.clientX,
+      clientY: e.data.clientY,
+      pageX: e.data.pageX,
+      pageY: e.data.pageY,
+      offsetX: e.data.offsetX,
+      offsetY: e.data.offsetY,
+    })
   })
 }

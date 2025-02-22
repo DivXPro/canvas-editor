@@ -39,4 +39,14 @@ export const enableDragEffect = (engine: Engine) => {
     engine.controlBox?.update()
     engine.workbench.selection.selectedNodes.forEach(node => node.outline?.update())
   })
+
+  engine.events.on('node:resize', () => {
+    engine.controlBox?.update()
+    engine.workbench.selection.selectedNodes.forEach(node => node.outline?.hide())
+  })
+
+  engine.events.on('node:resizeEnd', () => {
+    engine.controlBox?.update()
+    engine.workbench.selection.selectedNodes.forEach(node => node.outline?.update())
+  })
 }

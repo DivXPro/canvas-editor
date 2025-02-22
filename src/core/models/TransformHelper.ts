@@ -1,15 +1,21 @@
 import { action, makeObservable, observable } from 'mobx'
 
 import { DNode } from '../elements'
-import { Position, Size } from '../elements/type'
+import { Position, ResizeHandle, Size } from '../elements/type'
 import { DragMoveEvent, DragStartEvent } from '../events'
-import { DragNodeEndEvent, DragNodeEvent, RotateNodeEvent } from '../events/mutation/TransformNodeEvent'
+import {
+  DragNodeEndEvent,
+  DragNodeEvent,
+  ResizeNodeEndEvent,
+  ResizeNodeEvent,
+  RotateNodeEvent,
+} from '../events/mutation/TransformNodeEvent'
 import { calculateAngleABC } from '../utils/transform'
-import { CompositeCommand, MoveCommand, RotationCommand } from '../commands'
+import { CompositeCommand, MoveCommand, ResizeCommand, RotationCommand } from '../commands'
 
 import { Engine } from './Engine'
 import { Workbench } from './Workbench'
-import { CornerResizeStyles, CursorDragType, EdgeResizeStyles, RotateStyles } from './Cursor'
+import { CornerResizeStyles, CursorDragType, CursorType, EdgeResizeStyles, RotateStyles } from './Cursor'
 
 export interface ITransformOptions {
   engine: Engine
@@ -24,7 +30,7 @@ export class TransformHelper {
 
   nodeInitialPositions: Record<string, Position> = {}
   nodeInitialSizes: Record<string, Size> = {}
-
+  resizeHandle: ResizeHandle | null = null
   rotates: Record<string, number> = {}
 
   constructor(options: ITransformOptions) {
@@ -44,7 +50,49 @@ export class TransformHelper {
   dragStart(event: DragStartEvent) {
     if (this.operation.selection.selectedNodes.length > 0) {
       if (CornerResizeStyles.includes(this.engine.cursor.type) || EdgeResizeStyles.includes(this.engine.cursor.type)) {
+        console.log('dragStar resize')
         this.engine.cursor.dragType = CursorDragType.Resize
+        const cursorType = this.engine.cursor.type
+
+        const cursorPos = { x: this.engine.cursor.position.offsetX, y: this.engine.cursor.position.offsetY }
+        const rectPoints = this.operation.selection.selectedRectPoints
+
+        if (cursorType === CursorType.NwseResize) {
+          // 计算到左上角和右下角的距离
+          const distanceToTopLeft = Math.sqrt(
+            Math.pow(cursorPos.x - rectPoints[0].x, 2) + Math.pow(cursorPos.y - rectPoints[0].y, 2)
+          )
+          const distanceToBottomRight = Math.sqrt(
+            Math.pow(cursorPos.x - rectPoints[2].x, 2) + Math.pow(cursorPos.y - rectPoints[2].y, 2)
+          )
+
+          this.resizeHandle =
+            distanceToTopLeft < distanceToBottomRight ? ResizeHandle.TopLeft : ResizeHandle.BottomRight
+        } else if (cursorType === CursorType.NeswResize) {
+          // 计算到右上角和左下角的距离
+          const distanceToTopRight = Math.sqrt(
+            Math.pow(cursorPos.x - rectPoints[1].x, 2) + Math.pow(cursorPos.y - rectPoints[1].y, 2)
+          )
+          const distanceToBottomLeft = Math.sqrt(
+            Math.pow(cursorPos.x - rectPoints[3].x, 2) + Math.pow(cursorPos.y - rectPoints[3].y, 2)
+          )
+
+          this.resizeHandle =
+            distanceToTopRight < distanceToBottomLeft ? ResizeHandle.TopRight : ResizeHandle.BottomLeft
+        } else if (cursorType === CursorType.NsResize) {
+          // 计算到上边和下边的距离
+          const distanceToTop = Math.abs(cursorPos.y - rectPoints[0].y)
+          const distanceToBottom = Math.abs(cursorPos.y - rectPoints[2].y)
+
+          this.resizeHandle = distanceToTop < distanceToBottom ? ResizeHandle.Top : ResizeHandle.Bottom
+        } else if (cursorType === CursorType.EwResize) {
+          // 计算到左边和右边的距离
+          const distanceToLeft = Math.abs(cursorPos.x - rectPoints[0].x)
+          const distanceToRight = Math.abs(cursorPos.x - rectPoints[1].x)
+
+          this.resizeHandle = distanceToLeft < distanceToRight ? ResizeHandle.Left : ResizeHandle.Right
+        }
+
         this.operation.selection.selectedNodes.forEach(node => {
           this.nodeInitialSizes[node.id] = { ...node.size }
         })
@@ -75,6 +123,9 @@ export class TransformHelper {
           break
         case CursorDragType.Rotate:
           this.handleRotate()
+          break
+        case CursorDragType.Resize:
+          this.handleResize()
           break
         default:
           break
@@ -143,6 +194,96 @@ export class TransformHelper {
     this.operation.selection.selectedNodes.forEach(node => {
       this.triggerDragEnd(node)
     })
+  }
+
+  handleResize() {
+    const delta = this.engine.cursor.dragStartToCurrentDelta
+
+    if (this.resizeHandle == null) return
+
+    this.operation.selection.selectedNodes.forEach(node => {
+      if (!node.locked) {
+        const initialSize = this.nodeInitialSizes[node.id]
+
+        if (!initialSize || !this.resizeHandle) return
+        const newSize = {
+          width: initialSize.width,
+          height: initialSize.height,
+        }
+
+        if (this.resizeHandle === ResizeHandle.Left || this.resizeHandle === ResizeHandle.Right) {
+          newSize.width += this.resizeHandle === ResizeHandle.Left ? -delta.offsetX : delta.offsetX
+        } else if (this.resizeHandle === ResizeHandle.Top || this.resizeHandle === ResizeHandle.Bottom) {
+          newSize.height += this.resizeHandle === ResizeHandle.Top ? -delta.offsetY : delta.offsetY
+        } else {
+          newSize.width +=
+            this.resizeHandle === ResizeHandle.TopLeft || this.resizeHandle === ResizeHandle.BottomLeft
+              ? -delta.offsetX
+              : delta.offsetX
+          newSize.height +=
+            this.resizeHandle === ResizeHandle.TopLeft || this.resizeHandle === ResizeHandle.TopRight
+              ? -delta.offsetY
+              : delta.offsetY
+        }
+
+        this.triggerResize(node, this.resizeHandle, newSize)
+      }
+    })
+  }
+
+  handleResizeEnd() {
+    if (Object.keys(this.nodeInitialSizes).length > 0) {
+      if (this.resizeHandle == null) return
+
+      const compositeCommand = new CompositeCommand({
+        timestamp: Date.now(),
+      })
+
+      this.operation.selection.selectedNodes.forEach(node => {
+        if (!node.locked) {
+          const initialSize = this.nodeInitialSizes[node.id]
+
+          if (!initialSize || !this.resizeHandle) return
+
+          this.triggerResizeEnd(node, this.resizeHandle, node.size)
+
+          const resizeCommand = new ResizeCommand(
+            node,
+            this.engine,
+            { size: node.size },
+            { size: this.nodeInitialSizes[node.id] }
+          )
+
+          compositeCommand.add(resizeCommand)
+        }
+      })
+      this.operation.history.push(compositeCommand)
+      this.nodeInitialSizes = {}
+      this.resizeHandle = null
+    }
+  }
+
+  triggerResize(node: DNode, handle: ResizeHandle, size: Size) {
+    node.resize(handle, size)
+    this.engine.events.emit(
+      'node:resize',
+      new ResizeNodeEvent({
+        source: node,
+        handle,
+        size,
+      })
+    )
+  }
+
+  triggerResizeEnd(node: DNode, handle: ResizeHandle, size: Size) {
+    this.engine.events.emit(
+      'node:resizeEnd',
+      new ResizeNodeEndEvent({
+        source: node,
+        handle,
+        size,
+      })
+    )
   }
 
   handleRotate() {

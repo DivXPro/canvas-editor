@@ -1,4 +1,6 @@
-import { Position } from '../../elements'
+import { Size } from 'pixi.js'
+
+import { Position, ResizeHandle } from '../../elements'
 import { ICustomEvent } from '../event'
 
 import { AbstractMutationNodeEvent, IMutatioNodeEventData } from './AbstractMutationElementEvent'
@@ -19,7 +21,8 @@ export interface RotateNodeData extends IMutatioNodeEventData {
 }
 
 export interface ResizeNodeData extends IMutatioNodeEventData {
-  resize: number
+  handle: ResizeHandle
+  size: Size
 }
 
 export class NodeTransformEvent extends AbstractMutationNodeEvent<NodeTransformData> {
@@ -47,5 +50,5 @@ export class ResizeNodeEvent extends AbstractMutationNodeEvent<ResizeNodeData> i
 }
 
 export class ResizeNodeEndEvent extends AbstractMutationNodeEvent<ResizeNodeData> implements ICustomEvent {
-  type = 'node:resize'
+  type = 'node:resizeEnd'
 }

@@ -1,4 +1,4 @@
-import { Container, Graphics, Point } from 'pixi.js'
+import { Container, Graphics } from 'pixi.js'
 
 import { Engine } from '../models/Engine'
 import * as UICfg from '../config'
@@ -11,18 +11,15 @@ export class ControlBox extends Container {
   engine: Engine
   border: Graphics
   handles: Graphics[]
-  rotateHandle: Graphics
 
   constructor(engine: Engine) {
     super()
     this.engine = engine
     this.border = new Graphics()
     this.handles = []
-    this.rotateHandle = new Graphics()
     this.visible = false
     this.initBorder()
     this.initHandles()
-    // this.initRotateHandle()
   }
 
   private initBorder() {
@@ -50,24 +47,6 @@ export class ControlBox extends Container {
   get selection() {
     return this.engine.workbench?.selection
   }
-
-  // private initRotateHandle() {
-  //   const radius = UICfg.boundingHandingSize
-
-  //   this.rotateHandle
-  //     .circle(0, 0, radius)
-  //     .fill({
-  //       color: UICfg.white,
-  //     })
-  //     .stroke({
-  //       width: UICfg.boundingHandingStrokeWidth,
-  //       color: UICfg.boundingHandingStrokeColor,
-  //     })
-
-  //   this.rotateHandle.eventMode = 'static'
-  //   this.rotateHandle.cursor = 'pointer'
-  //   this.addChild(this.rotateHandle)
-  // }
 
   private handleZoomChange = () => {
     this.update()
@@ -100,16 +79,7 @@ export class ControlBox extends Container {
       handle.position.set(rect[i].x, rect[i].y)
     })
 
-    // 更新旋转控制点位置
-    const centerX = (rect[0].x + rect[2].x) / 2
-    const centerY = rect[0].y - 30 // 将旋转控制点放在选区上方
-
-    this.rotateHandle.position.set(centerX, centerY)
     this.show()
-  }
-
-  get rotationHandlePos() {
-    return this.getGlobalPosition(new Point(this.rotateHandle.position.x, this.rotateHandle.position.y))
   }
 
   show() {

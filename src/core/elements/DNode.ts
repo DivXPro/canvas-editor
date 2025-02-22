@@ -1,13 +1,12 @@
 import { customAlphabet } from 'nanoid'
-import { Container, EventMode, FederatedPointerEvent, Matrix, Point, Size } from 'pixi.js'
+import { Container, EventMode, Matrix, Point, Size } from 'pixi.js'
 import { action, computed, makeObservable, observable } from 'mobx'
 
 import { Engine } from '../models/Engine'
 import { Outline } from '../components/Outline'
 
-import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Position } from './type'
+import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Position, ResizeHandle } from './type'
 import { DFrameBase } from './DFrameBase'
-import { isPointInPointsArea } from '../utils/hitConfirm'
 
 export interface ScaleData {
   x: number
@@ -338,64 +337,6 @@ export abstract class DNode implements IDNode<any> {
     return this.parent.topGroup
   }
 
-  // protected initInteractive() {
-  //   if (this.item) {
-  //     this.item.on('pointerenter', this.handlePointerEnter.bind(this))
-  //     this.item.on('pointerleave', this.handlePointerLeave.bind(this))
-  //     this.item.on('pointerdown', this.handlePointerDown.bind(this))
-  //     this.eventMode = this.locked ? 'none' : 'dynamic'
-  //   }
-  // }
-
-  // protected handlePointerEnter(event: FederatedPointerEvent) {
-  //   if (this.locked) {
-  //     return
-  //   }
-  //   if (this.parent === this.root) {
-  //     this.operation?.hover.setHover(this)
-  //     event.preventDefault()
-  //     event.stopPropagation()
-  //   } else {
-  //     this.operation?.hover.setHover(this.topGroup)
-  //     event.preventDefault()
-  //     event.stopPropagation()
-  //   }
-  // }
-
-  // protected handlePointerLeave() {
-  //   if (this.locked) {
-  //     return
-  //   }
-  //   if (this.parent === this.root) {
-  //     this.operation?.hover.setHover()
-  //   }
-  //   this.operation?.hover.setHover()
-  // }
-
-  // protected handlePointerDown(event: FederatedPointerEvent) {
-  //   if (this.locked) {
-  //     return
-  //   }
-  //   if (this.parent === this.root) {
-  //     this.operation?.selection.safeSelect(this)
-  //     this.operation?.transformHelper.dragStart(event)
-  //     event.preventDefault()
-  //     event.stopPropagation()
-  //   } else if (this.topGroup) {
-  //     this.operation?.selection.safeSelect(this.topGroup)
-  //     this.operation?.transformHelper.dragStart(event)
-  //     event.preventDefault()
-  //     event.stopPropagation()
-  //   }
-  // }
-
-  // protected handlePointerUp(event: FederatedPointerEvent) {
-  //   if (this.operation?.transformHelper.dragging) {
-  //     this.operation?.transformHelper.dragStop()
-  //   }
-  //   event.stopPropagation()
-  // }
-
   setScale(scaleX: number, scaleY?: number) {
     if (this.item) {
       this.item.scale.set(scaleX, scaleY)
@@ -459,34 +400,85 @@ export abstract class DNode implements IDNode<any> {
     this.outline?.destroy()
   }
 
-  resize(globalBottomRight: Position) {
-    const bottomRight = this.parent?.item
-      ? this.parent.item.toLocal(globalBottomRight)
-      : { x: globalBottomRight.x, y: globalBottomRight.y }
-    // 创建矩阵进行旋转变换
-    const mt = new Matrix()
+  resize(handle: ResizeHandle, size: Size) {
+    const oldSize = this.size
+    const oldPosition = this.position
+    const rotation = this.rotation
 
-    mt.translate(-this.position.x, -this.position.y)
-    mt.rotate(-this.rotation)
-    mt.translate(this.position.x, this.position.y)
+    // 计算新的位置偏移
+    const dx = (size.width - oldSize.width) / 2
+    const dy = (size.height - oldSize.height) / 2
 
-    // 将旋转后的点转换为未旋转状态的点
-    const topLeft = mt.apply({ x: this.position.x - this.size.width / 2, y: this.position.y - this.size.height / 2 })
+    // switch (handle) {
+    //   case ResizeHandle.Bottom:
+    //     dy = (size.height - oldSize.height) / 2
+    //     break
+    //   case ResizeHandle.Left:
+    //     dx = (size.width - oldSize.width) / 2
+    //     break
+    //   case ResizeHandle.Top:
+    //     dy = (size.height - oldSize.height) / 2
+    //     break
+    //   case ResizeHandle.Right:
+    //     dx = (size.width - oldSize.width) / 2
+    //     break
+    //   case ResizeHandle.BottomRight:
+    //     dx = (size.width - oldSize.width) / 2
+    //     dy = (size.height - oldSize.height) / 2
+    //     break
+    //   case ResizeHandle.BottomLeft:
+    //     dx = -(size.width - oldSize.width) / 2
+    //     dy = (size.height - oldSize.height) / 2
+    //     break
+    //   case ResizeHandle.TopLeft:
+    //     dx = (size.width - oldSize.width) / 2
+    //     dy = (size.height - oldSize.height) / 2
+    //     break
+    //   case ResizeHandle.TopRight:
+    //     dx = (size.width - oldSize.width) / 2
+    //     dy = (size.height - oldSize.height) / 2
+    //     break
+    // }
 
-    // 计算新的尺寸
-    const newWidth = Math.abs(bottomRight.x - topLeft.x)
-    const newHeight = Math.abs(bottomRight.y - topLeft.y)
+    // 考虑旋转角度计算实际偏移
+    const cos = Math.cos(rotation)
+    const sin = Math.sin(rotation)
 
-    this.size = {
-      width: Math.max(0, newWidth),
-      height: Math.max(0, newHeight),
+    const offsetX = dx * cos - dy * sin
+    const offsetY = dx * sin + dy * cos
+
+    console.log(size, offsetX, offsetY)
+    // 更新尺寸和位置
+    this.setSize(size)
+    switch (handle) {
+      case ResizeHandle.Top:
+        this.setPosition(oldPosition.x, oldPosition.y - offsetY)
+        break
+      case ResizeHandle.Bottom:
+        this.setPosition(oldPosition.x, oldPosition.y + offsetY)
+        break
+      case ResizeHandle.Left:
+        this.setPosition(oldPosition.x - offsetX, oldPosition.y)
+        break
+      case ResizeHandle.Right:
+        this.setPosition(oldPosition.x + offsetX, oldPosition.y)
+        break
+      case ResizeHandle.TopLeft:
+        this.setPosition(oldPosition.x - offsetX, oldPosition.y - offsetY)
+        break
+      case ResizeHandle.TopRight:
+        this.setPosition(oldPosition.x + offsetX, oldPosition.y - offsetY)
+        break
+      case ResizeHandle.BottomLeft:
+        this.setPosition(oldPosition.x - offsetX, oldPosition.y + offsetY)
+        break
+      case ResizeHandle.BottomRight:
+        this.setPosition(oldPosition.x + offsetX, oldPosition.y + offsetY)
+        break
+      default:
+        break
     }
-
-    // 更新元素位置到新的中心点
-    const centerX = topLeft.x + newWidth / 2
-    const centerY = topLeft.y + newHeight / 2
-
-    this.setPosition(centerX, centerY)
+    // this.setPosition(oldPosition.x - offsetX, oldPosition.y - offsetY)
   }
 }
 
