@@ -24,7 +24,6 @@ export class ResizeCommand extends Command<ResizeCommandStates> {
     const node = this.engine.workbench?.findById(this.target) as DNode
 
     try {
-      console.log('undo resize cmd', this.prevStates)
       node.resize(this.prevStates.handle, this.prevStates.size)
     } catch (e) {
       console.error('Resize Cmd undo faile', this.serialize(), e)

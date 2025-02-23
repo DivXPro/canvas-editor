@@ -120,6 +120,7 @@ export class Cursor {
       dragStartToCurrentDelta: observable,
       dragAtomDelta: observable,
       dragEndPosition: observable,
+      _type: observable,
       type: computed,
       setType: action.bound,
       setPosition: action.bound,
@@ -139,6 +140,7 @@ export class Cursor {
 
   set type(type: CursorType) {
     this.setType(type)
+    console.log('CursorType', this.type)
   }
 
   setType(type: CursorType) {

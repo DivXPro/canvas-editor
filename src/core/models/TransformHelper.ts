@@ -12,6 +12,7 @@ import {
 } from '../events/mutation/TransformNodeEvent'
 import { calculateAngleABC } from '../utils/transform'
 import { CompositeCommand, MoveCommand, ResizeCommand, RotationCommand } from '../commands'
+import { calculatePointToLineDistance } from '../utils/geometric'
 
 import { Engine } from './Engine'
 import { Workbench } from './Workbench'
@@ -80,14 +81,14 @@ export class TransformHelper {
             distanceToTopRight < distanceToBottomLeft ? ResizeHandle.TopRight : ResizeHandle.BottomLeft
         } else if (cursorType === CursorType.NsResize) {
           // 计算到上边和下边的距离
-          const distanceToTop = Math.abs(cursorPos.y - rectPoints[0].y)
-          const distanceToBottom = Math.abs(cursorPos.y - rectPoints[2].y)
+          const distanceToTop = calculatePointToLineDistance(cursorPos, rectPoints[0], rectPoints[1])
+          const distanceToBottom = calculatePointToLineDistance(cursorPos, rectPoints[2], rectPoints[3])
 
           this.resizeHandle = distanceToTop < distanceToBottom ? ResizeHandle.Top : ResizeHandle.Bottom
         } else if (cursorType === CursorType.EwResize) {
           // 计算到左边和右边的距离
-          const distanceToLeft = Math.abs(cursorPos.x - rectPoints[0].x)
-          const distanceToRight = Math.abs(cursorPos.x - rectPoints[1].x)
+          const distanceToLeft = calculatePointToLineDistance(cursorPos, rectPoints[0], rectPoints[3])
+          const distanceToRight = calculatePointToLineDistance(cursorPos, rectPoints[1], rectPoints[2])
 
           this.resizeHandle = distanceToLeft < distanceToRight ? ResizeHandle.Left : ResizeHandle.Right
         }
@@ -214,19 +215,30 @@ export class TransformHelper {
           height: initialSize.height,
         }
 
+        // 考虑节点的旋转角度
+        const rotation = node.rotation
+        const cos = Math.cos(rotation)
+        const sin = Math.sin(rotation)
+
+        // 根据旋转角度转换鼠标移动的偏移量
+        const transformedDelta = {
+          x: delta.offsetX * cos + delta.offsetY * sin,
+          y: -delta.offsetX * sin + delta.offsetY * cos,
+        }
+
         if (this.resizeHandle === ResizeHandle.Left || this.resizeHandle === ResizeHandle.Right) {
-          newSize.width += this.resizeHandle === ResizeHandle.Left ? -delta.offsetX : delta.offsetX
+          newSize.width += this.resizeHandle === ResizeHandle.Left ? -transformedDelta.x : transformedDelta.x
         } else if (this.resizeHandle === ResizeHandle.Top || this.resizeHandle === ResizeHandle.Bottom) {
-          newSize.height += this.resizeHandle === ResizeHandle.Top ? -delta.offsetY : delta.offsetY
+          newSize.height += this.resizeHandle === ResizeHandle.Top ? -transformedDelta.y : transformedDelta.y
         } else {
           newSize.width +=
             this.resizeHandle === ResizeHandle.TopLeft || this.resizeHandle === ResizeHandle.BottomLeft
-              ? -delta.offsetX
-              : delta.offsetX
+              ? -transformedDelta.x
+              : transformedDelta.x
           newSize.height +=
             this.resizeHandle === ResizeHandle.TopLeft || this.resizeHandle === ResizeHandle.TopRight
-              ? -delta.offsetY
-              : delta.offsetY
+              ? -transformedDelta.y
+              : transformedDelta.y
         }
 
         this.triggerResize(node, this.resizeHandle, newSize)

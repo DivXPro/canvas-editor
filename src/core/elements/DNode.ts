@@ -423,20 +423,19 @@ export abstract class DNode implements IDNode<any> {
     const offsetY = dx * sin + dy * cos
 
     // 更新尺寸和位置
-    this.setSize(size)
-    console.log('resize', size, this.size)
+    console.log('Resize', handle, (rotation * 180) / Math.PI, offsetX, offsetY)
     switch (handle) {
       case ResizeHandle.Top:
-        this.setPosition(oldPosition.x, oldPosition.y - offsetY)
+        this.setPosition(oldPosition.x - offsetX, oldPosition.y - offsetY)
         break
       case ResizeHandle.Bottom:
         this.setPosition(oldPosition.x, oldPosition.y + offsetY)
         break
       case ResizeHandle.Left:
-        this.setPosition(oldPosition.x - offsetX, oldPosition.y)
+        this.setPosition(oldPosition.x - offsetX, oldPosition.y + offsetY)
         break
       case ResizeHandle.Right:
-        this.setPosition(oldPosition.x + offsetX, oldPosition.y)
+        this.setPosition(oldPosition.x + offsetX, oldPosition.y + offsetY)
         break
       case ResizeHandle.TopLeft:
         this.setPosition(oldPosition.x - offsetX, oldPosition.y - offsetY)
@@ -453,6 +452,7 @@ export abstract class DNode implements IDNode<any> {
       default:
         break
     }
+    this.setSize(size)
     // this.setPosition(oldPosition.x - offsetX, oldPosition.y - offsetY)
   }
 }

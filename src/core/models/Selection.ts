@@ -30,6 +30,7 @@ export class Selection {
       indexes: observable,
       selectedNodes: computed,
       startPoint: computed,
+      selectedRectPoints: computed,
       select: action.bound,
       trigger: action.bound,
       add: action.bound,
