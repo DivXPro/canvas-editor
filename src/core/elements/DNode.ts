@@ -411,7 +411,7 @@ export abstract class DNode implements IDNode<any> {
     const oldPosition = this.position
     const rotation = this.rotation
 
-    // 计算新的位置偏移
+    // 计算尺寸变化
     const dx = (size.width - oldSize.width) / 2
     const dy = (size.height - oldSize.height) / 2
 
@@ -419,41 +419,56 @@ export abstract class DNode implements IDNode<any> {
     const cos = Math.cos(rotation)
     const sin = Math.sin(rotation)
 
-    const offsetX = dx * cos - dy * sin
-    const offsetY = dx * sin + dy * cos
+    // 根据不同的控制点计算偏移
+    let offsetX = 0
+    let offsetY = 0
 
-    // 更新尺寸和位置
-    console.log('Resize', handle, (rotation * 180) / Math.PI, offsetX, offsetY)
     switch (handle) {
       case ResizeHandle.Top:
-        this.setPosition(oldPosition.x - offsetX, oldPosition.y - offsetY)
-        break
       case ResizeHandle.Bottom:
-        this.setPosition(oldPosition.x, oldPosition.y + offsetY)
+        offsetX = dy * sin
+        offsetY = -dy * cos
         break
       case ResizeHandle.Left:
-        this.setPosition(oldPosition.x - offsetX, oldPosition.y + offsetY)
-        break
       case ResizeHandle.Right:
-        this.setPosition(oldPosition.x + offsetX, oldPosition.y + offsetY)
+        offsetX = -dx * cos
+        offsetY = -dx * sin
         break
       case ResizeHandle.TopLeft:
-        this.setPosition(oldPosition.x - offsetX, oldPosition.y - offsetY)
+      case ResizeHandle.BottomRight:
+        offsetX = -(dx * cos - dy * sin)
+        offsetY = -(dx * sin + dy * cos)
         break
       case ResizeHandle.TopRight:
-        this.setPosition(oldPosition.x + offsetX, oldPosition.y - offsetY)
-        break
       case ResizeHandle.BottomLeft:
-        this.setPosition(oldPosition.x - offsetX, oldPosition.y + offsetY)
-        break
-      case ResizeHandle.BottomRight:
-        this.setPosition(oldPosition.x + offsetX, oldPosition.y + offsetY)
+        offsetX = dx * cos + dy * sin
+        offsetY = dx * sin - dy * cos
         break
       default:
         break
     }
+
+    // 根据控制点方向调整位置
+    switch (handle) {
+      case ResizeHandle.Top:
+      case ResizeHandle.TopLeft:
+      case ResizeHandle.TopRight:
+        this.setPosition(oldPosition.x + offsetX, oldPosition.y + offsetY)
+        break
+      case ResizeHandle.Bottom:
+      case ResizeHandle.BottomLeft:
+      case ResizeHandle.BottomRight:
+        this.setPosition(oldPosition.x - offsetX, oldPosition.y - offsetY)
+        break
+      case ResizeHandle.Left:
+        this.setPosition(oldPosition.x + offsetX, oldPosition.y + offsetY)
+        break
+      case ResizeHandle.Right:
+        this.setPosition(oldPosition.x - offsetX, oldPosition.y - offsetY)
+        break
+    }
+
     this.setSize(size)
-    // this.setPosition(oldPosition.x - offsetX, oldPosition.y - offsetY)
   }
 }
 
