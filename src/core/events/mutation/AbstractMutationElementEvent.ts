@@ -1,4 +1,4 @@
-import { DNode } from '../../elements/DNode'
+import { DNode } from '../../nodes/DNode'
 
 export interface IMutatioNodeEventData {
   //事件发生的数据源

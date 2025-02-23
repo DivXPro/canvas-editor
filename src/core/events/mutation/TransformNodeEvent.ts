@@ -1,6 +1,6 @@
 import { Size } from 'pixi.js'
 
-import { Position, ResizeHandle } from '../../elements'
+import { Position, ResizeHandle } from '../../nodes'
 import { ICustomEvent } from '../event'
 
 import { AbstractMutationNodeEvent, IMutatioNodeEventData } from './AbstractMutationElementEvent'

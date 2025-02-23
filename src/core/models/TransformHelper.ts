@@ -1,7 +1,7 @@
 import { action, makeObservable, observable } from 'mobx'
 
-import { DNode } from '../elements'
-import { Position, ResizeHandle, Size } from '../elements/type'
+import { DNode } from '../nodes'
+import { Position, ResizeHandle, Size } from '../nodes/type'
 import { DragMoveEvent, DragStartEvent } from '../events'
 import {
   DragNodeEndEvent,

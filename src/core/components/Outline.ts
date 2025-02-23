@@ -1,6 +1,6 @@
 import { Graphics } from 'pixi.js'
 
-import { DNode } from '../elements/DNode'
+import { DNode } from '../nodes/DNode'
 import { outlineWidth, outlineWidth2, primaryColor } from '../config'
 
 export interface IOutline {

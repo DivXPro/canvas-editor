@@ -1,6 +1,6 @@
 import { action, makeObservable, observable } from 'mobx'
 
-import { DNode } from '../elements'
+import { DNode } from '../nodes'
 import { HoverElementEvent } from '../events'
 
 import { Engine } from './Engine'

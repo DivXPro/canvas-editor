@@ -6,7 +6,7 @@ import { BackgroundLayer } from '../components/BackgroundLayer'
 import { SelectionAreaLayer } from '../components/SelectionAreaLayer'
 import { ControlBox } from '../components/ControlBox'
 import { ZoomChangeEvent } from '../events/view/ZoomChangeEvent'
-import { NodeBase } from '../elements'
+import { NodeBase } from '../nodes'
 import { enableSelectionEffect, enableCursorEffect, enableDragEffect } from '../effects'
 import { CanvasApp } from '../components/Canvas'
 

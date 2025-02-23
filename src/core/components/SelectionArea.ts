@@ -1,6 +1,6 @@
 import { Graphics } from 'pixi.js'
 
-import { Position } from '../elements'
+import { Position } from '../nodes'
 
 export interface SelectionAreaOptions {
   x?: number

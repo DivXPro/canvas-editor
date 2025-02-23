@@ -1,6 +1,6 @@
 import { Text, TextOptions } from 'pixi.js'
 
-import { Size, Position } from '../elements/type'
+import { Size, Position } from '../nodes/type'
 
 export interface TextBoxOptions extends TextOptions {
   size?: Size

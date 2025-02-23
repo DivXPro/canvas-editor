@@ -1,4 +1,4 @@
-import { Position } from '../elements'
+import { Position } from '../nodes'
 
 import { isPointInPointsArea } from './hitConfirm'
 

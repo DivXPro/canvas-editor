@@ -1,4 +1,4 @@
-import { DNode, ResizeHandle, Size } from '../elements'
+import { DNode, ResizeHandle, Size } from '../nodes'
 
 import { CommandType, Command } from './Command'
 

@@ -1,4 +1,4 @@
-import { DNode } from '../../elements'
+import { DNode } from '../../nodes'
 import { globalThisPolyfill } from '../../utils/globalThisPolyfill'
 
 export interface Position {

@@ -1,4 +1,4 @@
-import { DNode, Position } from '../elements'
+import { DNode, Position } from '../nodes'
 import { HoverElementEvent, SelectElementEvent, SelectionAreaMoveEvent, UnselectElementEvent } from '../events'
 import { CursorStatus, Engine } from '../models'
 import { isRectanglePolygonIntersect } from '../utils/polygonIntersect'

@@ -1,4 +1,4 @@
-import { Color } from '../elements/type'
+import { Color } from '../nodes/type'
 
 export class ColorUtils {
   /**

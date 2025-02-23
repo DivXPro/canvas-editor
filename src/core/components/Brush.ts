@@ -1,7 +1,7 @@
 import { Graphics } from 'pixi.js'
 
 import { Engine } from '../models/Engine'
-import { Position } from '../elements'
+import { Position } from '../nodes'
 
 export class Brush {
   private engine: Engine

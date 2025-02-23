@@ -1,4 +1,4 @@
-import { DNode } from '../elements'
+import { DNode } from '../nodes'
 import { Engine } from '../models'
 
 export type CommandType = 'ADD' | 'DELETE' | 'MOVE' | 'RESIZE' | 'ROTATION' | 'GROUP'

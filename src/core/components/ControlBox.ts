@@ -2,7 +2,7 @@ import { Container, Graphics } from 'pixi.js'
 
 import { Engine } from '../models/Engine'
 import * as UICfg from '../config'
-import { Position } from '../elements'
+import { Position } from '../nodes'
 import { calculatePointsFromBounds } from '../utils/transform'
 import { isPointInPointsArea } from '../utils/hitConfirm'
 import { CursorViewOffset } from '../models'

@@ -1,26 +1,32 @@
-import { makeObservable, computed, action, override } from 'mobx'
+import { makeObservable, computed, action, override, observable } from 'mobx'
 
 import { Frame } from '../components/Frame'
 
 import { DFrameBase, DFrameBaseOptions, IDFrameBaseBase } from './DFrameBase'
+import { Color } from './type'
 
-export interface DFrameOptions extends DFrameBaseOptions { }
+export interface DFrameOptions extends DFrameBaseOptions {
+  backgroundColor: Color
+}
 
 export interface IDFrameBase extends IDFrameBaseBase { }
 
 export class DFrame extends DFrameBase {
   declare item: Frame
+  backgroundColor: Color
   private _clipsContent: boolean = true
 
   constructor(options: DFrameOptions) {
     super(options)
     this.root = this.parent?.root ?? this
     this._clipsContent = options.clipsContent ?? true
+    this.backgroundColor = options.backgroundColor ?? '#ffffff'
     makeObservable(this, {
       type: override,
       serialize: override,
       clipsContent: computed,
       zoomRatio: computed,
+      backgroundColor: observable,
       setZoom: action.bound,
     })
 
@@ -53,10 +59,15 @@ export class DFrame extends DFrameBase {
     return this._clipsContent
   }
 
+  update(): void {
+    throw new Error('Method not implemented.')
+  }
+
   serialize() {
     return {
       ...super.serialize(),
       clipsContent: this.clipsContent,
+      backgroundColor: this.backgroundColor,
     }
   }
 }

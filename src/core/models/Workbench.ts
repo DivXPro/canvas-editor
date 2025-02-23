@@ -1,8 +1,8 @@
 import { computed, makeObservable, observable } from 'mobx'
 
-import { DNode, DFrame, DRectangle, DText, IDFrameBase, IDRectangleBase, IDTextBase, DFrameBase } from '../elements'
-import { NodeBase, Position } from '../elements/type'
-import { DGroup, IDGroupBase } from '../elements/DGroup'
+import { DNode, DFrame, DRectangle, DText, IDFrameBase, IDRectangleBase, IDTextBase, DFrameBase } from '../nodes'
+import { NodeBase, Position } from '../nodes/type'
+import { DGroup, IDGroupBase } from '../nodes/DGroup'
 import { isArr } from '../utils/types'
 
 import { Engine, ICanva } from './Engine'

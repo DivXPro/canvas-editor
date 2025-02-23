@@ -1,6 +1,6 @@
 import { PointData } from 'pixi.js'
 
-import { Position } from '../elements'
+import { Position } from '../nodes'
 
 export type BoundsType = {
   x: number

@@ -1,4 +1,4 @@
-import { Position } from '../elements/type'
+import { Position } from '../nodes/type'
 
 /**
  * 计算点到直线的垂直距离

@@ -3,12 +3,11 @@ import { makeObservable, observable, action, observe, IObservableArray, override
 import { Engine } from '../models/Engine'
 
 import { DNode, INodeBase } from './DNode'
-import { Size, Color, LayoutConstraint, Position } from './type'
+import { Size, LayoutConstraint, Position } from './type'
 
 export interface IDFrameBaseBase extends INodeBase {
   children?: INodeBase[]
   size: Size
-  backgroundColor: Color
   constraints?: LayoutConstraint
   clipsContent?: boolean
 }
@@ -26,13 +25,11 @@ const DefaultLayoutConstraint: LayoutConstraint = {
 }
 
 export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
-  backgroundColor: Color
   children: IObservableArray<DNode> = observable.array<DNode>([])
   constraints: LayoutConstraint
 
   constructor(options: DFrameBaseOptions) {
     super(options)
-    this.backgroundColor = options.backgroundColor
     this.constraints = options.constraints ?? DefaultLayoutConstraint
 
     makeObservable(this, {
@@ -111,7 +108,6 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
     return {
       ...super.serialize(),
       children: this.children.map(child => child.serialize()),
-      backgroundColor: this.backgroundColor,
       constraints: this.constraints,
     }
   }

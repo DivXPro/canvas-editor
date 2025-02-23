@@ -118,4 +118,8 @@ export class DGroup extends DFrameBase {
       child.setPosition(position.x, position.y)
     })
   }
+
+  update() {
+    this.children.forEach(child => child.update())
+  }
 }

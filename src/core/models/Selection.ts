@@ -1,6 +1,6 @@
 import { action, computed, makeObservable, observable } from 'mobx'
 
-import { DNode, Position } from '../elements'
+import { DGroup, DNode, eid, Position } from '../nodes'
 import { SelectElementEvent, UnselectElementEvent } from '../events/mutation'
 import { calculateBoundsFromPoints } from '../utils/transform'
 import { isArr } from '../utils/types'
@@ -185,5 +185,43 @@ export class Selection {
     this.selected.clear()
     this.indexes = {}
     this.trigger(UnselectElementEvent)
+  }
+
+  createGroup() {
+    if (this.selectedNodes.length < 2) return
+
+    const nodes = this.selectedNodes
+    const bounds = calculateBoundsFromPoints(nodes.map(node => node.absVertices).flat())
+
+    const group = new DGroup({
+      engine: this.engine,
+      id: eid(),
+      name: 'Group',
+      type: 'GROUP',
+      position: { x: bounds.x, y: bounds.y },
+      size: { width: bounds.width, height: bounds.height },
+      children: nodes,
+    })
+
+    // 从画布中移除原始节点
+    nodes.forEach(node => {
+      const index = this.operation.canvaNodes.indexOf(node)
+
+      if (index !== -1) {
+        this.operation.canvaNodes.splice(index, 1)
+      }
+      if (node.item && node.item.parent) {
+        node.item.parent.removeChild(node.item)
+      }
+    })
+
+    // 添加组到画布
+    this.operation.canvaNodes.push(group)
+    if (group.item) {
+      this.engine.app.stage.addChild(group.item)
+    }
+
+    // 选中新创建的组
+    this.select(group)
   }
 }

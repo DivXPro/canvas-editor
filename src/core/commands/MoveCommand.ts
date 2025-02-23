@@ -1,4 +1,4 @@
-import { Position, DNode } from '../elements'
+import { Position, DNode } from '../nodes'
 
 import { CommandType, Command } from './Command'
 

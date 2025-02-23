@@ -1,6 +1,6 @@
 import { Bounds } from 'pixi.js'
 
-import { Position } from '../elements'
+import { Position } from '../nodes'
 
 export function calculateBoundsFromPoints(points: Position[]) {
   const x = Math.min(...points.map(p => p.x))
