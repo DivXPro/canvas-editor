@@ -26,7 +26,6 @@ const DefaultLayoutConstraint: LayoutConstraint = {
 }
 
 export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
-  declare _size: Size
   backgroundColor: Color
   children: IObservableArray<DNode> = observable.array<DNode>([])
   constraints: LayoutConstraint
@@ -39,7 +38,6 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
     makeObservable(this, {
       type: override,
       serialize: override,
-      size: override,
       children: observable,
       renderNodes: action.bound,
     })
@@ -107,10 +105,6 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
         this.item?.removeChild(element.item)
       }
     })
-  }
-
-  get size() {
-    return this._size
   }
 
   serialize() {

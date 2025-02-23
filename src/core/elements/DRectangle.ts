@@ -28,8 +28,8 @@ export class DRectangle extends DVector<Graphics> {
       this.fills.push(DVector.DEFAULT_FILL)
     }
     makeObservable(this, {
-      size: override,
       absoluteBoundingBox: override,
+      setSize: override,
       cornerRadius: computed,
     })
     this.item = new Graphics()
@@ -55,6 +55,7 @@ export class DRectangle extends DVector<Graphics> {
 
   setSize(size: Size) {
     super.setSize(size)
+    console.log('DRect setSize', size, this.size, super.size)
     this.update()
   }
 
@@ -71,9 +72,6 @@ export class DRectangle extends DVector<Graphics> {
       .roundRect(0, 0, this.size.width, this.size.height, this.cornerRadius)
       .fill(ColorUtils.rgbaToNumber(this.fills[0].color ?? (DVector.DEFAULT_FILL.color as Color)))
       .stroke(this.strokes[0])
-  }
-
-  get size() {
-    return this._size
+    console.log('update', this.size, super.size)
   }
 }

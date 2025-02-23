@@ -175,6 +175,7 @@ export abstract class DNode implements IDNode<any> {
 
   setSize(size: Size) {
     this._size = size
+    console.log('DNode setSize', size, this._size)
   }
 
   get r() {
@@ -409,37 +410,6 @@ export abstract class DNode implements IDNode<any> {
     const dx = (size.width - oldSize.width) / 2
     const dy = (size.height - oldSize.height) / 2
 
-    // switch (handle) {
-    //   case ResizeHandle.Bottom:
-    //     dy = (size.height - oldSize.height) / 2
-    //     break
-    //   case ResizeHandle.Left:
-    //     dx = (size.width - oldSize.width) / 2
-    //     break
-    //   case ResizeHandle.Top:
-    //     dy = (size.height - oldSize.height) / 2
-    //     break
-    //   case ResizeHandle.Right:
-    //     dx = (size.width - oldSize.width) / 2
-    //     break
-    //   case ResizeHandle.BottomRight:
-    //     dx = (size.width - oldSize.width) / 2
-    //     dy = (size.height - oldSize.height) / 2
-    //     break
-    //   case ResizeHandle.BottomLeft:
-    //     dx = -(size.width - oldSize.width) / 2
-    //     dy = (size.height - oldSize.height) / 2
-    //     break
-    //   case ResizeHandle.TopLeft:
-    //     dx = (size.width - oldSize.width) / 2
-    //     dy = (size.height - oldSize.height) / 2
-    //     break
-    //   case ResizeHandle.TopRight:
-    //     dx = (size.width - oldSize.width) / 2
-    //     dy = (size.height - oldSize.height) / 2
-    //     break
-    // }
-
     // 考虑旋转角度计算实际偏移
     const cos = Math.cos(rotation)
     const sin = Math.sin(rotation)
@@ -447,7 +417,8 @@ export abstract class DNode implements IDNode<any> {
     const offsetX = dx * cos - dy * sin
     const offsetY = dx * sin + dy * cos
 
-    console.log(size, offsetX, offsetY)
+    console.log('resize', size)
+
     // 更新尺寸和位置
     this.setSize(size)
     switch (handle) {

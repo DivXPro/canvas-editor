@@ -1,32 +1,20 @@
-import { DNode, Size } from '../elements'
-import { Engine } from '../models/Engine'
+import { DNode, ResizeHandle, Size } from '../elements'
 
-import { ICommand, CommandType } from './Command'
+import { CommandType, Command } from './Command'
 
 export interface ResizeCommandStates {
   size: Size
+  handle: ResizeHandle
 }
 
-export class ResizeCommand implements ICommand {
-  engine: Engine
+export class ResizeCommand extends Command<ResizeCommandStates> {
   type: CommandType = 'RESIZE'
-  target: string
-  states: ResizeCommandStates
-  prevStates: ResizeCommandStates
 
-  constructor(node: DNode, engine: Engine, states: ResizeCommandStates, prevStates?: ResizeCommandStates) {
-    this.engine = engine
-    this.target = node.id
-    this.states = states
-    this.prevStates = prevStates ?? {
-      size: node.size,
-    }
-  }
   execute() {
     const node = this.engine.workbench?.findById(this.target) as DNode
 
     try {
-      node.size = this.states.size
+      node.resize(this.states.handle, this.states.size)
     } catch (e) {
       console.error('Resize Cmd execute faile', this.serialize(), e)
     }
@@ -36,18 +24,10 @@ export class ResizeCommand implements ICommand {
     const node = this.engine.workbench?.findById(this.target) as DNode
 
     try {
-      node.size = this.prevStates.size
+      console.log('undo resize cmd', this.prevStates)
+      node.resize(this.prevStates.handle, this.prevStates.size)
     } catch (e) {
       console.error('Resize Cmd undo faile', this.serialize(), e)
-    }
-  }
-
-  serialize() {
-    return {
-      target: this.target,
-      state: this.states,
-      prevState: this.prevStates,
-      states: this.states,
     }
   }
 }

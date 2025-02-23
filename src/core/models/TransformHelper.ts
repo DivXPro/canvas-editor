@@ -50,7 +50,6 @@ export class TransformHelper {
   dragStart(event: DragStartEvent) {
     if (this.operation.selection.selectedNodes.length > 0) {
       if (CornerResizeStyles.includes(this.engine.cursor.type) || EdgeResizeStyles.includes(this.engine.cursor.type)) {
-        console.log('dragStar resize')
         this.engine.cursor.dragType = CursorDragType.Resize
         const cursorType = this.engine.cursor.type
 
@@ -95,6 +94,7 @@ export class TransformHelper {
 
         this.operation.selection.selectedNodes.forEach(node => {
           this.nodeInitialSizes[node.id] = { ...node.size }
+          this.nodeInitialPositions[node.id] = { ...node.position }
         })
 
         return
@@ -141,6 +141,9 @@ export class TransformHelper {
           break
         case CursorDragType.Rotate:
           this.handleRotateEnd()
+          break
+        case CursorDragType.Resize:
+          this.handleResizeEnd()
           break
         default:
           break
@@ -250,8 +253,8 @@ export class TransformHelper {
           const resizeCommand = new ResizeCommand(
             node,
             this.engine,
-            { size: node.size },
-            { size: this.nodeInitialSizes[node.id] }
+            { size: node.size, handle: this.resizeHandle },
+            { size: this.nodeInitialSizes[node.id], handle: this.resizeHandle }
           )
 
           compositeCommand.add(resizeCommand)

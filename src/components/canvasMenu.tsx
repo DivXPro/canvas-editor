@@ -30,7 +30,7 @@ export const CanvasMenu: React.FC<PropsWithChildren<CanvasMenuProps>> = observer
       <ContextMenuTrigger>{children}</ContextMenuTrigger>
       <ContextMenuContent className="w-64">
         <ContextMenuItem inset disabled={history?.allowUndo ? false : true} onClick={history?.undo}>
-          Undo {history?.current}
+          Undo
           <ContextMenuShortcut>⌘Z</ContextMenuShortcut>
         </ContextMenuItem>
         <ContextMenuItem inset disabled={history?.allowRedo ? false : true} onClick={history?.redo}>

@@ -25,7 +25,6 @@ export interface DVectorOptions extends Omit<IDVectorBase, 'type'> {
 export abstract class DVector<Item extends Container> extends DNode implements TDVector {
   static DEFAULT_FILL: Paint = { type: 'SOLID', color: ColorUtils.numberToRGBA(0xd9d9d9) }
 
-  declare _size: Size
   declare item: Item
   preserveRatio?: boolean | undefined
   constraints: LayoutConstraint = {
