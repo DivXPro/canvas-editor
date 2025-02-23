@@ -1,11 +1,11 @@
 import { customAlphabet } from 'nanoid'
-import { Container, EventMode, Matrix, Point, Size } from 'pixi.js'
+import { Container, EventMode, Matrix, Point } from 'pixi.js'
 import { action, computed, makeObservable, observable } from 'mobx'
 
 import { Engine } from '../models/Engine'
 import { Outline } from '../components/Outline'
 
-import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Position, ResizeHandle } from './type'
+import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Position, ResizeHandle, Size } from './type'
 import { DFrameBase } from './DFrameBase'
 
 export interface ScaleData {
@@ -51,11 +51,11 @@ export abstract class DNode implements IDNode<any> {
     return Math.sqrt(Math.pow(size?.width ?? 0, 2) + Math.pow(size?.height ?? 0, 2)) / 2
   }
 
-  protected _locked?: boolean
-  protected _visible: boolean = true
-  protected _rotation?: number
-  protected _position: Position
-  protected _size: Size
+  _locked?: boolean
+  _visible: boolean = true
+  _rotation?: number
+  _position: Position
+  _size: Size
 
   engine: Engine
   parent?: DFrameBase
@@ -127,6 +127,11 @@ export abstract class DNode implements IDNode<any> {
       effects: observable,
       isMask: observable,
       isDragging: observable,
+      _size: observable,
+      _position: observable,
+      _locked: observable,
+      _visible: observable,
+      _rotation: observable,
       rotation: computed,
       index: computed,
       absoluteBoundingBox: computed,
@@ -153,6 +158,8 @@ export abstract class DNode implements IDNode<any> {
   }
   visable?: boolean | undefined
 
+  abstract update(): void
+
   get index() {
     return this.parent?.children?.indexOf(this) ?? 0
   }
@@ -175,7 +182,6 @@ export abstract class DNode implements IDNode<any> {
 
   setSize(size: Size) {
     this._size = size
-    console.log('DNode setSize', size, this._size)
   }
 
   get r() {
@@ -184,7 +190,6 @@ export abstract class DNode implements IDNode<any> {
 
   get center() {
     return this.position
-    // return DNode.GetNodeCenter(this.position, this.r, this.rotation)
   }
 
   get rotation(): number {
@@ -417,10 +422,9 @@ export abstract class DNode implements IDNode<any> {
     const offsetX = dx * cos - dy * sin
     const offsetY = dx * sin + dy * cos
 
-    console.log('resize', size)
-
     // 更新尺寸和位置
     this.setSize(size)
+    console.log('resize', size, this.size)
     switch (handle) {
       case ResizeHandle.Top:
         this.setPosition(oldPosition.x, oldPosition.y - offsetY)

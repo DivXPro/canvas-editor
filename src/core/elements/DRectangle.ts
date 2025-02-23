@@ -1,4 +1,4 @@
-import { computed, makeObservable, override } from 'mobx'
+import { action, computed, makeObservable, override } from 'mobx'
 import { Graphics } from 'pixi.js'
 
 import { Engine } from '../models/Engine'
@@ -30,6 +30,7 @@ export class DRectangle extends DVector<Graphics> {
     makeObservable(this, {
       absoluteBoundingBox: override,
       setSize: override,
+      update: action.bound,
       cornerRadius: computed,
     })
     this.item = new Graphics()
@@ -55,11 +56,10 @@ export class DRectangle extends DVector<Graphics> {
 
   setSize(size: Size) {
     super.setSize(size)
-    console.log('DRect setSize', size, this.size, super.size)
     this.update()
   }
 
-  private update() {
+  update() {
     this.item.clear()
     const position = this.position
 
@@ -72,6 +72,5 @@ export class DRectangle extends DVector<Graphics> {
       .roundRect(0, 0, this.size.width, this.size.height, this.cornerRadius)
       .fill(ColorUtils.rgbaToNumber(this.fills[0].color ?? (DVector.DEFAULT_FILL.color as Color)))
       .stroke(this.strokes[0])
-    console.log('update', this.size, super.size)
   }
 }

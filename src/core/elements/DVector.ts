@@ -1,4 +1,4 @@
-import { makeObservable, override } from 'mobx'
+import { action, makeObservable, override } from 'mobx'
 import { Container } from 'pixi.js'
 
 import { Engine } from '../models/Engine'

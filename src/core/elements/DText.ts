@@ -46,6 +46,7 @@ export class DText extends DVector<TextBox> implements TDText {
       setPosition: override,
       setWidth: action.bound,
       setHeight: action.bound,
+      update: action.bound,
     })
   }
 
@@ -100,6 +101,11 @@ export class DText extends DVector<TextBox> implements TDText {
 
   get size() {
     return { width: this.width, height: this.height }
+  }
+
+  update() {
+    // this.item.text = this.characters
+    // this.item.style = this.style
   }
 
   setPosition(x: number, y: number) {
