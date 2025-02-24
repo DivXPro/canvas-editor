@@ -5,6 +5,8 @@ import { SelectElementEvent, UnselectElementEvent } from '../events/mutation'
 import { calculateBoundsFromPoints, mergeBounds } from '../utils/transform'
 import { isArr } from '../utils/types'
 import { isPointInPointsArea } from '../utils/hitConfirm'
+import { GroupSelectionCommand } from '../commands/GroupSelectionCommand'
+import { CompositeCommand } from '../commands'
 
 import { Engine } from './Engine'
 import { Workbench } from './Workbench'
@@ -206,15 +208,68 @@ export class Selection {
     this.trigger(UnselectElementEvent)
   }
 
-  groupSelection(nodes?: DNode[]): DGroup[] {
-    if (this.selectedNodes.length === 0 && nodes?.length === 0) return []
+  groupSelection() {
+    if (this.selectedNodes.length < 1) return
+    // 按父节点分组
+    const nodesByParent = new Map<any, DNode[]>()
 
-    if (nodes) {
+    this.selectedNodes.forEach(node => {
+      const parentKey = node.item?.parent || 'root'
+
+      if (!nodesByParent.has(parentKey)) {
+        nodesByParent.set(parentKey, [])
+      }
+      nodesByParent.get(parentKey)?.push(node)
+    })
+
+    this.clear()
+    const command = new CompositeCommand({
+      timestamp: Date.now(),
+    })
+
+    nodesByParent.forEach(groupNodes => {
+      if (groupNodes.length > 1) {
+        const cmd = this.groupNodes(groupNodes)
+
+        if (cmd) {
+          command.add(cmd)
+        }
+      }
+    })
+    if (command.subCommands.length > 0) {
+      this.engine.workbench.history.push(command)
+    }
+  }
+
+  groupNodes(nodes: DNode[]) {
+    if (nodes && nodes.length > 0) {
       const groupNodes = nodes.sort((a, b) => {
         return a.index - b.index
       })
 
-      const bounds = this.absoluteBoundingBox
+      // 获取所有父节点 ID 并去重
+      const parentIds = [...new Set(groupNodes.map(node => node.parent?.id ?? 'root').filter(id => id))]
+
+      const prevStates = {
+        groupStates: parentIds.map(id => {
+          const parentNode = this.engine.workbench?.findById(id)
+
+          return {
+            id,
+            parent: parentNode?.parent?.id,
+            index: parent?.index ?? 0,
+            nodes: groupNodes
+              .filter(node => node.parent?.id === id)
+              .map(node => ({
+                id: node.id,
+                index: node.index,
+                parent: node.parent?.id,
+              })),
+          }
+        }),
+      }
+
+      const bounds = mergeBounds(groupNodes.map(node => node.absoluteBoundingBox))
 
       const groudIndex = groupNodes[nodes.length - 1].index
 
@@ -249,32 +304,26 @@ export class Selection {
         }
       })
 
-      return [group]
-    } else {
-      if (this.selectedNodes.length < 1) return []
-      // 按父节点分组
-      const nodesByParent = new Map<any, DNode[]>()
+      this.add(group)
 
-      this.selectedNodes.forEach(node => {
-        const parentKey = node.item?.parent || 'root'
+      const states = {
+        groupStates: [
+          {
+            id: group.id,
+            index: groudIndex,
+            parent: parent?.id,
+            nodes: groupNodes.map(node => ({
+              id: node.id,
+              index: node.index,
+              parent: node.parent?.id,
+            })),
+          },
+        ],
+      }
 
-        if (!nodesByParent.has(parentKey)) {
-          nodesByParent.set(parentKey, [])
-        }
-        nodesByParent.get(parentKey)?.push(node)
-      })
-      // 为每个分组创建新的组
-      const groups: DGroup[] = []
+      const command = new GroupSelectionCommand(nodes, this.engine, states, prevStates)
 
-      nodesByParent.forEach(groupNodes => {
-        if (groupNodes.length > 1) {
-          groups.push(...this.groupSelection(groupNodes))
-        }
-      })
-      this.clear()
-      this.select(groups)
-
-      return groups
+      return command
     }
   }
 

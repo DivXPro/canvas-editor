@@ -1,4 +1,5 @@
 import { Position, DNode } from '../nodes'
+import { isArr } from '../utils/types'
 
 import { CommandType, Command } from './Command'
 
@@ -10,10 +11,16 @@ export class MoveCommand extends Command<MoveCommandStates> {
   type: CommandType = 'MOVE'
 
   execute() {
-    const node = this.engine.workbench?.findById(this.target) as DNode
+    const nodes = isArr(this.target)
+      ? this.target.map(id => this.engine.workbench?.findById(id))
+      : [this.engine.workbench?.findById(this.target)]
 
     try {
-      node.position = this.states.position
+      nodes.forEach(n => {
+        if (n) {
+          n.position = this.states.position
+        }
+      })
     } catch (e) {
       console.error('Move Cmd execute faile', this.serialize(), e)
     }
@@ -21,10 +28,16 @@ export class MoveCommand extends Command<MoveCommandStates> {
 
   undo() {
     console.debug('undo', this.serialize())
-    const node = this.engine.workbench?.findById(this.target) as DNode
+    const nodes = isArr(this.target)
+      ? this.target.map(id => this.engine.workbench?.findById(id))
+      : [this.engine.workbench?.findById(this.target)]
 
     try {
-      node.position = this.prevStates.position
+      nodes.forEach(n => {
+        if (n) {
+          n.position = this.prevStates.position
+        }
+      })
     } catch (e) {
       console.error('Move Cmd undo faile', this.serialize(), e)
     }

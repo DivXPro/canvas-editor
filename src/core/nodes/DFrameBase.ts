@@ -61,9 +61,6 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
 
   removeChild(node: DNode) {
     if (!this.children.includes(node)) return
-    if (node.item) {
-      this.item.removeChild(node.item)
-    }
     this.children.remove(node)
   }
 

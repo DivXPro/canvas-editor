@@ -1,22 +1,22 @@
-import { ICommand, ICompositeCommand } from './Command'
+import { Command, ICompositeCommand } from './Command'
 
-export interface CompositeCommandProps {
-  subCommands?: ICommand[]
+export interface CompositeCommandProps<States> {
+  subCommands?: Command<States>[]
   timestamp?: number
   commander?: string
 }
 
-export class CompositeCommand implements ICompositeCommand {
-  subCommands: ICommand[] = []
+export class CompositeCommand implements ICompositeCommand<any> {
+  subCommands: Command<any>[] = []
   timestamp?: number
   commander?: string
-  constructor(props: CompositeCommandProps) {
+  constructor(props: CompositeCommandProps<any>) {
     this.subCommands = props.subCommands ?? []
     this.timestamp = props.timestamp
     this.commander = props.commander
   }
 
-  add(cmd: ICommand) {
+  add(cmd: Command<any>) {
     this.subCommands.push(cmd)
   }
 

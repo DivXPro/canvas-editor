@@ -1,53 +1,45 @@
 import { DNode } from '../nodes'
-import { Engine } from '../models/Engine'
+import { isArr } from '../utils/types'
 
-import { ICommand, CommandType } from './Command'
+import { CommandType, Command } from './Command'
 
 export interface RotationCommandStates {
   rotation: number
 }
 
-export class RotationCommand implements ICommand {
-  engine: Engine
+export class RotationCommand extends Command<RotationCommandStates> {
   type: CommandType = 'ROTATION'
-  target: string
-  states: RotationCommandStates
-  prevStates: RotationCommandStates
 
-  constructor(node: DNode, engine: Engine, states: RotationCommandStates, prevStates?: RotationCommandStates) {
-    this.engine = engine
-    this.target = node.id
-    this.states = states
-    this.prevStates = prevStates ?? {
-      rotation: node.rotation,
-    }
-  }
   execute() {
-    const node = this.engine.workbench?.findById(this.target) as DNode
+    const nodes = isArr(this.target)
+      ? this.target.map(id => this.engine.workbench?.findById(id))
+      : [this.engine.workbench?.findById(this.target)]
 
     try {
-      node.rotation = this.states.rotation
+      nodes.forEach(n => {
+        if (n) {
+          n.rotation = this.states.rotation
+        }
+      })
     } catch (e) {
-      console.error('Rotate Cmd execute faile', this.serialize(), e)
+      console.error('Rotate Cmd execute failed', this.serialize(), e)
     }
   }
 
   undo() {
-    const node = this.engine.workbench?.findById(this.target) as DNode
+    console.debug('undo', this.serialize())
+    const nodes = isArr(this.target)
+      ? this.target.map(id => this.engine.workbench?.findById(id))
+      : [this.engine.workbench?.findById(this.target)]
 
     try {
-      node.rotation = this.prevStates.rotation
+      nodes.forEach(n => {
+        if (n) {
+          n.rotation = this.prevStates.rotation
+        }
+      })
     } catch (e) {
-      console.error('Rotate Cmd undo faile', this.serialize(), e)
-    }
-  }
-
-  serialize() {
-    return {
-      target: this.target,
-      state: this.states,
-      prevState: this.prevStates,
-      states: this.states,
+      console.error('Rotate Cmd undo failed', this.serialize(), e)
     }
   }
 }

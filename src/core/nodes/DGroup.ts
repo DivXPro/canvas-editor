@@ -122,7 +122,7 @@ export class DGroup extends DFrameBase {
   ungroup() {
     const children = this.children.slice()
 
-    children.forEach((child, idx) => {
+    children.forEach(child => {
       if (this.parent) {
         child.joinGroupAt(this.parent, this.index)
       } else {

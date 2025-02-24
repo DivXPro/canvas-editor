@@ -1,11 +1,12 @@
 import { DNode } from '../nodes'
 import { Engine } from '../models'
+import { isArr } from '../utils/types'
 
-export type CommandType = 'ADD' | 'DELETE' | 'MOVE' | 'RESIZE' | 'ROTATION' | 'GROUP'
+export type CommandType = 'ADD' | 'DELETE' | 'MOVE' | 'RESIZE' | 'ROTATION' | 'GROUP' | 'UNGROUP'
 
 export interface ICommand<States> {
   type: CommandType
-  target: string
+  target: string | string[]
   states: States
   prevStates: States
   execute: () => void
@@ -23,13 +24,13 @@ export interface ICompositeCommand<States> {
 export abstract class Command<States> implements ICommand<States> {
   engine: Engine
   type: CommandType = 'ADD'
-  target: string
+  target: string | string[]
   states: States
   prevStates: States
 
-  constructor(node: DNode, engine: Engine, states: States, prevStates: States) {
+  constructor(nodes: DNode | DNode[], engine: Engine, states: States, prevStates: States) {
     this.engine = engine
-    this.target = node.id
+    this.target = isArr(nodes) ? nodes.map(n => n.id) : nodes.id
     this.states = { ...states }
     this.prevStates = { ...prevStates }
   }

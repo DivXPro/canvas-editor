@@ -165,6 +165,23 @@ export abstract class DNode implements IDNode<any> {
     return this.parent?.children?.indexOf(this) ?? 0
   }
 
+  set index(value: number) {
+    this.setIndex(value)
+  }
+
+  setIndex(value: number) {
+    if (!this.parent) return
+
+    const currentIndex = this.index
+    const maxIndex = this.parent.children.length - 1
+    const targetIndex = Math.max(0, Math.min(value, maxIndex))
+
+    if (currentIndex !== targetIndex) {
+      this.parent.removeChild(this)
+      this.parent.addChildAt(this, targetIndex)
+    }
+  }
+
   get position() {
     return this._position
   }
@@ -375,7 +392,7 @@ export abstract class DNode implements IDNode<any> {
 
   joinGroupAt(group: DFrameBase, index: number) {
     const position = group.item.toLocal(this.globalPosition)
-    console.log('pos', group.parent, group.position, group.globalPosition, this.globalPosition, position)
+
     this.item?.parent.removeChild(this.item)
     this.parent?.removeChild(this)
     this.parent = group
