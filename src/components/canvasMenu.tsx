@@ -42,11 +42,15 @@ export const CanvasMenu: React.FC<PropsWithChildren<CanvasMenuProps>> = observer
         </ContextMenuItem>
         <ContextMenuItem
           inset
-          disabled={selection.selectedNodes.length === 0 ? true : false}
-          onClick={() => selection.createGroup()}
+          disabled={selection.allowGroup ? false : true}
+          onClick={() => selection.groupSelection()}
         >
           Group Selection
           <ContextMenuShortcut>⌘G</ContextMenuShortcut>
+        </ContextMenuItem>
+        <ContextMenuItem inset disabled={selection.allowUngroup ? false : true} onClick={() => selection.ungroup()}>
+          Ungroup Selection
+          <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>
         </ContextMenuItem>
         <ContextMenuSub>
           <ContextMenuSubTrigger inset>More Tools</ContextMenuSubTrigger>

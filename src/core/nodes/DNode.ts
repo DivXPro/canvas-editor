@@ -7,7 +7,6 @@ import { Outline } from '../components/Outline'
 
 import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Position, ResizeHandle, Size } from './type'
 import { DFrameBase } from './DFrameBase'
-import { DGroup } from './DGroup'
 
 export interface ScaleData {
   x: number
@@ -40,6 +39,8 @@ export interface DNodeOptions extends INodeBase {
 }
 
 export abstract class DNode implements IDNode<any> {
+  declare children?: DNode[]
+
   static GetNodeCenter(position: Position, r: number, rotation: number) {
     return {
       x: position.x + Math.cos(Math.PI / 4 + rotation) * r,
@@ -71,7 +72,6 @@ export abstract class DNode implements IDNode<any> {
   strokeAlign: 'INSIDE' | 'OUTSIDE' | 'CENTER' = 'CENTER'
   effects = observable.array<Effect>([])
   isMask?: boolean | undefined
-  children?: DNode[]
   isDragging?: boolean
   isHovered?: boolean | undefined
   pluginData?: any
@@ -146,6 +146,7 @@ export abstract class DNode implements IDNode<any> {
       absDisplayVertices: computed,
       displayWidth: computed,
       displayHeight: computed,
+      destory: action.bound,
       serialize: action.bound,
       setHidden: action.bound,
       setLocked: action.bound,
@@ -368,13 +369,18 @@ export abstract class DNode implements IDNode<any> {
     return false
   }
 
-  joinGroup(group: DGroup) {
+  joinGroup(group: DFrameBase) {
+    this.joinGroupAt(group, group.children.length)
+  }
+
+  joinGroupAt(group: DFrameBase, index: number) {
+    const position = group.item.toLocal(this.globalPosition)
+    console.log('pos', group.parent, group.position, group.globalPosition, this.globalPosition, position)
     this.item?.parent.removeChild(this.item)
     this.parent?.removeChild(this)
     this.parent = group
-    this.position = group.item.toLocal(this.globalPosition)
-    console.log('item pos in new group', this.position)
-    group.addChild(this)
+    this.position = position
+    group.addChildAt(this, index)
   }
 
   serialize(): NodeBase {
@@ -418,6 +424,14 @@ export abstract class DNode implements IDNode<any> {
   }
 
   destory() {
+    if (this.parent) {
+      this.parent.removeChild(this)
+    } else {
+      if (this.item) {
+        this.engine.app.stage.removeChild(this.item)
+      }
+      this.engine.workbench.canvaNodes.splice(this.engine.workbench.canvaNodes.indexOf(this), 1)
+    }
     this.item?.destroy()
     this.outline?.destroy()
   }

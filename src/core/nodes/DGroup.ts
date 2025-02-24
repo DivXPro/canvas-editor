@@ -1,5 +1,5 @@
 import { Container, Matrix } from 'pixi.js'
-import { computed, makeObservable, override } from 'mobx'
+import { action, computed, makeObservable, override } from 'mobx'
 
 import { Group } from '../components/Group'
 import { mergeBounds } from '../utils/transform'
@@ -31,6 +31,7 @@ export class DGroup extends DFrameBase {
       absoluteBoundingBox: override,
       serialize: override,
       childrenPoints: computed,
+      ungroup: action.bound,
     })
   }
 
@@ -116,6 +117,22 @@ export class DGroup extends DFrameBase {
       child.setSize(size)
       child.setPosition(position.x, position.y)
     })
+  }
+
+  ungroup() {
+    const children = this.children.slice()
+
+    children.forEach((child, idx) => {
+      if (this.parent) {
+        child.joinGroupAt(this.parent, this.index)
+      } else {
+        if (child.item != null) {
+          this.engine.app.stage.addChildAt(child.item, this.index)
+        }
+        this.engine.workbench.canvaNodes.push(child)
+      }
+    })
+    this.destory()
   }
 
   update() {

@@ -31,16 +31,27 @@ export class Selection {
       selectedNodes: computed,
       startPoint: computed,
       selectedDisplayRectPoints: computed,
+      allowGroup: computed,
+      allowUngroup: computed,
       select: action.bound,
       trigger: action.bound,
       add: action.bound,
       remove: action.bound,
       clear: action.bound,
-      createGroup: action.bound,
+      groupSelection: action.bound,
+      ungroup: action.bound,
     })
     if (options.selected) {
       this.selected.clear().push(...options.selected)
     }
+  }
+
+  get allowGroup() {
+    return this.selectedNodes.length > 1
+  }
+
+  get allowUngroup() {
+    return this.selectedNodes.some(node => node.type === 'GROUP')
   }
 
   trigger(type = SelectElementEvent) {
@@ -195,7 +206,7 @@ export class Selection {
     this.trigger(UnselectElementEvent)
   }
 
-  createGroup(nodes?: DNode[]): DGroup[] {
+  groupSelection(nodes?: DNode[]): DGroup[] {
     if (this.selectedNodes.length === 0 && nodes?.length === 0) return []
 
     if (nodes) {
@@ -222,6 +233,13 @@ export class Selection {
         size: { width: bounds.width, height: bounds.height },
       })
 
+      if (parent != null) {
+        parent.addChildAt(group, Math.min(parent.children.length - 1, groudIndex))
+      } else {
+        this.engine.app.stage.addChildAt(group.item, Math.min(this.engine.app.stage.children.length - 1, groudIndex))
+        this.workbench.canvaNodes.push(group)
+      }
+
       groupNodes.forEach(node => {
         if (node.parent == null) {
           this.workbench.canvaNodes.splice(this.workbench.canvaNodes.indexOf(node), 1)
@@ -231,15 +249,9 @@ export class Selection {
         }
       })
 
-      if (parent != null) {
-        parent.addChildAt(group, Math.min(parent.children.length - 1, groudIndex))
-      } else {
-        this.engine.app.stage.addChildAt(group.item, Math.min(this.engine.app.stage.children.length - 1, groudIndex))
-        this.workbench.canvaNodes.push(group)
-      }
-
       return [group]
     } else {
+      if (this.selectedNodes.length < 1) return []
       // 按父节点分组
       const nodesByParent = new Map<any, DNode[]>()
 
@@ -256,7 +268,7 @@ export class Selection {
 
       nodesByParent.forEach(groupNodes => {
         if (groupNodes.length > 1) {
-          groups.push(...this.createGroup(groupNodes))
+          groups.push(...this.groupSelection(groupNodes))
         }
       })
       this.clear()
@@ -264,5 +276,20 @@ export class Selection {
 
       return groups
     }
+  }
+
+  ungroup() {
+    const newSelectedNodes: DNode[] = []
+
+    this.selectedNodes.forEach(node => {
+      if (node.type === 'GROUP' && node instanceof DGroup) {
+        newSelectedNodes.push(...node.children)
+        node.ungroup()
+      } else {
+        newSelectedNodes.push(node)
+      }
+    })
+    this.clear()
+    this.select(newSelectedNodes)
   }
 }
