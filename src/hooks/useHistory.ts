@@ -1,7 +1,7 @@
-import { useOperation } from './useOperation'
+import { useWorkbench } from './useWorkbench'
 
 export const useHistory = () => {
-  const operation = useOperation()
+  const operation = useWorkbench()
 
   return operation?.history
 }

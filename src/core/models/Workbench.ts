@@ -1,6 +1,16 @@
 import { computed, makeObservable, observable } from 'mobx'
 
-import { DNode, DFrame, DRectangle, DText, IDFrameBase, IDRectangleBase, IDTextBase, DFrameBase } from '../nodes'
+import {
+  DNode,
+  DFrame,
+  DRectangle,
+  DText,
+  IDFrameBase,
+  IDRectangleBase,
+  IDTextBase,
+  DFrameBase,
+  DFrameOptions,
+} from '../nodes'
 import { NodeBase, Position } from '../nodes/type'
 import { DGroup, IDGroupBase } from '../nodes/DGroup'
 import { isArr } from '../utils/types'
@@ -11,7 +21,7 @@ import { Hover } from './Hover'
 import { TransformHelper } from './TransformHelper'
 import { History } from './History'
 
-declare type DefaultFrameType = Omit<IDFrameBase, 'engine' | 'parent'>
+declare type DefaultFrameType = Omit<DFrameOptions, 'engine' | 'parent'>
 
 const DefaultFrame: DefaultFrameType = {
   id: 'rootFrame',
@@ -58,7 +68,7 @@ export class Workbench {
     })
     this.selection = new Selection({
       engine: this.engine,
-      operation: this,
+      workbench: this,
     })
     this.transformHelper = new TransformHelper({
       engine: this.engine,
@@ -66,6 +76,9 @@ export class Workbench {
     })
     this.history = new History()
     makeObservable(this, {
+      id: observable,
+      title: observable,
+      description: observable,
       canvaNodes: observable,
       zoomRatio: observable,
       selectableNodes: computed,
@@ -115,6 +128,8 @@ export class Workbench {
   }
 
   serialize(): IWorkbench {
+    console.log('canvaNodes', this.canvaNodes.length)
+
     return {
       canva: {
         id: this.id,

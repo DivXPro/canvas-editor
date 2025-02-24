@@ -2,7 +2,7 @@ import { action, computed, makeObservable, observable } from 'mobx'
 
 import { DGroup, DNode, eid, Position } from '../nodes'
 import { SelectElementEvent, UnselectElementEvent } from '../events/mutation'
-import { calculateBoundsFromPoints } from '../utils/transform'
+import { calculateBoundsFromPoints, mergeBounds } from '../utils/transform'
 import { isArr } from '../utils/types'
 import { isPointInPointsArea } from '../utils/hitConfirm'
 
@@ -11,31 +11,32 @@ import { Workbench } from './Workbench'
 
 export interface SelectionOptions {
   engine: Engine
-  operation: Workbench
+  workbench: Workbench
   selected?: string[]
 }
 
 export class Selection {
   engine: Engine
-  operation: Workbench
+  workbench: Workbench
   selected = observable.array<string>([])
   indexes: Record<string, boolean> = {}
   selecting = false
 
   constructor(options: SelectionOptions) {
     this.engine = options.engine
-    this.operation = options.operation
+    this.workbench = options.workbench
     makeObservable(this, {
       selected: observable,
       indexes: observable,
       selectedNodes: computed,
       startPoint: computed,
-      selectedRectPoints: computed,
+      selectedDisplayRectPoints: computed,
       select: action.bound,
       trigger: action.bound,
       add: action.bound,
       remove: action.bound,
       clear: action.bound,
+      createGroup: action.bound,
     })
     if (options.selected) {
       this.selected.clear().push(...options.selected)
@@ -112,12 +113,16 @@ export class Selection {
     return this.selected.length
   }
 
-  get selectedRectPoints(): Position[] {
+  get absoluteBoundingBox() {
+    return mergeBounds(this.selectedNodes.map(node => node.absoluteBoundingBox))
+  }
+
+  get selectedDisplayRectPoints(): Position[] {
     if (this.selectedNodes.length === 1) {
-      return this.selectedNodes[0].absVertices
+      return this.selectedNodes[0].absDisplayVertices
     }
     if (this.selectedNodes.length > 1) {
-      const nodeRects = this.selectedNodes.map(node => node.absVertices)
+      const nodeRects = this.selectedNodes.map(node => node.absDisplayVertices)
 
       const boundPoints: Position[] = []
 
@@ -139,7 +144,7 @@ export class Selection {
   }
 
   rectContainsPoint(point: Position) {
-    return isPointInPointsArea(point, this.selectedRectPoints)
+    return isPointInPointsArea(point, this.selectedDisplayRectPoints)
   }
 
   containsPoint(point: Position) {
@@ -182,46 +187,82 @@ export class Selection {
   }
 
   clear() {
+    this.selectedNodes.forEach(node => {
+      node.hideOutline()
+    })
     this.selected.clear()
     this.indexes = {}
     this.trigger(UnselectElementEvent)
   }
 
-  createGroup() {
-    if (this.selectedNodes.length < 2) return
+  createGroup(nodes?: DNode[]): DGroup[] {
+    if (this.selectedNodes.length === 0 && nodes?.length === 0) return []
 
-    const nodes = this.selectedNodes
-    const bounds = calculateBoundsFromPoints(nodes.map(node => node.absVertices).flat())
+    if (nodes) {
+      const groupNodes = nodes.sort((a, b) => {
+        return a.index - b.index
+      })
 
-    const group = new DGroup({
-      engine: this.engine,
-      id: eid(),
-      name: 'Group',
-      type: 'GROUP',
-      position: { x: bounds.x, y: bounds.y },
-      size: { width: bounds.width, height: bounds.height },
-      children: nodes,
-    })
+      const bounds = this.absoluteBoundingBox
 
-    // 从画布中移除原始节点
-    nodes.forEach(node => {
-      const index = this.operation.canvaNodes.indexOf(node)
+      const groudIndex = groupNodes[nodes.length - 1].index
 
-      if (index !== -1) {
-        this.operation.canvaNodes.splice(index, 1)
+      const parent = nodes[0].parent
+      const position = parent?.item
+        ? parent.item?.toLocal({ x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 })
+        : { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 }
+
+      const group = new DGroup({
+        engine: this.engine,
+        id: eid(),
+        name: 'Group',
+        type: 'GROUP',
+        parent,
+        position,
+        size: { width: bounds.width, height: bounds.height },
+      })
+
+      groupNodes.forEach(node => {
+        if (node.parent == null) {
+          this.workbench.canvaNodes.splice(this.workbench.canvaNodes.indexOf(node), 1)
+        }
+        if (node.item && node.item.parent) {
+          node.joinGroup(group)
+        }
+      })
+
+      if (parent != null) {
+        parent.addChildAt(group, Math.min(parent.children.length - 1, groudIndex))
+      } else {
+        this.engine.app.stage.addChildAt(group.item, Math.min(this.engine.app.stage.children.length - 1, groudIndex))
+        this.workbench.canvaNodes.push(group)
       }
-      if (node.item && node.item.parent) {
-        node.item.parent.removeChild(node.item)
-      }
-    })
 
-    // 添加组到画布
-    this.operation.canvaNodes.push(group)
-    if (group.item) {
-      this.engine.app.stage.addChild(group.item)
+      return [group]
+    } else {
+      // 按父节点分组
+      const nodesByParent = new Map<any, DNode[]>()
+
+      this.selectedNodes.forEach(node => {
+        const parentKey = node.item?.parent || 'root'
+
+        if (!nodesByParent.has(parentKey)) {
+          nodesByParent.set(parentKey, [])
+        }
+        nodesByParent.get(parentKey)?.push(node)
+      })
+      // 为每个分组创建新的组
+      const groups: DGroup[] = []
+
+      nodesByParent.forEach(groupNodes => {
+        if (groupNodes.length > 1) {
+          groups.push(...this.createGroup(groupNodes))
+        }
+      })
+      this.clear()
+      this.select(groups)
+
+      return groups
     }
-
-    // 选中新创建的组
-    this.select(group)
   }
 }

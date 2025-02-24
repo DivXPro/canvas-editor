@@ -55,7 +55,7 @@ export class TransformHelper {
         const cursorType = this.engine.cursor.type
 
         const cursorPos = { x: this.engine.cursor.position.offsetX, y: this.engine.cursor.position.offsetY }
-        const rectPoints = this.operation.selection.selectedRectPoints
+        const rectPoints = this.operation.selection.selectedDisplayRectPoints
 
         if (cursorType === CursorType.NwseResize) {
           // 计算到左上角和右下角的距离
@@ -303,7 +303,7 @@ export class TransformHelper {
 
   handleRotate() {
     if (this.operation.selection.selectedNodes.length > 0) {
-      const rect = this.operation.selection.selectedRectPoints
+      const rect = this.operation.selection.selectedDisplayRectPoints
       const center = {
         x: (rect[0].x + rect[2].x) / 2,
         y: (rect[0].y + rect[2].y) / 2,

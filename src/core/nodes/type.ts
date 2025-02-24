@@ -7,6 +7,9 @@ export interface Global {
   visible?: boolean
   /** the type of the node, refer to table below for details */
   type: NodeType
+
+  index?: number
+
   /** data written by plugins that is visible only trotationo the plugin that wrote it. Requires the `pluginData` to include the ID of the plugin. */
   pluginData?: any
   /** data written by plugins that is visible to all plugins. Requires the `pluginData` parameter to include the string "shared". */
@@ -493,7 +496,7 @@ export interface Text extends VectorBase {
    * Style of text including font family and weight (see type style
    * section for more information)
    */
-  style: TypeStyle
+  style?: TypeStyle
   /**
    * Array with same number of elements as characeters in text 'box' |    * each element is a reference to the styleOverrideTable defined
    * below and maps to the corresponding character in the characters

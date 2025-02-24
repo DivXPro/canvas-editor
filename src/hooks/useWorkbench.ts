@@ -1,6 +1,6 @@
 import { useEngine } from './useEngine'
 
-export const useOperation = () => {
+export const useWorkbench = () => {
   const engine = useEngine()
 
   return engine?.workbench

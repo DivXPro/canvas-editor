@@ -7,6 +7,7 @@ import { Outline } from '../components/Outline'
 
 import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Position, ResizeHandle, Size } from './type'
 import { DFrameBase } from './DFrameBase'
+import { DGroup } from './DGroup'
 
 export interface ScaleData {
   x: number
@@ -15,7 +16,6 @@ export interface ScaleData {
 
 export interface INodeBase extends NodeBase {
   locked?: boolean
-  index?: number
 }
 
 export interface IDNode<Item extends Container> extends INodeBase {
@@ -26,7 +26,7 @@ export interface IDNode<Item extends Container> extends INodeBase {
   globalPosition: Position
   globalCenter: Position
   absoluteBoundingBox: Rect
-  absVertices: Position[]
+  absDisplayVertices: Position[]
   serialize: () => NodeBase
   isSelected?: boolean
   isHovered?: boolean
@@ -143,7 +143,7 @@ export abstract class DNode implements IDNode<any> {
       globalCenter: computed,
       globalPosition: computed,
       globalRotation: computed,
-      absVertices: computed,
+      absDisplayVertices: computed,
       displayWidth: computed,
       displayHeight: computed,
       serialize: action.bound,
@@ -211,7 +211,7 @@ export abstract class DNode implements IDNode<any> {
     return this.rotation + (this.parent?.globalRotation ?? 0)
   }
 
-  get absVertices(): Position[] {
+  get absDisplayVertices(): Position[] {
     const rect: Position[] = [
       {
         x: this.globalPosition.x - ((this.size?.width ?? 0) / 2) * this.engine.zoomRatio,
@@ -288,7 +288,7 @@ export abstract class DNode implements IDNode<any> {
     return this.item?.getGlobalPosition(new Point(this.center.x, this.center.y)) ?? { x: 0, y: 0 }
   }
 
-  get absoluteBoundingBox() {
+  get absoluteBoundingBox(): Rect {
     if (this.item == null) {
       return {
         x: 0,
@@ -297,7 +297,7 @@ export abstract class DNode implements IDNode<any> {
         height: 0,
       }
     }
-    const bounds = this.item.getLocalBounds()
+    const bounds = this.item.getBounds()
 
     return {
       x: bounds.minX,
@@ -368,14 +368,24 @@ export abstract class DNode implements IDNode<any> {
     return false
   }
 
+  joinGroup(group: DGroup) {
+    this.item?.parent.removeChild(this.item)
+    this.parent?.removeChild(this)
+    this.parent = group
+    this.position = group.item.toLocal(this.globalPosition)
+    console.log('item pos in new group', this.position)
+    group.addChild(this)
+  }
+
   serialize(): NodeBase {
     return {
       id: this.id,
       name: this.name,
       type: this.type,
+      index: this.parent?.children?.indexOf(this) ?? 0,
       blendMode: this.blendMode,
-      position: this.position,
-      size: this.size,
+      position: { ...this.position },
+      size: { ...this.size },
       rotation: this.rotation,
       locked: this.locked,
       visible: this.visible,
@@ -399,6 +409,12 @@ export abstract class DNode implements IDNode<any> {
 
   moveTo(point: Position) {
     this.setPosition(point.x, point.y)
+  }
+
+  hideOutline() {
+    if (this.outline) {
+      this.outline.visible = false
+    }
   }
 
   destory() {

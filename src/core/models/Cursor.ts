@@ -140,7 +140,6 @@ export class Cursor {
 
   set type(type: CursorType) {
     this.setType(type)
-    console.log('CursorType', this.type)
   }
 
   setType(type: CursorType) {

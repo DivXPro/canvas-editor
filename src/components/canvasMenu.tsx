@@ -1,6 +1,8 @@
 import React, { PropsWithChildren } from 'react'
 import { observer } from 'mobx-react-lite'
 
+import { useHistory, useSelection, useWorkbench } from '../hooks'
+
 import {
   ContextMenu,
   ContextMenuCheckboxItem,
@@ -16,7 +18,6 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu'
-import { useHistory } from '@/hooks/useHistory'
 
 export type CanvasMenuProps = {
   className?: string
@@ -24,6 +25,8 @@ export type CanvasMenuProps = {
 
 export const CanvasMenu: React.FC<PropsWithChildren<CanvasMenuProps>> = observer(({ children }) => {
   const history = useHistory()
+  const selection = useSelection()
+  const workbench = useWorkbench()
 
   return (
     <ContextMenu>
@@ -37,14 +40,18 @@ export const CanvasMenu: React.FC<PropsWithChildren<CanvasMenuProps>> = observer
           Redo
           <ContextMenuShortcut>⇧⌘Z</ContextMenuShortcut>
         </ContextMenuItem>
-        <ContextMenuItem inset>
-          Reload
-          <ContextMenuShortcut>⌘R</ContextMenuShortcut>
+        <ContextMenuItem
+          inset
+          disabled={selection.selectedNodes.length === 0 ? true : false}
+          onClick={() => selection.createGroup()}
+        >
+          Group Selection
+          <ContextMenuShortcut>⌘G</ContextMenuShortcut>
         </ContextMenuItem>
         <ContextMenuSub>
           <ContextMenuSubTrigger inset>More Tools</ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-48">
-            <ContextMenuItem>
+            <ContextMenuItem onClick={() => console.log(workbench.serialize())}>
               Save Page As...
               <ContextMenuShortcut>⇧⌘S</ContextMenuShortcut>
             </ContextMenuItem>

@@ -1,15 +1,21 @@
 import { makeObservable, computed, action, override, observable } from 'mobx'
+import { Container } from 'pixi.js'
 
 import { Frame } from '../components/Frame'
+import { Engine } from '../models'
 
-import { DFrameBase, DFrameBaseOptions, IDFrameBaseBase } from './DFrameBase'
+import { DFrameBase, IDFrameBaseBase } from './DFrameBase'
 import { Color } from './type'
 
-export interface DFrameOptions extends DFrameBaseOptions {
+export interface IDFrameBase extends IDFrameBaseBase {
   backgroundColor: Color
 }
 
-export interface IDFrameBase extends IDFrameBaseBase { }
+export interface DFrameOptions extends IDFrameBase {
+  engine: Engine
+  parent?: DFrameBase
+  backgroundColor: Color
+}
 
 export class DFrame extends DFrameBase {
   declare item: Frame
@@ -39,8 +45,11 @@ export class DFrame extends DFrameBase {
       width: this.size.width,
       height: this.size.height,
     })
-    // this.item.pivot.set(this.size.width / 2, this.size.height / 2)
     this.initChildren(options.children)
+  }
+
+  get innerChildren() {
+    return [this.item.background, this.item.mask] as Container[]
   }
 
   get zoomRatio() {
@@ -67,7 +76,7 @@ export class DFrame extends DFrameBase {
     return {
       ...super.serialize(),
       clipsContent: this.clipsContent,
-      backgroundColor: this.backgroundColor,
+      backgroundColor: { ...this.backgroundColor },
     }
   }
 }

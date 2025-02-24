@@ -1,4 +1,4 @@
-import { action, makeObservable, override } from 'mobx'
+import { makeObservable, override } from 'mobx'
 import { Container } from 'pixi.js'
 
 import { Engine } from '../models/Engine'
@@ -50,7 +50,7 @@ export abstract class DVector<Item extends Container> extends DNode implements T
   serialize() {
     return {
       ...super.serialize(),
-      constraints: this.constraints,
+      constraints: { ...this.constraints },
       preserveRatio: this.preserveRatio,
       transitionNodeID: this.transitionNodeID,
       transitionDuration: this.transitionDuration,

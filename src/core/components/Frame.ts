@@ -45,7 +45,6 @@ export class Frame extends Container {
 
   set zoomRatio(zoom: number) {
     this.scale.set(zoom)
-    // this.updateMask()
   }
 
   updateMask() {

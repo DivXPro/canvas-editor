@@ -1,4 +1,5 @@
 import { makeObservable, observable, action, observe, IObservableArray, override } from 'mobx'
+import { Container } from 'pixi.js'
 
 import { Engine } from '../models/Engine'
 
@@ -31,17 +32,37 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
   constructor(options: DFrameBaseOptions) {
     super(options)
     this.constraints = options.constraints ?? DefaultLayoutConstraint
-
+    this.setupChildrenObserver()
     makeObservable(this, {
       type: override,
       serialize: override,
       children: observable,
+      constraints: observable,
       renderNodes: action.bound,
+      addChild: action.bound,
+      addChildAt: action.bound,
+      removeChild: action.bound,
     })
   }
 
+  abstract innerChildren: Container[]
+
+  addChild(node: DNode) {
+    this.children.push(node)
+  }
+
+  addChildAt(node: DNode, index: number) {
+    if (index > this.children.length) {
+      throw new Error(`Index ${index} is out of bounds for children array with length ${this.children.length}`)
+    }
+    this.children.splice(index, 0, node)
+  }
+
+  removeChild(node: DNode) {
+    this.children.remove(node)
+  }
+
   protected initChildren(nodes?: INodeBase[]) {
-    this.setupChildrenObserver()
     const children = this.renderNodes(nodes)
 
     children.forEach(child => this.children.push(child))
@@ -88,8 +109,8 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
     // 处理添加元素的逻辑
     elements.forEach(element => {
       // 例如，将元素添加到 Frame 中
-      if (element.item) {
-        this.item?.addChild(element.item)
+      if (element.item && !this.item?.children.includes(element.item)) {
+        this.item?.addChildAt(element.item, this.children.indexOf(element) + this.innerChildren.length)
       }
     })
   }

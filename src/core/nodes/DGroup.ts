@@ -2,7 +2,7 @@ import { Container, Matrix } from 'pixi.js'
 import { computed, makeObservable, override } from 'mobx'
 
 import { Group } from '../components/Group'
-import { calculateBoundsFromPoints } from '../utils/transform'
+import { mergeBounds } from '../utils/transform'
 
 import { DFrameBase, DFrameBaseOptions, IDFrameBaseBase } from './DFrameBase'
 
@@ -34,8 +34,11 @@ export class DGroup extends DFrameBase {
     })
   }
 
+  get innerChildren() {
+    return []
+  }
+
   protected initChildren(nodes?: INodeBase[]) {
-    this.setupChildrenObserver()
     const children = this.renderNodes(nodes)
 
     // 根据 children 重新定位 Group
@@ -43,7 +46,7 @@ export class DGroup extends DFrameBase {
   }
 
   get childrenPoints() {
-    const childrenBounds = (this.children ?? []).map(child => child.absVertices)
+    const childrenBounds = (this.children ?? []).map(child => child.absDisplayVertices)
 
     const boundPoints: Position[] = []
 
@@ -52,10 +55,6 @@ export class DGroup extends DFrameBase {
     })
 
     return boundPoints
-  }
-
-  get absBounds() {
-    return calculateBoundsFromPoints(this.childrenPoints)
   }
 
   get localRectPoints() {
@@ -73,7 +72,7 @@ export class DGroup extends DFrameBase {
   }
 
   get absoluteBoundingBox() {
-    return calculateBoundsFromPoints(this.childrenPoints)
+    return mergeBounds(this.children.map(child => child.absoluteBoundingBox))
   }
 
   setPosition(x: number, y: number) {

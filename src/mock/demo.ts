@@ -52,7 +52,7 @@ export const demoData: any = {
             width: 100,
             height: 100,
           },
-          rotation: Math.PI / 6,
+          // rotation: Math.PI / 6,
           children: [
             {
               id: 'rectangle-2',

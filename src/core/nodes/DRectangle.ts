@@ -28,7 +28,6 @@ export class DRectangle extends DVector<Graphics> {
       this.fills.push(DVector.DEFAULT_FILL)
     }
     makeObservable(this, {
-      absoluteBoundingBox: override,
       setSize: override,
       update: action.bound,
       cornerRadius: computed,

@@ -4,7 +4,7 @@ import { Engine } from '../models'
 import { TextBox } from '../components/TextBox'
 
 import { IDNode } from './DNode'
-import { Position, Text } from './type'
+import { ExportSetting, Position, Text, TypeStyle } from './type'
 import { DVector } from './DVector'
 import { DFrameBase } from './DFrameBase'
 
@@ -21,10 +21,10 @@ export interface DTextOptions extends IDTextBase {
 
 export class DText extends DVector<TextBox> implements TDText {
   declare type: 'TEXT'
-  style: any // 添加缺失的属性
   characterStyleOverrides: any // 添加缺失的属性
   styleOverrideTable: any // 添加缺失的属性
   _characters: string = ''
+  style?: TypeStyle
 
   constructor(options: DTextOptions) {
     super(options)
@@ -39,7 +39,6 @@ export class DText extends DVector<TextBox> implements TDText {
       size: override,
       serialize: override,
       globalCenter: override,
-      absoluteBoundingBox: override,
       characters: computed,
       displayWidth: override,
       displayHeight: override,
@@ -49,6 +48,7 @@ export class DText extends DVector<TextBox> implements TDText {
       update: action.bound,
     })
   }
+  exportSettings?: ExportSetting[] | undefined
 
   get displayWidth() {
     if (this.item) {
@@ -139,8 +139,8 @@ export class DText extends DVector<TextBox> implements TDText {
   serialize() {
     return {
       ...super.serialize(),
-      contr: this.item.text,
-      style: this.item.style,
+      style: { ...this.style },
+      characters: this.item.text,
     }
   }
 

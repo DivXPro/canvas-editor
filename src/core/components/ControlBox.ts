@@ -56,7 +56,7 @@ export class ControlBox extends Container {
     if (this.selection == null || this.selection.selected.length === 0) {
       return this.hide()
     }
-    const rect = this.selection?.selectedRectPoints
+    const rect = this.selection?.selectedDisplayRectPoints
 
     if (rect.length === 0) {
       return
@@ -78,7 +78,6 @@ export class ControlBox extends Container {
       handle.rotation = handleRotation
       handle.position.set(rect[i].x, rect[i].y)
     })
-
     this.show()
   }
 
@@ -235,7 +234,7 @@ export class ControlBox extends Container {
   }
 
   isPointOnHorizontalBorder(point: Position, borderWidth: number = 8): boolean {
-    const rect = this.selection.selectedRectPoints
+    const rect = this.selection.selectedDisplayRectPoints
 
     // 检查上边框
     if (this.isPointOnLine(point, rect[0], rect[1], borderWidth)) {
@@ -251,7 +250,7 @@ export class ControlBox extends Container {
   }
 
   isPointOnVerticalBorder(point: Position, borderWidth: number = 8): boolean {
-    const rect = this.selection.selectedRectPoints
+    const rect = this.selection.selectedDisplayRectPoints
 
     // 检查左边框
     if (this.isPointOnLine(point, rect[0], rect[3], borderWidth)) {

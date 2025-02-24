@@ -1,6 +1,6 @@
 import { Bounds } from 'pixi.js'
 
-import { Position } from '../nodes'
+import { Position, Rect } from '../nodes'
 
 export function calculateBoundsFromPoints(points: Position[]) {
   const x = Math.min(...points.map(p => p.x))
@@ -14,6 +14,26 @@ export function calculateBoundsFromPoints(points: Position[]) {
     width: maxX - x,
     height: maxY - y,
   }
+}
+
+export function mergeBounds(boundsArr: Rect[]) {
+  if (boundsArr.length === 0) {
+    return {
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+    }
+  }
+
+  const points = boundsArr.flatMap(bounds => [
+    { x: bounds.x, y: bounds.y },
+    { x: bounds.x + bounds.width, y: bounds.y },
+    { x: bounds.x + bounds.width, y: bounds.y + bounds.height },
+    { x: bounds.x, y: bounds.y + bounds.height },
+  ])
+
+  return calculateBoundsFromPoints(points)
 }
 
 export function calculateAngleABC(A: Position, B: Position, C: Position): number {

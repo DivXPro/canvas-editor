@@ -43,7 +43,7 @@ export const enableSelectionEffect = (engine: Engine) => {
         { x: startPoint.offsetX, y: e.data.offsetY },
       ]
 
-      return isRectanglePolygonIntersect(rectVertices, node.absVertices)
+      return isRectanglePolygonIntersect(rectVertices, node.absDisplayVertices)
     })
 
     engine.workbench.selection.select(nodes.map(node => node.id))
