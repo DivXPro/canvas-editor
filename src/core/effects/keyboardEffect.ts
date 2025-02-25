@@ -3,7 +3,6 @@ import { KeyDownEvent, KeyUpEvent } from '../events'
 
 export const enableKeyboardEffect = (engine: Engine) => {
   engine.subscribeTo(KeyDownEvent.Type, event => {
-    console.log('on keyEvent', event)
     const keyboard = engine.keyboard
 
     if (!keyboard) return
