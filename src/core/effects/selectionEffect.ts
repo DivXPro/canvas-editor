@@ -9,7 +9,7 @@ export const enableSelectionEffect = (engine: Engine) => {
       checkSelectNode(engine, { x: e.offsetX, y: e.offsetY })
     } else if (engine.workbench.selection.selected.length > 0) {
       if (!engine.workbench.selection.rectContainsPoint({ x: e.offsetX, y: e.offsetY })) {
-        if (!engine.controlBox?.isOnTransformArea({ x: e.offsetX, y: e.offsetY })) {
+        if (!engine.workbench.controlBox?.isOnTransformArea({ x: e.offsetX, y: e.offsetY })) {
           engine.workbench.selection.clear()
 
           checkSelectNode(engine, { x: e.offsetX, y: e.offsetY })
@@ -24,7 +24,7 @@ export const enableSelectionEffect = (engine: Engine) => {
       engine.cursor.status === CursorStatus.Normal
     ) {
       if (!engine.workbench.selection.containsPoint({ x: e.offsetX, y: e.offsetY })) {
-        if (!engine.controlBox?.isOnTransformArea({ x: e.offsetX, y: e.offsetY })) {
+        if (!engine.workbench.controlBox?.isOnTransformArea({ x: e.offsetX, y: e.offsetY })) {
           engine.workbench.selection.clear()
 
           checkSelectNode(engine, { x: e.offsetX, y: e.offsetY })
@@ -56,7 +56,7 @@ export const enableSelectionEffect = (engine: Engine) => {
   })
 
   engine.events.on('node:select', (event: SelectNodeEvent) => {
-    engine.controlBox?.update()
+    engine.workbench.controlBox?.update()
     engine.workbench.selectableNodes.forEach(node => {
       if (!node.isSelected) {
         node.outline?.hide()
@@ -67,7 +67,7 @@ export const enableSelectionEffect = (engine: Engine) => {
   })
 
   engine.events.on('node:unselect', (event: UnselectNodeEvent) => {
-    engine.controlBox?.update()
+    engine.workbench.controlBox?.update()
     engine.workbench.selectableNodes.forEach(node => {
       if (!node.isSelected) {
         node.outline?.hide()

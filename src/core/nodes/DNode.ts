@@ -144,7 +144,7 @@ export abstract class DNode implements IDNode<any> {
       setScale: action.bound,
       setSize: action.bound,
     })
-    this.outline = this.engine.outlineLayer?.addOutline(this)
+    this.outline = this.workbench.outlineLayer?.addOutline(this)
   }
   visable?: boolean | undefined
 
@@ -156,6 +156,10 @@ export abstract class DNode implements IDNode<any> {
 
   get index() {
     return this.parent?.children?.indexOf(this) ?? 0
+  }
+
+  get workbench() {
+    return this.engine.workbench
   }
 
   set index(value: number) {
@@ -225,20 +229,20 @@ export abstract class DNode implements IDNode<any> {
   get absDisplayVertices(): Position[] {
     const rect: Position[] = [
       {
-        x: this.globalPosition.x - ((this.size?.width ?? 0) / 2) * this.engine.zoomRatio,
-        y: this.globalPosition.y - ((this.size?.height ?? 0) / 2) * this.engine.zoomRatio,
+        x: this.globalPosition.x - ((this.size?.width ?? 0) / 2) * this.workbench.zoomRatio,
+        y: this.globalPosition.y - ((this.size?.height ?? 0) / 2) * this.workbench.zoomRatio,
       },
       {
-        x: this.globalPosition.x + ((this.size?.width ?? 0) / 2) * this.engine.zoomRatio,
-        y: this.globalPosition.y - ((this.size?.height ?? 0) / 2) * this.engine.zoomRatio,
+        x: this.globalPosition.x + ((this.size?.width ?? 0) / 2) * this.workbench.zoomRatio,
+        y: this.globalPosition.y - ((this.size?.height ?? 0) / 2) * this.workbench.zoomRatio,
       },
       {
-        x: this.globalPosition.x + ((this.size?.width ?? 0) / 2) * this.engine.zoomRatio,
-        y: this.globalPosition.y + ((this.size?.height ?? 0) / 2) * this.engine.zoomRatio,
+        x: this.globalPosition.x + ((this.size?.width ?? 0) / 2) * this.workbench.zoomRatio,
+        y: this.globalPosition.y + ((this.size?.height ?? 0) / 2) * this.workbench.zoomRatio,
       },
       {
-        x: this.globalPosition.x - ((this.size?.width ?? 0) / 2) * this.engine.zoomRatio,
-        y: this.globalPosition.y + ((this.size?.height ?? 0) / 2) * this.engine.zoomRatio,
+        x: this.globalPosition.x - ((this.size?.width ?? 0) / 2) * this.workbench.zoomRatio,
+        y: this.globalPosition.y + ((this.size?.height ?? 0) / 2) * this.workbench.zoomRatio,
       },
     ]
 
@@ -284,11 +288,11 @@ export abstract class DNode implements IDNode<any> {
   }
 
   get displayWidth() {
-    return (this.size?.width ?? 0) * this.engine.zoomRatio
+    return (this.size?.width ?? 0) * this.workbench.zoomRatio
   }
 
   get displayHeight() {
-    return (this.size?.height ?? 0) * this.engine.zoomRatio
+    return (this.size?.height ?? 0) * this.workbench.zoomRatio
   }
 
   get globalPosition() {

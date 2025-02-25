@@ -41,23 +41,23 @@ export const enableCursorEffect = (engine: Engine) => {
   engine.events.on('pointermove', (e: PointerEvent) => {
     if (
       engine.workbench.selection.selected.length === 0 ||
-      engine.controlBox == null ||
+      engine.workbench.controlBox == null ||
       engine.cursor.status === CursorStatus.DragStart ||
       engine.cursor.status === CursorStatus.Dragging ||
       e.buttons === 1
     ) {
       return
     }
-    for (let i = 0; i < engine.controlBox.handles.length; i++) {
-      const handle = engine.controlBox.handles[i]
+    for (let i = 0; i < engine.workbench.controlBox.handles.length; i++) {
+      const handle = engine.workbench.controlBox.handles[i]
       const point = handle.toLocal({ x: e.offsetX + CursorViewOffset, y: e.offsetY + CursorViewOffset })
 
-      if (engine.controlBox.isLocalPointOnHandler(point, i)) {
+      if (engine.workbench.controlBox.isLocalPointOnHandler(point, i)) {
         engine.cursor.type = CornerResizeStyles[i]
 
         return
       }
-      if (engine.controlBox.isLocalPointOnRotateHandler(point, i)) {
+      if (engine.workbench.controlBox.isLocalPointOnRotateHandler(point, i)) {
         engine.cursor.type = RotateStyles[i]
 
         return
@@ -65,7 +65,7 @@ export const enableCursorEffect = (engine: Engine) => {
     }
 
     if (
-      engine.controlBox.isPointOnHorizontalBorder({
+      engine.workbench.controlBox.isPointOnHorizontalBorder({
         x: e.offsetX + CursorViewOffset * 1.5,
         y: e.offsetY + CursorViewOffset * 1.5,
       })
@@ -76,7 +76,7 @@ export const enableCursorEffect = (engine: Engine) => {
     }
 
     if (
-      engine.controlBox.isPointOnVerticalBorder({
+      engine.workbench.controlBox.isPointOnVerticalBorder({
         x: e.offsetX + CursorViewOffset * 1.5,
         y: e.offsetY + CursorViewOffset * 1.5,
       })

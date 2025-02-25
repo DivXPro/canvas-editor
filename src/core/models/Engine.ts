@@ -1,17 +1,13 @@
-import { ApplicationOptions, Size, PointData, EventEmitter } from 'pixi.js'
+import { ApplicationOptions, Size, EventEmitter } from 'pixi.js'
 
-import { OutlineLayer } from '../components/OutlineLayer'
 import { DragDriver, EventDriver, SelectionAreaDriver } from '../drivers'
-import { BackgroundLayer } from '../components/BackgroundLayer'
-import { SelectionAreaLayer } from '../components/SelectionAreaLayer'
-import { ControlBox } from '../components/ControlBox'
-import { ZoomChangeEvent } from '../events/view/ZoomChangeEvent'
 import { NodeBase } from '../nodes'
 import { enableSelectionEffect, enableCursorEffect, enableDragEffect } from '../effects'
 import { CanvasApp } from '../components/Canvas'
 
 import { Workbench } from './Workbench'
 import { Cursor, CursorType } from './Cursor'
+import { Keyboard } from './Keyboard'
 
 export interface EngineOptions extends Partial<ApplicationOptions> {
   enableZoom?: boolean
@@ -28,51 +24,34 @@ export interface ICanva {
 }
 
 export class Engine {
-  maxZoom = 2
-  minZoom = 0.5
-  zoomRatio = 1
-  canvasSize?: Size
-  enableZoom = false
-  lastPointerDown?: PointData
-  outlineLayer?: OutlineLayer
-  backgroundLayer?: BackgroundLayer
-  selectionAreaLayer?: SelectionAreaLayer
-  controlBox?: ControlBox
+  app: CanvasApp
   events = new EventEmitter()
   drivers: EventDriver[] = []
-  app: CanvasApp
   workbench: Workbench
   cursor: Cursor
+  keyboard: Keyboard
 
   constructor() {
     this.app = new CanvasApp()
-    this.workbench = new Workbench(this)
     this.cursor = new Cursor(this)
+    this.keyboard = new Keyboard(this)
+    this.workbench = new Workbench(this)
   }
 
   async init(options: EngineOptions) {
     const { enableZoom, data, background, canvasSize } = options
 
-    this.enableZoom = enableZoom ?? false
-    this.canvasSize = canvasSize
     await this.app.init(options)
     this.cursor.type = CursorType.Default
-    this.initGuideLayers(background)
+    this.workbench.initGuideLayers(background)
     this.initEventEmitter()
-    this.workbench.init(data)
+    this.workbench.init({
+      canva: data,
+      enableZoom,
+      canvasSize,
+    })
     this.initDrivers()
     this.initEffects()
-    if (this.enableZoom) {
-      this.activeWheelZoom()
-    }
-  }
-
-  initGuideLayers(background?: number | string) {
-    this.backgroundLayer = new BackgroundLayer({ app: this, color: background })
-    this.outlineLayer = new OutlineLayer(this)
-    this.controlBox = new ControlBox(this)
-    this.selectionAreaLayer = new SelectionAreaLayer(this)
-    this.app.stage.addChild(this.backgroundLayer, this.outlineLayer, this.controlBox, this.selectionAreaLayer)
   }
 
   initEventEmitter() {
@@ -99,36 +78,6 @@ export class Engine {
     enableCursorEffect(this)
     enableSelectionEffect(this)
     enableDragEffect(this)
-  }
-
-  activeWheelZoom() {
-    if (this.enableZoom) {
-      this.events.on('wheel', this.applyZoom.bind(this))
-    }
-  }
-
-  applyZoom(event: WheelEvent) {
-    const delta = event.deltaY
-    let zoomRatio = this.zoomRatio ?? 1
-
-    if (delta > 0) {
-      zoomRatio -= 0.02
-    } else {
-      zoomRatio += 0.02
-    }
-
-    if (zoomRatio <= this.minZoom) {
-      zoomRatio = this.minZoom
-    } else if (zoomRatio >= this.maxZoom) {
-      zoomRatio = this.maxZoom
-    }
-
-    this.zoomRatio = zoomRatio
-    this.workbench.setZoom(this.zoomRatio)
-    this.workbench?.hover.clear()
-    this.events.emit('zoom:change', new ZoomChangeEvent({ zoomRatio }))
-    event.preventDefault()
-    event.stopPropagation()
   }
 
   get stage() {

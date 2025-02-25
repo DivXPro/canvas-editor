@@ -17,36 +17,36 @@ export const enableDragEffect = (engine: Engine) => {
   })
 
   engine.events.on('node:transform', () => {
-    engine.controlBox?.update()
+    engine.workbench.controlBox?.update()
   })
 
   engine.events.on('node:rotate', () => {
-    engine.controlBox?.update()
+    engine.workbench.controlBox?.update()
     engine.workbench.selection.selectedNodes.forEach(node => node.outline?.hide())
   })
 
   engine.events.on('node:rotateEnd', () => {
-    engine.controlBox?.update()
+    engine.workbench.controlBox?.update()
     engine.workbench.selection.selectedNodes.forEach(node => node.outline?.update())
   })
 
   engine.events.on('node:drag', () => {
-    engine.controlBox?.hide()
+    engine.workbench.controlBox?.hide()
     engine.workbench.selection.selectedNodes.forEach(node => node.outline?.hide())
   })
 
   engine.events.on('node:dragEnd', () => {
-    engine.controlBox?.update()
+    engine.workbench.controlBox?.update()
     engine.workbench.selection.selectedNodes.forEach(node => node.outline?.update())
   })
 
   engine.events.on('node:resize', () => {
-    engine.controlBox?.update()
+    engine.workbench.controlBox?.update()
     engine.workbench.selection.selectedNodes.forEach(node => node.outline?.hide())
   })
 
   engine.events.on('node:resizeEnd', () => {
-    engine.controlBox?.update()
+    engine.workbench.controlBox?.update()
     engine.workbench.selection.selectedNodes.forEach(node => node.outline?.update())
   })
 }
