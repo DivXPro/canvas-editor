@@ -14,7 +14,7 @@ export class OutlineLayer extends Container {
     this.engine = engine
   }
 
-  addOutline(element: DNode) {
-    return this.addChild(new Outline(element))
+  addOutline(node: DNode) {
+    return this.addChild(new Outline(node))
   }
 }

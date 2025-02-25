@@ -20,8 +20,8 @@ export class CompositeCommand implements ICompositeCommand<any> {
     this.subCommands.push(cmd)
   }
 
-  execute() {
-    this.subCommands.forEach(cmd => cmd.execute())
+  redo() {
+    this.subCommands.forEach(cmd => cmd.redo())
   }
   undo = () => {
     this.subCommands.forEach(cmd => cmd.undo())

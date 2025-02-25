@@ -31,6 +31,7 @@ export interface NodeBase extends Global {
    * element after scaling and rotation. Only present if geometry=paths
    * is passed
    */
+  parentId?: string
   position: Position
   rotation?: number
   /**

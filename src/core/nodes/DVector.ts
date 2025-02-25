@@ -6,21 +6,13 @@ import { ColorUtils } from '../utils/styles'
 
 import { EasingType, LayoutConstraint, NodeType, Paint, Path, Size, StylesObject, Transform, Vector } from './type'
 import { DNode, IDNode } from './DNode'
-import { DFrameBase } from './DFrameBase'
 
 export interface IDVectorBase extends Omit<Vector, 'type'> {
   locked?: boolean
-  index?: number
-}
-
-export type TDVector = IDNode<Container> & IDVectorBase
-
-export interface DVectorOptions extends Omit<IDVectorBase, 'type'> {
-  engine: Engine
-  parent?: DFrameBase
-  size: Size
   type: NodeType
 }
+
+export type TDVector = IDNode<Container> & Omit<IDVectorBase, 'parent'>
 
 export abstract class DVector<Item extends Container> extends DNode implements TDVector {
   static DEFAULT_FILL: Paint = { type: 'SOLID', color: ColorUtils.numberToRGBA(0xd9d9d9) }
@@ -40,8 +32,8 @@ export abstract class DVector<Item extends Container> extends DNode implements T
   strokeGeometry?: Path[] | undefined
   styles?: StylesObject | undefined
 
-  constructor(options: DVectorOptions) {
-    super(options)
+  constructor(engine: Engine, options: IDVectorBase) {
+    super(engine, options)
     makeObservable(this, {
       serialize: override,
     })

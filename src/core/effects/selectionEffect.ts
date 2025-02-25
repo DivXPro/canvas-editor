@@ -1,5 +1,5 @@
 import { DNode, Position } from '../nodes'
-import { HoverElementEvent, SelectElementEvent, SelectionAreaMoveEvent, UnselectElementEvent } from '../events'
+import { HoverNodeEvent, SelectNodeEvent, SelectionAreaMoveEvent, UnselectNodeEvent } from '../events'
 import { CursorStatus, Engine } from '../models'
 import { isRectanglePolygonIntersect } from '../utils/polygonIntersect'
 
@@ -49,13 +49,13 @@ export const enableSelectionEffect = (engine: Engine) => {
     engine.workbench.selection.select(nodes.map(node => node.id))
   })
 
-  engine.events.on('element:hover', (event: HoverElementEvent) => {
+  engine.events.on('node:hover', (event: HoverNodeEvent) => {
     if (event.data.source instanceof DNode) {
       event.data.source.outline?.update()
     }
   })
 
-  engine.events.on('element:select', (event: SelectElementEvent) => {
+  engine.events.on('node:select', (event: SelectNodeEvent) => {
     engine.controlBox?.update()
     engine.workbench.selectableNodes.forEach(node => {
       if (!node.isSelected) {
@@ -66,7 +66,7 @@ export const enableSelectionEffect = (engine: Engine) => {
     })
   })
 
-  engine.events.on('element:unselect', (event: UnselectElementEvent) => {
+  engine.events.on('node:unselect', (event: UnselectNodeEvent) => {
     engine.controlBox?.update()
     engine.workbench.selectableNodes.forEach(node => {
       if (!node.isSelected) {

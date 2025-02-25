@@ -6,16 +6,11 @@ import { Engine } from '../models/Engine'
 import { DNode, INodeBase } from './DNode'
 import { Size, LayoutConstraint, Position } from './type'
 
-export interface IDFrameBaseBase extends INodeBase {
+export interface IDFrameAbsBase extends INodeBase {
   children?: INodeBase[]
   size: Size
   constraints?: LayoutConstraint
   clipsContent?: boolean
-}
-
-export interface DFrameBaseOptions extends IDFrameBaseBase {
-  engine: Engine
-  parent?: DFrameBase
 }
 
 export type ItemPostionType = 'relative' | 'absolute'
@@ -25,13 +20,13 @@ const DefaultLayoutConstraint: LayoutConstraint = {
   horizontal: 'LEFT',
 }
 
-export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
+export abstract class DFrameAbs extends DNode {
   declare item: Container
   children: IObservableArray<DNode> = observable.array<DNode>([])
   constraints: LayoutConstraint
 
-  constructor(options: DFrameBaseOptions) {
-    super(options)
+  constructor(engine: Engine, options: IDFrameAbsBase) {
+    super(engine, options)
     this.constraints = options.constraints ?? DefaultLayoutConstraint
     this.setupChildrenObserver()
     makeObservable(this, {
@@ -43,6 +38,7 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
       addChild: action.bound,
       addChildAt: action.bound,
       removeChild: action.bound,
+      initChildren: action.bound,
     })
   }
 
@@ -64,10 +60,10 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
     this.children.remove(node)
   }
 
-  protected initChildren(nodes?: INodeBase[]) {
+  initChildren(nodes?: INodeBase[]) {
     const children = this.renderNodes(nodes)
 
-    children.forEach(child => this.children.push(child))
+    children.forEach(child => this.addChild(child))
   }
 
   tansformRoot2Local(point: Position) {
@@ -84,7 +80,8 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
     nodes
       .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
       .forEach(item => {
-        const child = this.engine.workbench?.generateElement(item, this)
+        console.debug('renderNodes', this)
+        const child = this.engine.workbench?.generateElement(item, this.id)
 
         child && children.push(child)
       })
@@ -127,7 +124,7 @@ export abstract class DFrameBase extends DNode implements IDFrameBaseBase {
     })
   }
 
-  serialize() {
+  serialize(): IDFrameAbsBase {
     return {
       ...super.serialize(),
       children: this.children.map(child => child.serialize()),

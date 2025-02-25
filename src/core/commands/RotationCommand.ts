@@ -1,4 +1,3 @@
-import { DNode } from '../nodes'
 import { isArr } from '../utils/types'
 
 import { CommandType, Command } from './Command'
@@ -10,7 +9,7 @@ export interface RotationCommandStates {
 export class RotationCommand extends Command<RotationCommandStates> {
   type: CommandType = 'ROTATION'
 
-  execute() {
+  redo() {
     const nodes = isArr(this.target)
       ? this.target.map(id => this.engine.workbench?.findById(id))
       : [this.engine.workbench?.findById(this.target)]
@@ -27,7 +26,6 @@ export class RotationCommand extends Command<RotationCommandStates> {
   }
 
   undo() {
-    console.debug('undo', this.serialize())
     const nodes = isArr(this.target)
       ? this.target.map(id => this.engine.workbench?.findById(id))
       : [this.engine.workbench?.findById(this.target)]

@@ -3,20 +3,18 @@ import { action, computed, makeObservable, override } from 'mobx'
 
 import { Group } from '../components/Group'
 import { mergeBounds } from '../utils/transform'
+import { Engine } from '../models'
 
-import { DFrameBase, DFrameBaseOptions, IDFrameBaseBase } from './DFrameBase'
+import { DFrameAbs, IDFrameAbsBase } from './DFrameAbs'
+import { Position, ResizeHandle, Size } from './type'
 
-import { INodeBase, Position, ResizeHandle, Size } from '.'
+export interface IDGroupBase extends IDFrameAbsBase { }
 
-export interface DGroupOptions extends DFrameBaseOptions { }
-
-export interface IDGroupBase extends IDFrameBaseBase { }
-
-export class DGroup extends DFrameBase {
+export class DGroup extends DFrameAbs {
   declare item: Container
 
-  constructor(options: DGroupOptions) {
-    super(options)
+  constructor(engine: Engine, options: IDGroupBase) {
+    super(engine, options)
     this.item = new Group({
       rotation: this.rotation,
       x: this.position.x,
@@ -37,13 +35,6 @@ export class DGroup extends DFrameBase {
 
   get innerChildren() {
     return []
-  }
-
-  protected initChildren(nodes?: INodeBase[]) {
-    const children = this.renderNodes(nodes)
-
-    // 根据 children 重新定位 Group
-    children.forEach(child => this.children.push(child))
   }
 
   get childrenPoints() {
@@ -120,9 +111,13 @@ export class DGroup extends DFrameBase {
   }
 
   ungroup() {
-    const children = this.children.slice()
+    console.log('serialize', this.serialize())
+    const children = this.children.slice().sort((childA, childB) => {
+      return childA.index - childB.index
+    })
 
     children.forEach(child => {
+      console.log(`kick node ${child.id} from Group to join ${this.parent?.id}`)
       if (this.parent) {
         child.joinGroupAt(this.parent, this.index)
       } else {

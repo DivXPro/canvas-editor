@@ -6,18 +6,12 @@ import { TextBox } from '../components/TextBox'
 import { IDNode } from './DNode'
 import { ExportSetting, Position, Text, TypeStyle } from './type'
 import { DVector } from './DVector'
-import { DFrameBase } from './DFrameBase'
 
 export interface IDTextBase extends Text {
   type: 'TEXT'
 }
 
-export type TDText = IDNode<TextBox> & IDTextBase
-
-export interface DTextOptions extends IDTextBase {
-  engine: Engine
-  parent?: DFrameBase
-}
+export type TDText = IDNode<TextBox> & Omit<IDTextBase, 'parent'>
 
 export class DText extends DVector<TextBox> implements TDText {
   declare type: 'TEXT'
@@ -26,8 +20,8 @@ export class DText extends DVector<TextBox> implements TDText {
   _characters: string = ''
   style?: TypeStyle
 
-  constructor(options: DTextOptions) {
-    super(options)
+  constructor(engine: Engine, options: IDTextBase) {
+    super(engine, options)
     this._characters = options.characters
     this.item = new TextBox({
       text: this.characters,

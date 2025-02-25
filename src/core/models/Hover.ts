@@ -1,7 +1,7 @@
 import { action, makeObservable, observable } from 'mobx'
 
 import { DNode } from '../nodes'
-import { HoverElementEvent } from '../events'
+import { HoverNodeEvent } from '../events'
 
 import { Engine } from './Engine'
 import { Workbench } from './Workbench'
@@ -50,7 +50,7 @@ export class Hover {
 
   trigger() {
     if (this.engine) {
-      const event = new HoverElementEvent({
+      const event = new HoverNodeEvent({
         target: this.node,
         source: this.node,
       })

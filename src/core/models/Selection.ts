@@ -1,12 +1,13 @@
 import { action, computed, makeObservable, observable } from 'mobx'
 
 import { DGroup, DNode, eid, Position } from '../nodes'
-import { SelectElementEvent, UnselectElementEvent } from '../events/mutation'
+import { SelectNodeEvent, UnselectNodeEvent } from '../events/mutation'
 import { calculateBoundsFromPoints, mergeBounds } from '../utils/transform'
 import { isArr } from '../utils/types'
 import { isPointInPointsArea } from '../utils/hitConfirm'
-import { GroupSelectionCommand } from '../commands/GroupSelectionCommand'
+import { GroupCommand } from '../commands/GroupCommand'
 import { CompositeCommand } from '../commands'
+import { UngroupCommand } from '../commands/UngroupCommand'
 
 import { Engine } from './Engine'
 import { Workbench } from './Workbench'
@@ -56,7 +57,7 @@ export class Selection {
     return this.selectedNodes.some(node => node.type === 'GROUP')
   }
 
-  trigger(type = SelectElementEvent) {
+  trigger(type = SelectNodeEvent) {
     const event = new type({
       target: this.selectedNodes,
       source: this.selectedNodes,
@@ -96,7 +97,7 @@ export class Selection {
     nodeIds.forEach(id => {
       this.indexes[id] = true
     })
-    this.trigger(SelectElementEvent)
+    this.trigger(SelectNodeEvent)
   }
 
   safeSelect(ids: string | DNode | Array<string | DNode>) {
@@ -187,10 +188,10 @@ export class Selection {
 
   remove(...ids: string[] | DNode[]) {
     this.mapIds(ids).forEach(id => {
-      this.selected.push(...this.selected.filter(item => item !== id))
+      this.selected.splice(this.selected.indexOf(id), 1)
       delete this.indexes[id]
     })
-    this.trigger(UnselectElementEvent)
+    this.trigger(UnselectNodeEvent)
   }
 
   has(...ids: string[] | DNode[]): boolean {
@@ -205,7 +206,7 @@ export class Selection {
     })
     this.selected.clear()
     this.indexes = {}
-    this.trigger(UnselectElementEvent)
+    this.trigger(UnselectNodeEvent)
   }
 
   groupSelection() {
@@ -247,27 +248,10 @@ export class Selection {
         return a.index - b.index
       })
 
-      // 获取所有父节点 ID 并去重
-      const parentIds = [...new Set(groupNodes.map(node => node.parent?.id ?? 'root').filter(id => id))]
-
-      const prevStates = {
-        groupStates: parentIds.map(id => {
-          const parentNode = this.engine.workbench?.findById(id)
-
-          return {
-            id,
-            parent: parentNode?.parent?.id,
-            index: parent?.index ?? 0,
-            nodes: groupNodes
-              .filter(node => node.parent?.id === id)
-              .map(node => ({
-                id: node.id,
-                index: node.index,
-                parent: node.parent?.id,
-              })),
-          }
-        }),
-      }
+      const nodePrevStates = groupNodes.map(node => ({
+        id: node.id,
+        index: node.index,
+      }))
 
       const bounds = mergeBounds(groupNodes.map(node => node.absoluteBoundingBox))
 
@@ -278,12 +262,11 @@ export class Selection {
         ? parent.item?.toLocal({ x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 })
         : { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 }
 
-      const group = new DGroup({
-        engine: this.engine,
+      const group = new DGroup(this.engine, {
         id: eid(),
         name: 'Group',
         type: 'GROUP',
-        parent,
+        parentId: parent?.id,
         position,
         size: { width: bounds.width, height: bounds.height },
       })
@@ -306,22 +289,21 @@ export class Selection {
 
       this.add(group)
 
-      const states = {
-        groupStates: [
-          {
-            id: group.id,
-            index: groudIndex,
-            parent: parent?.id,
-            nodes: groupNodes.map(node => ({
-              id: node.id,
-              index: node.index,
-              parent: node.parent?.id,
-            })),
-          },
-        ],
+      const prevStates = {
+        group: group.serialize(),
+        nodes: nodePrevStates,
       }
 
-      const command = new GroupSelectionCommand(nodes, this.engine, states, prevStates)
+      const states = {
+        group: group.serialize(),
+        nodes: groupNodes.map(node => ({
+          id: node.id,
+          index: node.index,
+          parent: node.parent?.id,
+        })),
+      }
+
+      const command = new GroupCommand(group, this.engine, states, prevStates)
 
       return command
     }
@@ -329,15 +311,47 @@ export class Selection {
 
   ungroup() {
     const newSelectedNodes: DNode[] = []
+    const command = new CompositeCommand({
+      timestamp: Date.now(),
+    })
 
     this.selectedNodes.forEach(node => {
       if (node.type === 'GROUP' && node instanceof DGroup) {
+        // 记录组的状态信息
+        const childNodes = node.children.slice()
+
+        const prevStates = {
+          group: node.serialize(),
+          childNodeStates: childNodes.map(child => ({
+            id: child.id,
+            index: child.index,
+          })),
+        }
+
         newSelectedNodes.push(...node.children)
+        console.debug(`Ungroup ${node.id}`)
         node.ungroup()
+
+        const states = {
+          group: node.serialize(),
+          childNodeStates: childNodes.map(child => ({
+            id: child.id,
+            index: child.index,
+          })),
+        }
+        // 创建 UngroupCommand 并添加到组合命令中
+        const ungroupCommand = new UngroupCommand(node, this.engine, prevStates, states)
+
+        command.add(ungroupCommand)
       } else {
         newSelectedNodes.push(node)
       }
     })
+
+    if (command.subCommands.length > 0) {
+      this.engine.workbench.history.push(command)
+    }
+
     this.clear()
     this.select(newSelectedNodes)
   }

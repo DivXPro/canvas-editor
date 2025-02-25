@@ -10,7 +10,7 @@ export interface MoveCommandStates {
 export class MoveCommand extends Command<MoveCommandStates> {
   type: CommandType = 'MOVE'
 
-  execute() {
+  redo() {
     const nodes = isArr(this.target)
       ? this.target.map(id => this.engine.workbench?.findById(id))
       : [this.engine.workbench?.findById(this.target)]

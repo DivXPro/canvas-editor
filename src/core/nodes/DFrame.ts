@@ -4,26 +4,20 @@ import { Container } from 'pixi.js'
 import { Frame } from '../components/Frame'
 import { Engine } from '../models'
 
-import { DFrameBase, IDFrameBaseBase } from './DFrameBase'
+import { DFrameAbs, IDFrameAbsBase } from './DFrameAbs'
 import { Color } from './type'
 
-export interface IDFrameBase extends IDFrameBaseBase {
+export interface IDFrameBase extends IDFrameAbsBase {
   backgroundColor: Color
 }
 
-export interface DFrameOptions extends IDFrameBase {
-  engine: Engine
-  parent?: DFrameBase
-  backgroundColor: Color
-}
-
-export class DFrame extends DFrameBase {
+export class DFrame extends DFrameAbs {
   declare item: Frame
   backgroundColor: Color
   private _clipsContent: boolean = true
 
-  constructor(options: DFrameOptions) {
-    super(options)
+  constructor(engine: Engine, options: IDFrameBase) {
+    super(engine, options)
     this.root = this.parent?.root ?? this
     this._clipsContent = options.clipsContent ?? true
     this.backgroundColor = options.backgroundColor ?? '#ffffff'
@@ -72,7 +66,7 @@ export class DFrame extends DFrameBase {
     throw new Error('Method not implemented.')
   }
 
-  serialize() {
+  serialize(): IDFrameBase {
     return {
       ...super.serialize(),
       clipsContent: this.clipsContent,

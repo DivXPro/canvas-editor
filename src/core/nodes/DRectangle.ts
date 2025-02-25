@@ -6,23 +6,16 @@ import { ColorUtils } from '../utils/styles'
 
 import { DVector, IDVectorBase } from './DVector'
 import { Color, Position, Size } from './type'
-import { DFrameBase } from './DFrameBase'
 
 export interface IDRectangleBase extends IDVectorBase {
   size: Size
   cornerRadius?: number
   type: 'RECTANGLE'
 }
-
-export interface DRectangleOptions extends IDRectangleBase {
-  engine: Engine
-  parent?: DFrameBase
-}
-
 export class DRectangle extends DVector<Graphics> {
   _cornerRadius: number = 0
-  constructor(options: DRectangleOptions) {
-    super(options)
+  constructor(engine: Engine, options: IDRectangleBase) {
+    super(engine, options)
     this._cornerRadius = options.cornerRadius ?? 0
     if (this.fills.length === 0) {
       this.fills.push(DVector.DEFAULT_FILL)

@@ -6,7 +6,7 @@ import { Engine } from '../models/Engine'
 import { Outline } from '../components/Outline'
 
 import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Position, ResizeHandle, Size } from './type'
-import { DFrameBase } from './DFrameBase'
+import { DFrameAbs } from './DFrameAbs'
 
 export interface ScaleData {
   x: number
@@ -18,7 +18,6 @@ export interface INodeBase extends NodeBase {
 }
 
 export interface IDNode<Item extends Container> extends INodeBase {
-  position: Position
   displayWidth: number
   displayHeight: number
   item?: Item
@@ -27,15 +26,7 @@ export interface IDNode<Item extends Container> extends INodeBase {
   absoluteBoundingBox: Rect
   absDisplayVertices: Position[]
   serialize: () => NodeBase
-  isSelected?: boolean
-  isHovered?: boolean
-  isDragging?: boolean
   eventMode?: EventMode
-}
-
-export interface DNodeOptions extends INodeBase {
-  engine: Engine
-  parent?: DFrameBase
 }
 
 export abstract class DNode implements IDNode<any> {
@@ -59,8 +50,8 @@ export abstract class DNode implements IDNode<any> {
   _size: Size
 
   engine: Engine
-  parent?: DFrameBase
-  root?: DFrameBase
+  parentId?: string
+  root?: DFrameAbs
 
   id: string
   name: string
@@ -72,19 +63,16 @@ export abstract class DNode implements IDNode<any> {
   strokeAlign: 'INSIDE' | 'OUTSIDE' | 'CENTER' = 'CENTER'
   effects = observable.array<Effect>([])
   isMask?: boolean | undefined
-  isDragging?: boolean
-  isHovered?: boolean | undefined
+
   pluginData?: any
   sharedPluginData?: any
 
   item?: Container
   outline?: Outline
 
-  constructor(options: DNodeOptions) {
-    this.engine = options.engine
-    this.parent = options.parent
-    this.root = options.parent?.root
-
+  constructor(engine: Engine, options: INodeBase) {
+    this.engine = engine
+    this.parentId = options.parentId
     this.id = options.id ?? eid()
     this.name = options.name
     this.type = options.type
@@ -119,6 +107,7 @@ export abstract class DNode implements IDNode<any> {
       id: observable,
       name: observable,
       type: observable,
+      parentId: observable,
       blendMode: observable,
       fills: observable,
       strokes: observable,
@@ -126,7 +115,6 @@ export abstract class DNode implements IDNode<any> {
       strokeWeight: observable,
       effects: observable,
       isMask: observable,
-      isDragging: observable,
       _size: observable,
       _position: observable,
       _locked: observable,
@@ -146,6 +134,7 @@ export abstract class DNode implements IDNode<any> {
       absDisplayVertices: computed,
       displayWidth: computed,
       displayHeight: computed,
+      parent: computed,
       destory: action.bound,
       serialize: action.bound,
       setHidden: action.bound,
@@ -160,6 +149,10 @@ export abstract class DNode implements IDNode<any> {
   visable?: boolean | undefined
 
   abstract update(): void
+
+  get parent(): DFrameAbs | undefined {
+    return this.parentId ? (this.engine.workbench.findById(this.parentId) as DFrameAbs | undefined) : undefined
+  }
 
   get index() {
     return this.parent?.children?.indexOf(this) ?? 0
@@ -350,7 +343,7 @@ export abstract class DNode implements IDNode<any> {
     }
   }
 
-  get topGroup(): DFrameBase | undefined {
+  get topGroup(): DFrameAbs | undefined {
     if (this.parent == null || this.parent === this.root) {
       return
     }
@@ -386,16 +379,19 @@ export abstract class DNode implements IDNode<any> {
     return false
   }
 
-  joinGroup(group: DFrameBase) {
+  joinGroup(group: DFrameAbs) {
     this.joinGroupAt(group, group.children.length)
   }
 
-  joinGroupAt(group: DFrameBase, index: number) {
+  joinGroupAt(group: DFrameAbs, index: number) {
     const position = group.item.toLocal(this.globalPosition)
-
-    this.item?.parent.removeChild(this.item)
-    this.parent?.removeChild(this)
-    this.parent = group
+    console.log('pos', position, this.globalPosition)
+    if (this.parent) {
+      this.parent?.removeChild(this)
+    } else {
+      this.engine.workbench.canvaNodes.splice(this.engine.workbench.canvaNodes.indexOf(this), 1)
+    }
+    this.parentId = group.id
     this.position = position
     group.addChildAt(this, index)
   }
@@ -406,6 +402,7 @@ export abstract class DNode implements IDNode<any> {
       name: this.name,
       type: this.type,
       index: this.parent?.children?.indexOf(this) ?? 0,
+      parentId: this.parentId,
       blendMode: this.blendMode,
       position: { ...this.position },
       size: { ...this.size },
@@ -421,7 +418,7 @@ export abstract class DNode implements IDNode<any> {
     }
   }
 
-  addTo(parent: DFrameBase) {
+  addTo(parent: DFrameAbs) {
     parent.children?.push(this)
     if (this.item && parent.item) {
       const position = parent.item.toLocal(this.globalPosition)
@@ -438,19 +435,6 @@ export abstract class DNode implements IDNode<any> {
     if (this.outline) {
       this.outline.visible = false
     }
-  }
-
-  destory() {
-    if (this.parent) {
-      this.parent.removeChild(this)
-    } else {
-      if (this.item) {
-        this.engine.app.stage.removeChild(this.item)
-      }
-      this.engine.workbench.canvaNodes.splice(this.engine.workbench.canvaNodes.indexOf(this), 1)
-    }
-    this.item?.destroy()
-    this.outline?.destroy()
   }
 
   resize(handle: ResizeHandle, size: Size) {
@@ -516,6 +500,20 @@ export abstract class DNode implements IDNode<any> {
     }
 
     this.setSize(size)
+  }
+
+  destory() {
+    this.engine.workbench.selection.remove(this)
+    if (this.parent) {
+      this.parent.removeChild(this)
+    } else {
+      if (this.item) {
+        this.engine.app.stage.removeChild(this.item)
+      }
+      this.engine.workbench.canvaNodes.splice(this.engine.workbench.canvaNodes.indexOf(this), 1)
+    }
+    this.item?.destroy()
+    this.outline?.destroy()
   }
 }
 

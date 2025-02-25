@@ -49,7 +49,7 @@ export const CanvasMenu: React.FC<PropsWithChildren<CanvasMenuProps>> = observer
           <ContextMenuShortcut>⌘G</ContextMenuShortcut>
         </ContextMenuItem>
         <ContextMenuItem inset disabled={selection.allowUngroup ? false : true} onClick={() => selection.ungroup()}>
-          Ungroup Selection
+          Ungroup
           <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>
         </ContextMenuItem>
         <ContextMenuSub>

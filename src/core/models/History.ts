@@ -1,7 +1,6 @@
 import { action, computed, makeObservable, observable } from 'mobx'
 
 import { CompositeCommand } from '../commands'
-import { NodeBase } from '../nodes'
 
 export interface IHistoryProps<T = CompositeCommand> {
   onPush?: (item: T) => void
@@ -21,15 +20,12 @@ export class History {
   updateTimer = null
   maxSize = 100
   locking = false
-  // 存储废弃的节点
-  disposedNodes = new Map<string, NodeBase>()
 
   constructor(props?: IHistoryProps) {
     this.props = props
     makeObservable(this, {
       current: observable.ref,
       history: observable.shallow,
-      disposedNodes: observable.shallow,
       allowUndo: computed,
       allowRedo: computed,
       push: action.bound,
@@ -76,7 +72,7 @@ export class History {
 
       this.locking = true
       this.current++
-      cmd.execute()
+      cmd.redo()
       this.locking = false
       if (this.props?.onRedo) {
         this.props.onRedo(cmd)
@@ -101,31 +97,5 @@ export class History {
   clear() {
     this.history.splice(0, this.history.length)
     this.current = 0
-    this.disposedNodes.clear()
-  }
-
-  // 添加废弃节点到暂存区
-  addDisposedNode(id: string, node: any) {
-    this.disposedNodes.set(id, node)
-  }
-
-  // 从暂存区获取废弃节点
-  getDisposedNode(id: string) {
-    return this.disposedNodes.get(id)
-  }
-
-  // 从暂存区移除废弃节点
-  removeDisposedNode(id: string) {
-    return this.disposedNodes.delete(id)
-  }
-
-  // 获取所有废弃节点
-  getAllDisposedNodes() {
-    return Array.from(this.disposedNodes.entries())
-  }
-
-  // 清空废弃节点暂存区
-  clearDisposedNodes() {
-    this.disposedNodes.clear()
   }
 }

@@ -11,7 +11,7 @@ export interface ResizeCommandStates {
 export class ResizeCommand extends Command<ResizeCommandStates> {
   type: CommandType = 'RESIZE'
 
-  execute() {
+  redo() {
     const nodes = isArr(this.target)
       ? this.target.map(id => this.engine.workbench?.findById(id))
       : [this.engine.workbench?.findById(this.target)]

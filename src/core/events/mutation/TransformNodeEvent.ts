@@ -3,7 +3,7 @@ import { Size } from 'pixi.js'
 import { Position, ResizeHandle } from '../../nodes'
 import { ICustomEvent } from '../event'
 
-import { AbstractMutationNodeEvent, IMutatioNodeEventData } from './AbstractMutationElementEvent'
+import { AbstractMutationNodeEvent, IMutatioNodeEventData } from './AbstractMutationNodeEvent'
 
 export interface NodeTransformData extends IMutatioNodeEventData {
   transform: {
