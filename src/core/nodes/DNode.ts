@@ -385,7 +385,7 @@ export abstract class DNode implements IDNode<any> {
 
   joinGroupAt(group: DFrameAbs, index: number) {
     const position = group.item.toLocal(this.globalPosition)
-    console.log('pos', position, this.globalPosition)
+
     if (this.parent) {
       this.parent?.removeChild(this)
     } else {
