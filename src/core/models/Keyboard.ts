@@ -1,4 +1,4 @@
-import { action, makeObservable, observable } from 'mobx'
+import { action, computed, makeObservable, observable } from 'mobx'
 
 import { KeyCode } from '../utils/keycode'
 import { IEngineContext } from '../types'
@@ -20,7 +20,6 @@ export interface IKeyboard {
 
 export class Keyboard {
   engine: Engine
-  shortcuts: Shortcut[] = []
   sequence: KeyCode[] = []
   keyDown: KeyCode | null = null
   modifiers = {}
@@ -28,11 +27,17 @@ export class Keyboard {
 
   constructor(engine: Engine) {
     this.engine = engine
+
     makeObservable(this, {
       sequence: observable.shallow,
       keyDown: observable.ref,
+      shortcuts: computed,
       handleKeyboard: action.bound,
     })
+  }
+
+  get shortcuts() {
+    return this.engine.shortcuts
   }
 
   matchCodes(context: IEngineContext) {

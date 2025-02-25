@@ -4,9 +4,12 @@ import { action, computed, makeObservable, observable } from 'mobx'
 
 import { Engine } from '../models/Engine'
 import { Outline } from '../components/Outline'
+import { DeleteNodeEvent } from '../events/mutation/DeleteNodeEvent'
+import { ICustomEvent } from '../events'
+import { isFn } from '../utils/types'
 
-import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Position, ResizeHandle, Size } from './type'
 import { DFrameAbs } from './DFrameAbs'
+import { BlendMode, Effect, NodeBase, NodeType, Paint, Rect, Position, ResizeHandle, Size } from './type'
 
 export interface ScaleData {
   x: number
@@ -41,6 +44,10 @@ export abstract class DNode implements IDNode<any> {
 
   static GetNodeR(size: Size) {
     return Math.sqrt(Math.pow(size?.width ?? 0, 2) + Math.pow(size?.height ?? 0, 2)) / 2
+  }
+
+  static Clone(nodes: DNode[]) {
+    return nodes.sort((a, b) => a.index - b.index).map(node => node.clone())
   }
 
   _locked?: boolean
@@ -135,7 +142,7 @@ export abstract class DNode implements IDNode<any> {
       displayWidth: computed,
       displayHeight: computed,
       parent: computed,
-      destory: action.bound,
+      delete: action.bound,
       serialize: action.bound,
       setHidden: action.bound,
       setLocked: action.bound,
@@ -400,9 +407,17 @@ export abstract class DNode implements IDNode<any> {
     group.addChildAt(this, index)
   }
 
-  serialize(): NodeBase {
+  clone() {
+    const nodeProps: INodeBase = {
+      ...this.serialize(true),
+    }
+
+    return this.engine.workbench.generateElement(nodeProps)
+  }
+
+  serialize(clone?: boolean): NodeBase {
     return {
-      id: this.id,
+      id: clone ? eid() : this.id,
       name: this.name,
       type: this.type,
       index: this.parent?.children?.indexOf(this) ?? 0,
@@ -506,18 +521,26 @@ export abstract class DNode implements IDNode<any> {
     this.setSize(size)
   }
 
-  destory() {
-    this.engine.workbench.selection.remove(this)
-    if (this.parent) {
-      this.parent.removeChild(this)
-    } else {
-      if (this.item) {
-        this.engine.app.stage.removeChild(this.item)
+  delete() {
+    this.triggerMutation(new DeleteNodeEvent({ target: this }), () => {
+      if (this.parent) {
+        this.parent.removeChild(this)
+      } else {
+        if (this.item) {
+          this.engine.app.stage.removeChild(this.item)
+        }
+        this.engine.workbench.canvaNodes.splice(this.engine.workbench.canvaNodes.indexOf(this), 1)
       }
-      this.engine.workbench.canvaNodes.splice(this.engine.workbench.canvaNodes.indexOf(this), 1)
+      this.item?.destroy()
+      this.outline?.destroy()
+    })
+  }
+
+  triggerMutation(event: ICustomEvent, callback?: () => void) {
+    this.engine.events.emit(event.type, event)
+    if (isFn(callback)) {
+      callback()
     }
-    this.item?.destroy()
-    this.outline?.destroy()
   }
 }
 

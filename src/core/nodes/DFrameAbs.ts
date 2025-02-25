@@ -124,10 +124,10 @@ export abstract class DFrameAbs extends DNode {
     })
   }
 
-  serialize(): IDFrameAbsBase {
+  serialize(clone?: boolean): IDFrameAbsBase {
     return {
-      ...super.serialize(),
-      children: this.children.map(child => child.serialize()),
+      ...super.serialize(clone),
+      children: this.children.map(child => child.serialize(clone)),
       constraints: this.constraints,
     }
   }

@@ -15,6 +15,7 @@ import { History } from './History'
 import { BackgroundLayer } from '../components/BackgroundLayer'
 import { SelectionAreaLayer } from '../components/SelectionAreaLayer'
 import { OutlineLayer } from '../components/OutlineLayer'
+import { IEngineContext } from '../types'
 
 const DefaultFrame: IDFrameBase = {
   id: 'rootFrame',
@@ -243,6 +244,13 @@ export class Workbench {
         return new DText(this.engine, { ...(nodeProps as Omit<IDTextBase, 'position'>), parentId, position })
       default:
         break
+    }
+  }
+
+  getEventContext(): IEngineContext {
+    return {
+      engine: this.engine,
+      workbench: this,
     }
   }
 }

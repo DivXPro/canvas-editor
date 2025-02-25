@@ -3,3 +3,6 @@ export interface ICustomEvent<EventData = any, EventContext = any> {
   data?: EventData
   context?: EventContext
 }
+export interface CustomEventClass {
+  new(...args: any[]): any
+}

@@ -111,13 +111,11 @@ export class DGroup extends DFrameAbs {
   }
 
   ungroup() {
-    console.log('serialize', this.serialize())
     const children = this.children.slice().sort((childA, childB) => {
       return childA.index - childB.index
     })
 
     children.forEach(child => {
-      console.log(`kick node ${child.id} from Group to join ${this.parent?.id}`)
       if (this.parent) {
         child.joinGroupAt(this.parent, this.index)
       } else {
@@ -127,7 +125,7 @@ export class DGroup extends DFrameAbs {
         this.engine.workbench.canvaNodes.push(child)
       }
     })
-    this.destory()
+    this.delete()
   }
 
   update() {

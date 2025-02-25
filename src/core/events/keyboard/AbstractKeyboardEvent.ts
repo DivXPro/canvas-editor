@@ -1,7 +1,7 @@
 import { IEngineContext } from '../../types'
 import { getKeyCodeFromEvent, KeyCode } from '../../utils/keycode'
 
-export class AbstractKeyboardEvent {
+export abstract class AbstractKeyboardEvent {
   data: KeyCode
   // context: IEngineContext
   originEvent: KeyboardEvent

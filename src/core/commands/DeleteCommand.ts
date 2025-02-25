@@ -12,7 +12,7 @@ export class DeleteCommand extends Command<DeleteCommandStates> {
   redo() {
     const node = this.engine.workbench?.findById(this.target)
 
-    node?.destory()
+    node?.delete()
   }
 
   undo() {
