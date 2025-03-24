@@ -200,7 +200,7 @@ export class Viewport {
         requestAnimationFrame(() => {
           // 计算缩放因子
           const delta = -event.deltaY
-          const zoomFactor = 1 + delta * 0.001
+          const zoomFactor = 1 + delta * 0.01
 
           // 获取鼠标位置作为缩放中心点
           const rect = this.viewportElement?.getBoundingClientRect()
@@ -238,8 +238,15 @@ export class Viewport {
   move(deltaX: number, deltaY: number) {
     this.engine.stage.position.x -= deltaX
     this.engine.stage.position.y -= deltaY
+    const position = {
+      x: this.engine.stage.position.x - deltaX,
+      y: this.engine.stage.position.y - deltaY,
+    }
 
-    this.engine.dispatch(new ViewChangeEvent({ position: this.engine.stage.position }))
+    this.engine.dispatch(new ViewChangeEvent({ position }), () => {
+      this.scrollX = position.x
+      this.scrollY = position.y
+    })
     // 清除悬停状态
     this.workspace.hover.clear()
   }

@@ -111,8 +111,9 @@ export class Engine {
     return this.app.canvas
   }
 
-  dispatch(event: ICustomEvent) {
+  dispatch(event: ICustomEvent, callback?: () => void) {
     this.events.emit(event.type, event)
+    callback?.()
   }
 
   subscribeTo(type: string, callback: (event: any) => void) {
