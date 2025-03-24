@@ -45,7 +45,7 @@ export class ControlBox extends Container {
     }
   }
   get selection() {
-    return this.engine.workbench?.selection
+    return this.engine.workspace?.selection
   }
 
   private handleZoomChange = () => {
@@ -61,7 +61,7 @@ export class ControlBox extends Container {
     if (rect.length === 0) {
       return
     }
-    const firstSelected = this.engine.workbench?.findById(this.selection.selected[0])
+    const firstSelected = this.engine.workspace?.findById(this.selection.selected[0])
     const handleRotation = this.selection.selected.length === 1 ? (firstSelected?.rotation ?? 0) : 0
 
     this.border

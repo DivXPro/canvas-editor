@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { Engine } from '@/core'
 import DefaultLayout from '@/layouts/default'
-import { Canvas } from '@/components/canvas'
+import { CanvasEditor } from '@/components/canvasEditor'
 
 export default function IndexPage() {
   const engine = useMemo(() => {
@@ -11,7 +11,7 @@ export default function IndexPage() {
 
   return (
     <DefaultLayout>
-      <Canvas engine={engine} />
+      <CanvasEditor engine={engine} />
     </DefaultLayout>
   )
 }

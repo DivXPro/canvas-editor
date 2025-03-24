@@ -46,7 +46,7 @@ export class DText extends DVector<TextBox> implements TDText {
 
   get displayWidth() {
     if (this.item) {
-      return (this.item.fixWidth ?? this.item.width) * this.workbench.zoomRatio
+      return (this.item.fixWidth ?? this.item.width) * this.workspace.zoomRatio
     }
 
     return 0
@@ -54,7 +54,7 @@ export class DText extends DVector<TextBox> implements TDText {
 
   get displayHeight() {
     if (this.item) {
-      return (this.item.fixHeight ?? this.item.height) * this.workbench.zoomRatio
+      return (this.item.fixHeight ?? this.item.height) * this.workspace.zoomRatio
     }
 
     return 0

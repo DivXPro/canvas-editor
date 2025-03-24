@@ -2,16 +2,22 @@ import { ApplicationOptions, Size, EventEmitter } from 'pixi.js'
 
 import { DragDriver, EventDriver, SelectionAreaDriver, KeyboardDriver } from '../drivers'
 import { NodeBase } from '../nodes'
-import { enableSelectionEffect, enableCursorEffect, enableDragEffect, enableTransformEffect } from '../effects'
+import {
+  enableSelectionEffect,
+  enableCursorEffect,
+  enableDragEffect,
+  enableTransformEffect,
+  enableZoomEffect,
+  enableKeyboardEffect,
+} from '../effects'
 import { CanvasApp } from '../components/Canvas'
-import { CustomEventClass, ICustomEvent } from '../events'
+import { ICustomEvent } from '../events'
 import { CopyNodes, DeleteNodes, PasteNodes } from '../shortcuts/NodeMutation'
 
-import { Workbench } from './Workbench'
+import { Workspace } from './Workspace'
 import { Cursor, CursorType } from './Cursor'
 import { Keyboard } from './Keyboard'
 import { Shortcut } from './Shortcut'
-import { enableKeyboardEffect } from '../effects/keyboardEffect'
 
 export interface EngineOptions extends Partial<ApplicationOptions> {
   enableZoom?: boolean
@@ -32,7 +38,7 @@ export class Engine {
   shortcuts: Shortcut[] = []
   events = new EventEmitter()
   drivers: EventDriver[] = []
-  workbench: Workbench
+  workspace: Workspace
   cursor: Cursor
   keyboard: Keyboard
 
@@ -41,19 +47,18 @@ export class Engine {
     this.shortcuts = [DeleteNodes, CopyNodes, PasteNodes]
     this.cursor = new Cursor(this)
     this.keyboard = new Keyboard(this)
-    this.workbench = new Workbench(this)
+    this.workspace = new Workspace(this)
   }
 
   async init(options: EngineOptions) {
-    const { enableZoom, data, background, canvasSize } = options
+    const { data, background, canvasSize } = options
 
     await this.app.init(options)
     this.cursor.type = CursorType.Default
-    this.workbench.initGuideLayers(background)
+    this.workspace.initGuideLayers(background)
     this.initEventEmitter()
-    this.workbench.init({
+    this.workspace.init({
       canva: data,
-      enableZoom,
       canvasSize,
     })
     this.initDrivers()
@@ -69,7 +74,7 @@ export class Engine {
     this.app.canvas.addEventListener('pointertap', e => this.events.emit('pointertap', e), { passive: false })
     this.app.canvas.addEventListener('click', e => this.events.emit('click', e), { passive: false })
 
-    this.app.canvas.addEventListener('wheel', e => this.events.emit('wheel', e), { passive: false })
+    // this.app.canvas.addEventListener('wheel', e => { console.log('wheel', e) }, { passive: false })
   }
 
   initDrivers() {
@@ -87,6 +92,7 @@ export class Engine {
     enableDragEffect(this)
     enableTransformEffect(this)
     enableKeyboardEffect(this)
+    enableZoomEffect(this)
   }
 
   get stage() {

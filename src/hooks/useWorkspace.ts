@@ -1,7 +1,7 @@
 import { useEngine } from './useEngine'
 
-export const useWorkbench = () => {
+export const useWorkspace = () => {
   const engine = useEngine()
 
-  return engine?.workbench
+  return engine?.workspace
 }

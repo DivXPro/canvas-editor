@@ -4,17 +4,16 @@ import { DNode } from '../nodes'
 import { HoverNodeEvent } from '../events'
 
 import { Engine } from './Engine'
-import { Workbench } from './Workbench'
-import { CursorType } from './Cursor'
+import { Workspace } from './Workspace'
 
 export interface IHoverOptions {
   engine: Engine
-  operation: Workbench
+  operation: Workspace
 }
 
 export class Hover {
   engine: Engine
-  operation: Workbench
+  operation: Workspace
   node?: DNode | null
 
   constructor(options: IHoverOptions) {

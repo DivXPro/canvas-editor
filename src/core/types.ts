@@ -1,6 +1,6 @@
-import { Engine, Workbench } from './models'
+import { Engine, Workspace } from './models'
 
 export type IEngineContext = {
-  workbench: Workbench
+  workspace: Workspace
   engine: Engine
 }

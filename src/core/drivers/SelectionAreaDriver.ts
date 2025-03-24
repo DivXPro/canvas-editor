@@ -12,17 +12,17 @@ import { EventDriver } from './EventDriver'
 
 export class SelectionAreaDriver extends EventDriver {
   get selecting() {
-    return this.engine.workbench?.selection.selecting ?? false
+    return this.engine.workspace?.selection.selecting ?? false
   }
 
   set selecting(value: boolean) {
-    if (this.engine.workbench) {
-      this.engine.workbench.selection.selecting = value
+    if (this.engine.workspace) {
+      this.engine.workspace.selection.selecting = value
     }
   }
 
   private onDragStart = (e: DragStartEvent) => {
-    if (this.engine.workbench.selection.selected.length === 0) {
+    if (this.engine.workspace.selection.selected.length === 0) {
       this.engine.cursor.dragType = CursorDragType.Selection
 
       const event = new SelectionAreaStartEvent(e.data)

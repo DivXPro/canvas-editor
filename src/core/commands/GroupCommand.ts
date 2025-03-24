@@ -22,13 +22,13 @@ export class GroupCommand extends Command<GroupCommandStates> {
     if (group.parent) {
       group.parent.addChildAt(group, this.states.group.index ?? 0)
     } else {
-      this.engine.workbench.canvaNodes.splice(group.index, 0, group)
+      this.engine.workspace.canvaNodes.splice(group.index, 0, group)
     }
 
     this.states.nodes
       .sort((a, b) => a.index - b.index)
       .forEach(nodeState => {
-        const node = this.engine.workbench.findById(nodeState.id)
+        const node = this.engine.workspace.findById(nodeState.id)
 
         if (node) {
           node.joinGroupAt(group, nodeState.index)
@@ -37,7 +37,7 @@ export class GroupCommand extends Command<GroupCommandStates> {
   }
 
   undo() {
-    const group = this.engine.workbench.findById(this.target)
+    const group = this.engine.workspace.findById(this.target)
 
     if (group instanceof DGroup) {
       group.ungroup()
@@ -45,7 +45,7 @@ export class GroupCommand extends Command<GroupCommandStates> {
     this.prevStates.nodes
       .sort((a, b) => a.index - b.index)
       .forEach(nodeState => {
-        const node = this.engine.workbench.findById(nodeState.id)
+        const node = this.engine.workspace.findById(nodeState.id)
 
         node?.setIndex(nodeState.index)
       })

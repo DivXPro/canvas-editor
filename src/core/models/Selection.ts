@@ -10,17 +10,17 @@ import { CompositeCommand } from '../commands'
 import { UngroupCommand } from '../commands/UngroupCommand'
 
 import { Engine } from './Engine'
-import { Workbench } from './Workbench'
+import { Workspace } from './Workspace'
 
 export interface SelectionOptions {
   engine: Engine
-  workbench: Workbench
+  workbench: Workspace
   selected?: string[]
 }
 
 export class Selection {
   engine: Engine
-  workbench: Workbench
+  workbench: Workspace
   selected = observable.array<string>([])
   indexes: Record<string, boolean> = {}
   selecting = false
@@ -110,7 +110,7 @@ export class Selection {
   }
 
   get selectedNodes() {
-    return this.selected.map(id => this.engine.workbench.findById(id)).filter(node => node != null)
+    return this.selected.map(id => this.engine.workspace.findById(id)).filter(node => node != null)
   }
 
   get first() {
@@ -238,7 +238,7 @@ export class Selection {
       }
     })
     if (command.subCommands.length > 0) {
-      this.engine.workbench.history.push(command)
+      this.engine.workspace.history.push(command)
     }
   }
 
@@ -329,7 +329,6 @@ export class Selection {
         }
 
         newSelectedNodes.push(...node.children)
-        console.debug(`Ungroup ${node.id}`)
         node.ungroup()
 
         const states = {
@@ -349,7 +348,7 @@ export class Selection {
     })
 
     if (command.subCommands.length > 0) {
-      this.engine.workbench.history.push(command)
+      this.engine.workspace.history.push(command)
     }
 
     this.clear()

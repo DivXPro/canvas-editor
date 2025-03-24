@@ -5,7 +5,7 @@ import { KeyCode } from '../utils/keycode'
 export const DeleteNodes = new Shortcut({
   codes: [[KeyCode.Backspace], [KeyCode.Delete]],
   handler(context) {
-    const workbench = context?.workbench
+    const workbench = context?.workspace
 
     if (workbench) {
       workbench.selection.selectedNodes.forEach(node => {
@@ -29,7 +29,7 @@ export const CopyNodes = new Shortcut({
     [KeyCode.Control, KeyCode.C],
   ],
   handler(context) {
-    const workbench = context?.workbench
+    const workbench = context?.workspace
 
     if (workbench) {
       Clipboard.nodes = workbench.selection.selectedNodes
@@ -43,7 +43,7 @@ export const PasteNodes = new Shortcut({
     [KeyCode.Control, KeyCode.V],
   ],
   handler(context) {
-    const workbench = context?.workbench
+    const workbench = context?.workspace
 
     if (workbench) {
       DNode.Clone(Clipboard.nodes)

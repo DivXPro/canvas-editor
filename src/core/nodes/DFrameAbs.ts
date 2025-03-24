@@ -81,7 +81,7 @@ export abstract class DFrameAbs extends DNode {
       .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
       .forEach(item => {
         console.debug('renderNodes', this)
-        const child = this.engine.workbench?.generateElement(item, this.id)
+        const child = this.engine.workspace?.generateElement(item, this.id)
 
         child && children.push(child)
       })

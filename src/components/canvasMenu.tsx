@@ -1,7 +1,7 @@
 import React, { PropsWithChildren } from 'react'
 import { observer } from 'mobx-react-lite'
 
-import { useHistory, useSelection, useWorkbench } from '../hooks'
+import { useHistory, useSelection, useWorkspace } from '../hooks'
 
 import {
   ContextMenu,
@@ -26,7 +26,7 @@ export type CanvasMenuProps = {
 export const CanvasMenu: React.FC<PropsWithChildren<CanvasMenuProps>> = observer(({ children }) => {
   const history = useHistory()
   const selection = useSelection()
-  const workbench = useWorkbench()
+  const workbench = useWorkspace()
 
   return (
     <ContextMenu>

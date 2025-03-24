@@ -4,15 +4,15 @@ import { DragAbleTypes, Engine } from '../models'
 export const enableDragEffect = (engine: Engine) => {
   engine.events.on('drag:start', (event: DragStartEvent) => {
     if (!DragAbleTypes.includes(engine.cursor.type)) return
-    if (engine.workbench.selection.selected.length === 0) return
-    engine.workbench.transformHelper.dragStart(event)
+    if (engine.workspace.selection.selected.length === 0) return
+    engine.workspace.transformHelper.dragStart(event)
   })
 
   engine.events.on('drag:move', (event: DragMoveEvent) => {
-    engine.workbench.transformHelper.dragMove(event)
+    engine.workspace.transformHelper.dragMove(event)
   })
 
   engine.events.on('drag:stop', () => {
-    engine.workbench.transformHelper.dragStop()
+    engine.workspace.transformHelper.dragStop()
   })
 }

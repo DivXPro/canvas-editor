@@ -2,22 +2,20 @@ import React, { useEffect, useRef } from 'react'
 
 import { Engine } from '../core/models/Engine'
 import { demoData } from '../mock/demo'
-import { CanvasEngineContext } from '../context'
+import { EditorEngineContext } from '../context'
 
 import { CanvasMenu } from './canvasMenu'
 
-export const CANVAS_NAME = 'Canvas'
-
-export type CanvasContextValue = {
+export type EditorContextValue = {
   engine: Engine | null
 }
 
-export interface CanvasProps {
+export interface EditorProps {
   canvasScope?: any
   engine: Engine
 }
 
-export const Canvas: React.FC<CanvasProps> = ({ engine }) => {
+export const CanvasEditor: React.FC<EditorProps> = ({ engine }) => {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -46,10 +44,10 @@ export const Canvas: React.FC<CanvasProps> = ({ engine }) => {
   }, [])
 
   return (
-    <CanvasEngineContext.Provider value={engine}>
+    <EditorEngineContext.Provider value={engine}>
       <CanvasMenu>
         <div ref={containerRef} className="h-full" id="canvas" />
       </CanvasMenu>
-    </CanvasEngineContext.Provider>
+    </EditorEngineContext.Provider>
   )
 }

@@ -11,8 +11,8 @@ export class RotationCommand extends Command<RotationCommandStates> {
 
   redo() {
     const nodes = isArr(this.target)
-      ? this.target.map(id => this.engine.workbench?.findById(id))
-      : [this.engine.workbench?.findById(this.target)]
+      ? this.target.map(id => this.engine.workspace?.findById(id))
+      : [this.engine.workspace?.findById(this.target)]
 
     try {
       nodes.forEach(n => {
@@ -27,8 +27,8 @@ export class RotationCommand extends Command<RotationCommandStates> {
 
   undo() {
     const nodes = isArr(this.target)
-      ? this.target.map(id => this.engine.workbench?.findById(id))
-      : [this.engine.workbench?.findById(this.target)]
+      ? this.target.map(id => this.engine.workspace?.findById(id))
+      : [this.engine.workspace?.findById(this.target)]
 
     try {
       nodes.forEach(n => {

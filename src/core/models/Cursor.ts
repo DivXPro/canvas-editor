@@ -6,6 +6,7 @@ import { Engine } from './Engine'
 
 export enum CursorStatus {
   Normal = 'normal',
+  Hand = 'hand',
   DragStart = 'dragStart',
   Dragging = 'dragging',
   DragStop = 'dragStop',
@@ -13,6 +14,7 @@ export enum CursorStatus {
 }
 
 export enum CursorDragType {
+  Hand = 'hand',
   Selection = 'selection',
   Move = 'move',
   Resize = 'resize',
@@ -37,6 +39,7 @@ export enum CursorType {
   TrRotate = 'tr-rotate',
   BlRotate = 'bl-rotate',
   BrRotate = 'br-rotate',
+  Hand = 'hand',
 }
 
 export const DragAbleTypes: CursorType[] = [

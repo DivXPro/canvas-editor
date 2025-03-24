@@ -1,7 +1,7 @@
-import { useWorkbench } from './useWorkbench'
+import { useWorkspace } from './useWorkspace'
 
 export const useSelection = () => {
-  const workbench = useWorkbench()
+  const workbench = useWorkspace()
 
   return workbench.selection
 }

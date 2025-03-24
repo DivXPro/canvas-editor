@@ -22,42 +22,42 @@ export const enableCursorEffect = (engine: Engine) => {
   // 通过移动判断 hover
   engine.events.on('pointermove', (e: PointerEvent) => {
     if (engine.cursor.status !== CursorStatus.Normal) {
-      engine.workbench.hover.clear()
+      engine.workspace.hover.clear()
 
       return
     }
-    const nodes = engine.workbench.selectableNodes
+    const nodes = engine.workspace.selectableNodes
 
     const node = nodes.find(n => n.containsPoint({ x: e.offsetX, y: e.offsetY }))
 
     if (node) {
-      engine.workbench.hover.setHover(node)
+      engine.workspace.hover.setHover(node)
     } else {
-      engine.workbench.hover.clear()
+      engine.workspace.hover.clear()
     }
   })
 
   // 通过移动判断 ControlBox 的控制区域
   engine.events.on('pointermove', (e: PointerEvent) => {
     if (
-      engine.workbench.selection.selected.length === 0 ||
-      engine.workbench.controlBox == null ||
+      engine.workspace.selection.selected.length === 0 ||
+      engine.workspace.controlBox == null ||
       engine.cursor.status === CursorStatus.DragStart ||
       engine.cursor.status === CursorStatus.Dragging ||
       e.buttons === 1
     ) {
       return
     }
-    for (let i = 0; i < engine.workbench.controlBox.handles.length; i++) {
-      const handle = engine.workbench.controlBox.handles[i]
+    for (let i = 0; i < engine.workspace.controlBox.handles.length; i++) {
+      const handle = engine.workspace.controlBox.handles[i]
       const point = handle.toLocal({ x: e.offsetX + CursorViewOffset, y: e.offsetY + CursorViewOffset })
 
-      if (engine.workbench.controlBox.isLocalPointOnHandler(point, i)) {
+      if (engine.workspace.controlBox.isLocalPointOnHandler(point, i)) {
         engine.cursor.type = CornerResizeStyles[i]
 
         return
       }
-      if (engine.workbench.controlBox.isLocalPointOnRotateHandler(point, i)) {
+      if (engine.workspace.controlBox.isLocalPointOnRotateHandler(point, i)) {
         engine.cursor.type = RotateStyles[i]
 
         return
@@ -65,7 +65,7 @@ export const enableCursorEffect = (engine: Engine) => {
     }
 
     if (
-      engine.workbench.controlBox.isPointOnHorizontalBorder({
+      engine.workspace.controlBox.isPointOnHorizontalBorder({
         x: e.offsetX + CursorViewOffset * 1.5,
         y: e.offsetY + CursorViewOffset * 1.5,
       })
@@ -76,7 +76,7 @@ export const enableCursorEffect = (engine: Engine) => {
     }
 
     if (
-      engine.workbench.controlBox.isPointOnVerticalBorder({
+      engine.workspace.controlBox.isPointOnVerticalBorder({
         x: e.offsetX + CursorViewOffset * 1.5,
         y: e.offsetY + CursorViewOffset * 1.5,
       })

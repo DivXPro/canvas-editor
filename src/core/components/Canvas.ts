@@ -34,7 +34,7 @@ export class CanvasApp extends Application {
   }
 
   async init(options?: Partial<CanvasAppOptions>) {
-    await super.init(options)
+    await super.init({ ...options, powerPreference: 'high-performance' })
     if (options) {
       this.cursorStyles = options.cursorStyles ?? this.cursorStyles
     }

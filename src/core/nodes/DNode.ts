@@ -28,7 +28,7 @@ export interface IDNode<Item extends Container> extends INodeBase {
   globalCenter: Position
   absoluteBoundingBox: Rect
   absDisplayVertices: Position[]
-  serialize: () => NodeBase
+  serialize: (clone?: boolean) => NodeBase
   eventMode?: EventMode
 }
 
@@ -151,22 +151,22 @@ export abstract class DNode implements IDNode<any> {
       setScale: action.bound,
       setSize: action.bound,
     })
-    this.outline = this.workbench.outlineLayer?.addOutline(this)
+    this.outline = this.workspace.outlineLayer?.addOutline(this)
   }
   visable?: boolean | undefined
 
   abstract update(): void
 
   get parent(): DFrameAbs | undefined {
-    return this.parentId ? (this.engine.workbench.findById(this.parentId) as DFrameAbs | undefined) : undefined
+    return this.parentId ? (this.engine.workspace.findById(this.parentId) as DFrameAbs | undefined) : undefined
   }
 
   get index() {
     return this.parent?.children?.indexOf(this) ?? 0
   }
 
-  get workbench() {
-    return this.engine.workbench
+  get workspace() {
+    return this.engine.workspace
   }
 
   set index(value: number) {
@@ -236,20 +236,20 @@ export abstract class DNode implements IDNode<any> {
   get absDisplayVertices(): Position[] {
     const rect: Position[] = [
       {
-        x: this.globalPosition.x - ((this.size?.width ?? 0) / 2) * this.workbench.zoomRatio,
-        y: this.globalPosition.y - ((this.size?.height ?? 0) / 2) * this.workbench.zoomRatio,
+        x: this.globalPosition.x - ((this.size?.width ?? 0) / 2) * this.workspace.zoomRatio,
+        y: this.globalPosition.y - ((this.size?.height ?? 0) / 2) * this.workspace.zoomRatio,
       },
       {
-        x: this.globalPosition.x + ((this.size?.width ?? 0) / 2) * this.workbench.zoomRatio,
-        y: this.globalPosition.y - ((this.size?.height ?? 0) / 2) * this.workbench.zoomRatio,
+        x: this.globalPosition.x + ((this.size?.width ?? 0) / 2) * this.workspace.zoomRatio,
+        y: this.globalPosition.y - ((this.size?.height ?? 0) / 2) * this.workspace.zoomRatio,
       },
       {
-        x: this.globalPosition.x + ((this.size?.width ?? 0) / 2) * this.workbench.zoomRatio,
-        y: this.globalPosition.y + ((this.size?.height ?? 0) / 2) * this.workbench.zoomRatio,
+        x: this.globalPosition.x + ((this.size?.width ?? 0) / 2) * this.workspace.zoomRatio,
+        y: this.globalPosition.y + ((this.size?.height ?? 0) / 2) * this.workspace.zoomRatio,
       },
       {
-        x: this.globalPosition.x - ((this.size?.width ?? 0) / 2) * this.workbench.zoomRatio,
-        y: this.globalPosition.y + ((this.size?.height ?? 0) / 2) * this.workbench.zoomRatio,
+        x: this.globalPosition.x - ((this.size?.width ?? 0) / 2) * this.workspace.zoomRatio,
+        y: this.globalPosition.y + ((this.size?.height ?? 0) / 2) * this.workspace.zoomRatio,
       },
     ]
 
@@ -295,11 +295,11 @@ export abstract class DNode implements IDNode<any> {
   }
 
   get displayWidth() {
-    return (this.size?.width ?? 0) * this.workbench.zoomRatio
+    return (this.size?.width ?? 0) * this.workspace.zoomRatio
   }
 
   get displayHeight() {
-    return (this.size?.height ?? 0) * this.workbench.zoomRatio
+    return (this.size?.height ?? 0) * this.workspace.zoomRatio
   }
 
   get globalPosition() {
@@ -341,7 +341,7 @@ export abstract class DNode implements IDNode<any> {
   }
 
   get operation() {
-    return this.engine.workbench
+    return this.engine.workspace
   }
 
   get eventMode() {
@@ -400,7 +400,7 @@ export abstract class DNode implements IDNode<any> {
     if (this.parent) {
       this.parent?.removeChild(this)
     } else {
-      this.engine.workbench.canvaNodes.splice(this.engine.workbench.canvaNodes.indexOf(this), 1)
+      this.engine.workspace.canvaNodes.splice(this.engine.workspace.canvaNodes.indexOf(this), 1)
     }
     this.parentId = group.id
     this.position = position
@@ -412,7 +412,7 @@ export abstract class DNode implements IDNode<any> {
       ...this.serialize(true),
     }
 
-    return this.engine.workbench.generateElement(nodeProps)
+    return this.engine.workspace.generateElement(nodeProps)
   }
 
   serialize(clone?: boolean): NodeBase {
@@ -529,7 +529,7 @@ export abstract class DNode implements IDNode<any> {
         if (this.item) {
           this.engine.app.stage.removeChild(this.item)
         }
-        this.engine.workbench.canvaNodes.splice(this.engine.workbench.canvaNodes.indexOf(this), 1)
+        this.engine.workspace.canvaNodes.splice(this.engine.workspace.canvaNodes.indexOf(this), 1)
       }
       this.item?.destroy()
       this.outline?.destroy()

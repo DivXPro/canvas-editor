@@ -20,7 +20,7 @@ export class SelectionAreaLayer extends Container {
   }
 
   private onSelectionStart = () => {
-    const startPoint = this.engine.workbench.selection.startPoint
+    const startPoint = this.engine.workspace.selection.startPoint
 
     // 创建新的选区
     this.selectionArea = new SelectionArea({ x: startPoint.offsetX, y: startPoint.offsetY })
@@ -29,7 +29,7 @@ export class SelectionAreaLayer extends Container {
 
   private onSelectionMove = (event: SelectionAreaMoveEvent) => {
     if (!this.selectionArea) return
-    const startPoint = this.engine.workbench.selection.startPoint
+    const startPoint = this.engine.workspace.selection.startPoint
 
     // 更新选区大小
     this.selectionArea.update(

@@ -11,7 +11,7 @@ export interface UngroupCommandStates {
 export class UngroupCommand extends Command<UngroupCommandStates> {
   type: CommandType = 'UNGROUP'
   redo() {
-    const group = this.engine.workbench?.findById(this.target)
+    const group = this.engine.workspace?.findById(this.target)
 
     if (group instanceof DGroup) {
       group.ungroup()
@@ -24,14 +24,14 @@ export class UngroupCommand extends Command<UngroupCommandStates> {
     if (group.parent) {
       group.parent.addChildAt(group, this.prevStates.group.index ?? 0)
     } else {
-      this.engine.workbench.canvaNodes.splice(group.index, 0, group)
+      this.engine.workspace.canvaNodes.splice(group.index, 0, group)
     }
 
     if (group instanceof DGroup) {
       this.prevStates.childNodeStates
         .sort((a, b) => a.index - b.index)
         .forEach(nodeState => {
-          const node = this.engine.workbench.findById(nodeState.id)
+          const node = this.engine.workspace.findById(nodeState.id)
 
           if (node) {
             node.joinGroup(group)

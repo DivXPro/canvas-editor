@@ -122,7 +122,7 @@ export class DGroup extends DFrameAbs {
         if (child.item != null) {
           this.engine.app.stage.addChildAt(child.item, this.index)
         }
-        this.engine.workbench.canvaNodes.push(child)
+        this.engine.workspace.canvaNodes.push(child)
       }
     })
     this.delete()

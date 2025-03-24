@@ -1,7 +1,7 @@
-import { useWorkbench } from './useWorkbench'
+import { useWorkspace } from './useWorkspace'
 
 export const useHistory = () => {
-  const operation = useWorkbench()
+  const operation = useWorkspace()
 
   return operation?.history
 }

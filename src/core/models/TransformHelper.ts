@@ -15,17 +15,17 @@ import { CompositeCommand, MoveCommand, ResizeCommand, RotationCommand } from '.
 import { calculatePointToLineDistance } from '../utils/geometric'
 
 import { Engine } from './Engine'
-import { Workbench } from './Workbench'
+import { Workspace } from './Workspace'
 import { CornerResizeStyles, CursorDragType, CursorType, EdgeResizeStyles, RotateStyles } from './Cursor'
 
 export interface ITransformOptions {
   engine: Engine
-  operation: Workbench
+  operation: Workspace
 }
 
 export class TransformHelper {
   engine: Engine
-  operation: Workbench
+  operation: Workspace
 
   dragging = false
 

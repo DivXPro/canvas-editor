@@ -5,17 +5,17 @@ import { NodeBase, Position, Size } from '../nodes/type'
 import { DGroup, IDGroupBase } from '../nodes/DGroup'
 import { isArr } from '../utils/types'
 import { ControlBox } from '../components/ControlBox'
-import { ZoomChangeEvent } from '../events/view/ZoomChangeEvent'
+import { BackgroundLayer } from '../components/BackgroundLayer'
+import { SelectionAreaLayer } from '../components/SelectionAreaLayer'
+import { OutlineLayer } from '../components/OutlineLayer'
+import { IEngineContext } from '../types'
 
 import { Engine, ICanva } from './Engine'
 import { Selection } from './Selection'
 import { Hover } from './Hover'
 import { TransformHelper } from './TransformHelper'
 import { History } from './History'
-import { BackgroundLayer } from '../components/BackgroundLayer'
-import { SelectionAreaLayer } from '../components/SelectionAreaLayer'
-import { OutlineLayer } from '../components/OutlineLayer'
-import { IEngineContext } from '../types'
+import { Viewport } from './Viewport'
 
 const DefaultFrame: IDFrameBase = {
   id: 'rootFrame',
@@ -29,16 +29,12 @@ const DefaultFrame: IDFrameBase = {
   backgroundColor: { r: 1, g: 1, b: 1, a: 1 },
 }
 
-export interface IWorkbench {
+export interface IWorkspace {
   canva?: ICanva
-  zoomRatio?: number
-  enableZoom?: boolean
-  minZoom?: number
-  maxZoom?: number
   canvasSize?: Size
 }
 
-export class Workbench {
+export class Workspace {
   id?: string
 
   title?: string
@@ -48,8 +44,11 @@ export class Workbench {
   engine: Engine
 
   outlineLayer?: OutlineLayer
+
   backgroundLayer?: BackgroundLayer
+
   selectionAreaLayer?: SelectionAreaLayer
+
   controlBox?: ControlBox
 
   canvasSize?: Size
@@ -64,22 +63,11 @@ export class Workbench {
 
   history: History
 
-  enableZoom = false
+  viewport?: Viewport
 
-  zoomRatio: number = 1
-
-  maxZoom = 2
-
-  minZoom = 0.5
-
-  constructor(engine: Engine, options?: IWorkbench) {
+  constructor(engine: Engine, options?: IWorkspace) {
     this.engine = engine
-    this.enableZoom = options?.enableZoom ?? this.enableZoom
-    this.zoomRatio = options?.zoomRatio ?? this.zoomRatio
-    this.minZoom = options?.minZoom ?? this.minZoom
-    this.maxZoom = options?.maxZoom ?? this.maxZoom
     this.canvasSize = options?.canvasSize
-
     this.hover = new Hover({
       engine: this.engine,
       operation: this,
@@ -93,22 +81,16 @@ export class Workbench {
       operation: this,
     })
     this.history = new History()
+    this.viewport = new Viewport(this)
     makeObservable(this, {
       id: observable,
       title: observable,
       description: observable,
       canvaNodes: observable,
-      zoomRatio: observable,
-      enableZoom: observable,
-      minZoom: observable,
-      maxZoom: observable,
       selectableNodes: computed,
+      zoomRatio: computed,
       history: observable.shallow,
     })
-
-    if (this.enableZoom) {
-      this.activeWheelZoom()
-    }
   }
 
   initGuideLayers(background?: number) {
@@ -123,17 +105,19 @@ export class Workbench {
     this.engine.app.stage.addChild(this.controlBox)
   }
 
-  init(props: IWorkbench) {
+  init(props: IWorkspace) {
     const { canva } = props
 
     this.id = canva?.id
     this.title = canva?.title
     this.description = canva?.description
     this.canvasSize = props.canvasSize ?? this.canvasSize
-    this.enableZoom = props.enableZoom ?? this.enableZoom
-    this.zoomRatio = props.zoomRatio ?? this.zoomRatio
-    this.minZoom = props.minZoom ?? this.minZoom
-    this.maxZoom = props.maxZoom ?? this.maxZoom
+
+    this.viewport?.init({
+      viewportElement: this.engine.app.canvas,
+      contentWindow: window,
+      nodeIdAttrName: 'canvas',
+    })
 
     if (isArr(canva?.nodes)) {
       canva.nodes.forEach((node, index) => {
@@ -166,38 +150,7 @@ export class Workbench {
     }
   }
 
-  activeWheelZoom() {
-    if (this.enableZoom) {
-      this.engine.events.on('wheel', this.applyZoom.bind(this))
-    }
-  }
-
-  applyZoom(event: WheelEvent) {
-    const delta = event.deltaY
-    let zoomRatio = this.zoomRatio ?? 1
-
-    if (delta > 0) {
-      zoomRatio -= 0.02
-    } else {
-      zoomRatio += 0.02
-    }
-
-    if (zoomRatio <= this.minZoom) {
-      zoomRatio = this.minZoom
-    } else if (zoomRatio >= this.maxZoom) {
-      zoomRatio = this.maxZoom
-    }
-
-    this.zoomRatio = zoomRatio
-    this.canvaNodes.forEach(node => node.setScale(this.zoomRatio))
-
-    this.hover.clear()
-    this.engine.events.emit('zoom:change', new ZoomChangeEvent({ zoomRatio }))
-    event.preventDefault()
-    event.stopPropagation()
-  }
-
-  serialize(): IWorkbench {
+  serialize(): IWorkspace {
     return {
       canva: {
         id: this.id,
@@ -205,11 +158,11 @@ export class Workbench {
         description: this.description,
         nodes: this.canvaNodes.map(node => node.serialize()),
       },
-      zoomRatio: this.zoomRatio,
-      enableZoom: this.enableZoom,
-      minZoom: this.minZoom,
-      maxZoom: this.maxZoom,
     }
+  }
+
+  get zoomRatio() {
+    return this.viewport?.zoomRatio ?? 1
   }
 
   get selectableNodes() {
@@ -250,7 +203,7 @@ export class Workbench {
   getEventContext(): IEngineContext {
     return {
       engine: this.engine,
-      workbench: this,
+      workspace: this,
     }
   }
 }

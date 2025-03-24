@@ -12,8 +12,8 @@ export class MoveCommand extends Command<MoveCommandStates> {
 
   redo() {
     const nodes = isArr(this.target)
-      ? this.target.map(id => this.engine.workbench?.findById(id))
-      : [this.engine.workbench?.findById(this.target)]
+      ? this.target.map(id => this.engine.workspace?.findById(id))
+      : [this.engine.workspace?.findById(this.target)]
 
     try {
       nodes.forEach(n => {
@@ -29,8 +29,8 @@ export class MoveCommand extends Command<MoveCommandStates> {
   undo() {
     console.debug('undo', this.serialize())
     const nodes = isArr(this.target)
-      ? this.target.map(id => this.engine.workbench?.findById(id))
-      : [this.engine.workbench?.findById(this.target)]
+      ? this.target.map(id => this.engine.workspace?.findById(id))
+      : [this.engine.workspace?.findById(this.target)]
 
     try {
       nodes.forEach(n => {

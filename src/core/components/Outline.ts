@@ -38,7 +38,7 @@ export class Outline extends Graphics implements IOutline {
 
     this.rotation = this.node.globalRotation
     if (this.parent == null) {
-      this.node.engine.workbench.outlineLayer?.addChild(this)
+      this.node.engine.workspace.outlineLayer?.addChild(this)
     }
     this.show()
   }
